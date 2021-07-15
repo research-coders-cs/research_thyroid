@@ -1,4 +1,6 @@
 __all__ = ["gpu_utils", "labnote", "preprocess"]
 
-def hello():
-    print("hello world")
+from . import gpu_utils, labnote, preprocess
+
+def about():
+    print("Digitake!")
