@@ -13,43 +13,62 @@ imagenet_std = [0.229, 0.224, 0.225]
 # transform in dataset to target size
 ##################################
 def get_transform(target_size, phase='train'):
+    """
+    Pre-defined transformation pipe for the dataset
+    :param target_size: tuple of (W,H) result image from the pipe
+    :param phase: train/val/test phase of different transformation e.g. test will not need RandomCrop
+    :return: a transformation function to target_size
+    """
+
+
+    # enlarge 10% bigger for the later cropping
+    enlarge = transforms.Resize(size=(int(target_size[0] * 1.1), int(target_size[1] / 1.1))),
+
+    # ImageNet normalizer
+    imagenet_normalize = transforms.Normalize(mean=imagenet_mean, std=imagenet_std)
+
     transform_dict = {
         'train':
             transforms.Compose([
-                transforms.Resize(size=(int(target_size[0] * 1.1), int(target_size[1] / 1.1))),
+                enlarge,
                 transforms.RandomRotation(90, interpolation=Image.BILINEAR),
                 transforms.RandomCrop(target_size),
                 transforms.RandomHorizontalFlip(0.5),
-                transforms.ColorJitter(brightness=0.126, contrast=0.2),
+                transforms.RandomApply([
+                    transforms.ColorJitter(brightness=0.126, contrast=0.2)
+                ], p=0.5),
                 transforms.ToTensor(),
-                transforms.Normalize(mean=imagenet_mean, std=imagenet_std)
+                imagenet_normalize
             ]),
         'val':
             transforms.Compose([
-                transforms.Resize(size=(int(target_size[0] / 0.9), int(target_size[1] / 0.9))),
+                enlarge,
                 transforms.CenterCrop(target_size),
                 transforms.ToTensor(),
-                transforms.Normalize(mean=imagenet_mean, std=imagenet_std)
+                imagenet_normalize
             ]),
         'test':
             transforms.Compose([
-                transforms.Resize(size=(int(target_size[0] / 0.9), int(target_size[1] / 0.9))),
+                enlarge,
                 transforms.CenterCrop(target_size),
                 transforms.ToTensor(),
-                transforms.Normalize(mean=imagenet_mean, std=imagenet_std)
+                imagenet_normalize
             ])
     }
 
     if phase in transform_dict:
         return transform_dict[phase]
     else:
-        raise "Unknown pharse specified"
+        raise Exception("Unknown pharse specified")
 
 
 def build_train_validation_set(datasource, val_size, root="", ext="*.png"):
     """
-        datasource: dictionary with key as label of data, and value is a list of image path
-        val_size: validation size, must be greater than total datasource size of each class's dataset
+    :param datasource: dictionary with key as label of data, and value is a list of image path
+    :param val_size: validation size, must be greater than total datasource size of each class's dataset
+    :param root: the root path to be prepended to datasource, default is emptu
+    :param ext: the file extension to search for
+    :return a dictionary of data split by corresponding class name e.g. { 'benign', 'malignant'}
     """
     datasets = {}
     total_dataset = 0
