@@ -4,6 +4,9 @@
 Data Preprocessing and Auxiliary functions
 
 ------
+0.7.0
+- Add model last Linear layer search and replace function
+
 0.6.5
 - Remove InterpolationMode warning
 

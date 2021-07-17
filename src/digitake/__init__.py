@@ -1,6 +1,4 @@
-__all__ = ["gpu_utils", "labnote", "preprocess"]
-
-from . import gpu_utils, labnote, preprocess, view
+from . import gpu_utils, labnote, preprocess, view, model
 
 def about():
     print("Digitake!")
