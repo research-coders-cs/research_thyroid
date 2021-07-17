@@ -4,6 +4,7 @@ import glob
 from PIL import Image
 from torch.utils.data import Dataset
 from torch.utils.data.dataset import T_co
+from torchvision.transforms.functional import InterpolationMode
 
 # imagenet mean and std
 imagenet_mean = [0.485, 0.456, 0.406]
@@ -31,7 +32,7 @@ def get_transform(target_size, phase='train'):
         'train':
             transforms.Compose([
                 enlarge,
-                transforms.RandomRotation(90, interpolation=Image.BILINEAR),
+                transforms.RandomRotation(90, interpolation=InterpolationMode.BILINEAR),
                 transforms.RandomCrop(target_size),
                 transforms.RandomHorizontalFlip(0.5),
                 transforms.RandomApply([

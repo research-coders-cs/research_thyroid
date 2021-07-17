@@ -4,8 +4,11 @@
 Data Preprocessing and Auxiliary functions
 
 ------
+0.6.5
+- Remove InterpolationMode warning
+
 0.6.3
-- Minor bugfixing
+- Minor bug fixing
 
 0.6.2
 - Fix ThyroidDataset loader, make it keep track of label
