@@ -2,7 +2,7 @@ import os
 from PIL import Image
 import torchvision.transforms as transforms
 import glob
-from . import thyroid_dataset
+__package__ = ['thyroid_dataset']
 
 # imagenet mean and std
 imagenet_mean = [0.485, 0.456, 0.406]

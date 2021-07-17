@@ -4,6 +4,10 @@
 Data Preprocessing and Auxiliary functions
 
 ------
+
+0.6.0
+- Add display_sample function 
+
 0.3.0
 - expose submodule for import
 
