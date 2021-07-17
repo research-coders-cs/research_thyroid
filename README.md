@@ -4,6 +4,8 @@
 Data Preprocessing and Auxiliary functions
 
 ------
+0.6.3
+- Minor bugfixing
 
 0.6.2
 - Fix ThyroidDataset loader, make it keep track of label
