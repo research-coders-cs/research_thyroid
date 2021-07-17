@@ -5,6 +5,9 @@ Data Preprocessing and Auxiliary functions
 
 ------
 
+0.6.2
+- Fix ThyroidDataset loader, make it keep track of label
+
 0.6.0
 - Add display_sample function 
 
@@ -12,7 +15,7 @@ Data Preprocessing and Auxiliary functions
 - expose submodule for import
 
 0.2.0
-- restructure and add proprocess module 
+- restructure and add preprocess module 
 
 0.1.0
 - add labnote package

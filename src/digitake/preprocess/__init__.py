@@ -21,7 +21,6 @@ def get_transform(target_size, phase='train'):
     :return: a transformation function to target_size
     """
 
-
     # enlarge 10% bigger for the later cropping
     enlarge = transforms.Resize(size=(int(target_size[0] * 1.1), int(target_size[1] / 1.1))),
 
@@ -130,11 +129,14 @@ class ThyroidDataset(Dataset):
         )
 
         if phase == 'train':
-            self.dataset = sum(train.values(), [])  # monoid flatten
+            self.dataset = train  # sum(train.values(), [])  # monoid flatten
         elif phase == 'val':
-            self.dataset = sum(val.values(), [])
+            self.dataset = val
         elif phase == 'test':
-            self.dataset = sum(val.values(), [])
+            self.dataset = val
+
+        # Create a partition indices
+        self.partition = [(k, len(v)) for k, v in sorted(self.dataset.items())]
 
         if type(target_size) is int:
             target_size = (target_size, target_size)
@@ -144,8 +146,37 @@ class ThyroidDataset(Dataset):
         self.transform = get_transform(target_size, phase)
 
     def __len__(self):
-        return len(self.dataset)
+        size = len(sum(self.dataset.values(), []))  # monoid flatten, it's counting item so order doesn't matter
+        return size
+
+    def __get_partitioned_index(self, index):
+        if index < 0:
+            raise IndexError(f"Index must not be negative")
+
+        for (k, v) in self.partition:
+            if index >= v:
+                index -= v
+            else:
+                return k, index
+        raise IndexError(f"Index is out of range {index}")
 
     def __getitem__(self, index) -> T_co:
-        return self.dataset[index]
+        """
+        getitem takes index of linear data, meaning that the label key will be used to keep track of partition
+        :param index: linear index
+        :return: image, label, extra
+        """
+        # convert linear index into index respect to its partition
+        label, index = self.__get_partitioned_index(index)
+        path = self.dataset[label][index]
 
+        extra = {
+            'path': path
+        }
+
+        # load and transform
+        image = Image.open(path).convert('RGB')
+        transformed_image = self.transform(image)
+
+        # return image and label
+        return transformed_image, label, extra
