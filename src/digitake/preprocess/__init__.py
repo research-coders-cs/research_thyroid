@@ -22,7 +22,7 @@ def get_transform(target_size, phase='train'):
     """
 
     # enlarge 10% bigger for the later cropping
-    enlarge = transforms.Resize(size=(int(target_size[0] * 1.1), int(target_size[1] / 1.1)))
+    enlarge = transforms.Resize(size=(int(target_size[0] * 1.1), int(target_size[1] * 1.1)))
 
     # ImageNet normalizer
     imagenet_normalize = transforms.Normalize(mean=imagenet_mean, std=imagenet_std)
