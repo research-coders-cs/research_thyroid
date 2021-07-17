@@ -4,6 +4,9 @@
 Data Preprocessing and Auxiliary functions
 
 ------
+0.7.1
+- Make the in-place fully-connected layer change weight and bias as well 
+
 0.7.0
 - Add model last Linear layer search and replace function
 

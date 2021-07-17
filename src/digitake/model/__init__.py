@@ -1,4 +1,4 @@
-from torch import nn
+from torch import nn, ones
 
 
 def check_model_last_layer(m):
@@ -29,6 +29,10 @@ def replace_prediction_layer(model, n):
     ldn = get_last_linear_layer(model)
     if ldn is not None:
         ldn.out_features = n
+        # We have to reset the Weight matrix and bias as well, or it will not change
+        ldn.weight = nn.Parameter(ones(ldn.out_features, ldn.in_features))
+        ldn.bias = nn.Parameter(ones(ldn.out_features))
+        # Re-Randomize bias and weight
         ldn.reset_parameters()
         return ldn
     else:
