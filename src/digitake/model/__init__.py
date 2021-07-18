@@ -59,7 +59,7 @@ def set_reproducible(seed):
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
 
-    torch.use_deterministic_algorithms()
+    #torch.use_deterministic_algorithms(True)
 
 
 ## Credit, from pytorch imagenet example
