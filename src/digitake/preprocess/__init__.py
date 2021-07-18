@@ -121,7 +121,7 @@ class ThyroidDataset(Dataset):
         'test_size': 24
     }
 
-    def __init__(self, phase, target_size):
+    def __init__(self, phase, target_size, transform=None):
         self.phase = phase
         train, val = build_train_validation_set(
             ThyroidDataset.datasource_paths,
@@ -144,7 +144,10 @@ class ThyroidDataset(Dataset):
 
         assert type(target_size) is tuple, "target_size must be tuple of (W:int, H:int) or int if square is needed"
 
-        self.transform = get_transform(target_size, phase)
+        if transform:
+            self.transform = transform
+        else:
+            self.transform = get_transform(target_size, phase)
 
     def __len__(self):
         size = len(sum(self.dataset.values(), []))  # monoid flatten, it's counting item so order doesn't matter
