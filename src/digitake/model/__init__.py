@@ -50,7 +50,7 @@ def save_checkpoint(state, is_best, filename='checkpoint.pth.tar'):
         shutil.copyfile(filename, 'model_best.pth.tar')
 
 
-def set_reproductable(seed):
+def set_reproducible(seed):
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)

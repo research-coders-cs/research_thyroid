@@ -4,7 +4,7 @@
 Data Preprocessing and Auxiliary functions
 
 ------
-0.7.3
+0.7.4
 - Add set_reproducible function
 
 0.7.2
