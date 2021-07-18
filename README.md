@@ -4,6 +4,9 @@
 Data Preprocessing and Auxiliary functions
 
 ------
+0.7.3
+- Add set_reproducible function
+
 0.7.2
 - Add AverageMeter and ProgressMeter from Imagenet example
 

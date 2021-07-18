@@ -1,7 +1,9 @@
+import random
+
+import numpy as np
 import torch
 import shutil
 from torch import nn, ones
-
 
 
 def check_model_last_layer(m):
@@ -48,11 +50,24 @@ def save_checkpoint(state, is_best, filename='checkpoint.pth.tar'):
         shutil.copyfile(filename, 'model_best.pth.tar')
 
 
+def set_reproductable(seed):
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    torch.cuda.manual_seed(seed)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+
+    torch.use_deterministic_algorithms()
+
+
 ## Credit, from pytorch imagenet example
 ## https://github.com/pytorch/examples/blob/master/imagenet/main.py
 
 class AverageMeter(object):
     """Computes and stores the average and current value"""
+
     def __init__(self, name, fmt=':f'):
         self.name = name
         self.fmt = fmt
