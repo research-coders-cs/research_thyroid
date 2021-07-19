@@ -65,10 +65,15 @@ def set_reproducible(seed):
 ## Credit, from pytorch imagenet example
 ## https://github.com/pytorch/examples/blob/master/imagenet/main.py
 
-class AverageMeter(object):
+class Metric(object):
+    pass
+
+
+class AverageMeter(Metric):
     """Computes and stores the average and current value"""
 
-    def __init__(self, name, fmt=':f'):
+    def __init__(self, name, fmt=':.4f'):
+        super(AverageMeter, self).__init__()
         self.name = name
         self.fmt = fmt
         self.reset()
@@ -85,26 +90,30 @@ class AverageMeter(object):
         self.count += n
         self.avg = self.sum / self.count
 
+    def __call__(self, batch_score, sample_num=1):
+        self.update(batch_score, sample_num)
+        return self.avg
+
     def __str__(self):
         fmtstr = '{name} {val' + self.fmt + '} ({avg' + self.fmt + '})'
         return fmtstr.format(**self.__dict__)
 
 
-class ProgressMeter(object):
+class ProgressMeter(Metric):
     def __init__(self, num_batches, meters, prefix=""):
         self.batch_fmtstr = self._get_batch_fmtstr(num_batches)
         self.meters = meters
         self.prefix = prefix
 
-    def display(self, batch):
-        entries = [self.prefix + self.batch_fmtstr.format(batch)]
-        entries += [str(meter) for meter in self.meters]
-        print('\t'.join(entries))
-
     def _get_batch_fmtstr(self, num_batches):
         num_digits = len(str(num_batches // 1))
         fmt = '{:' + str(num_digits) + 'd}'
         return '[' + fmt + '/' + fmt.format(num_batches) + ']'
+
+    def __str__(self):
+        entries = [self.prefix + self.batch_fmtstr.format(batch)]
+        entries += [str(meter) for meter in self.meters]
+        return '\t'.join(entries)
 
 
 def adjust_learning_rate(optimizer, epoch, args):

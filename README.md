@@ -5,6 +5,7 @@ Data Preprocessing and Auxiliary functions
 
 ------
 0.7
+- Add test case on average meter
 - Add extra parameter to take in transform function for Dataset
 - Add set_reproducible function
 - Add AverageMeter and ProgressMeter from Imagenet example

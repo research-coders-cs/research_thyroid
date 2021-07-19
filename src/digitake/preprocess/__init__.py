@@ -32,8 +32,8 @@ def get_transform(target_size, phase='train'):
         'train':
             transforms.Compose([
                 enlarge,
-                transforms.RandomRotation(90, interpolation=InterpolationMode.BILINEAR),
-                transforms.RandomCrop(target_size),
+                transforms.RandomRotation(45, interpolation=InterpolationMode.BILINEAR, expand=True),
+                transforms.CenterCrop(target_size),
                 transforms.RandomHorizontalFlip(0.5),
                 transforms.RandomApply([
                     transforms.ColorJitter(brightness=0.126, contrast=0.2)
