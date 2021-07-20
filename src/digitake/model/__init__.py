@@ -154,3 +154,106 @@ def accuracy(output, target, topk=(1,)):
             correct_k = correct[:k].reshape(-1).float().sum(0, keepdim=True)
             res.append(correct_k.mul_(100.0 / batch_size))
         return res
+
+
+class ModelTrainer:
+    def __init__(self, model, criterion, optimizer, train_dataloader, val_dataloader, device=None):
+        self.model = model
+        self.criterion = criterion
+        self.optimizer = optimizer
+        self.dataloaders = {
+            "train": train_dataloader,
+            "val": val_dataloader
+        }
+        self.device = device
+
+    def train_one_batch(self, inputs, labels):
+        # forward
+        # track history if only in train
+        with torch.set_grad_enabled(True):
+
+            # Raw model prediction of size [batch_size, output_classes]
+            outputs = self.model(inputs)
+
+            # batch_loss
+            loss = self.criterion(outputs, labels)
+
+            # zero the parameter gradients
+            # we do this because the optimizer can accumulate loss across batches.
+            # so if we don't want to make a big gradient update(it can overshoot), better to reset every batch.
+            self.optimizer.zero_grad()
+
+            # Calculate gradient
+            loss.backward()
+
+            # Update weight parameter
+            self.optimizer.step()
+
+            # prediction as a class number for each outputs
+            with torch.no_grad(): # disable grad (we don't need it to cal loss and acc)
+              _, preds = torch.max(outputs, 1)
+              corrects = torch.sum(preds == labels.data)
+
+            return loss.item(), corrects/inputs.shape[0]
+
+    def val_one_batch(self, inputs, labels):
+        # forward
+        # track history if only in train
+        with torch.set_grad_enabled(False):
+            # Raw model prediction of size [batch_size, output_classes]
+            outputs = self.model(inputs)
+
+            # batch_loss
+            loss = self.criterion(outputs, labels)
+
+            # prediction as a class number for each outputs
+            _, preds = torch.max(outputs, 1)
+            corrects = torch.sum(preds == labels.data)
+
+            return loss.item(), corrects / inputs.shape[0]
+
+    def train_epoch(self):
+        # Set model to be in training mode
+        self.model.train()
+        batch = 1
+        loss_meter = AverageMeter('train_loss')
+        acc_meter = AverageMeter('train_acc')
+
+        for inputs, labels, extra in self.dataloaders["train"]:
+            # move inputs and labels to target device (GPU/CPU/TPU)
+            if self.device:
+                inputs = inputs.to(self.device)
+                labels = labels.to(self.device)
+
+            loss, acc = self.train_one_batch(inputs, labels)
+
+            with torch.no_grad():
+                loss_meter(loss)
+                acc_meter(acc)
+                batch += 1
+
+        return loss_meter, acc_meter
+
+    def val_epoch(self):
+        # Set model to be in tranning mode
+        self.model.eval()
+        batch = 1
+        loss_meter = AverageMeter('val_loss')
+        acc_meter = AverageMeter('val_acc')
+
+        for inputs, labels, extra in self.dataloaders['val']:
+            # move inputs and labels to target device (GPU/CPU/TPU)
+            if self.device:
+                inputs = inputs.to(self.device)
+                labels = labels.to(self.device)
+
+            loss, acc = self.val_one_batch(inputs, labels)
+
+            with torch.no_grad():
+                loss_meter(loss)
+                acc_meter(acc)
+                batch += 1
+
+        return loss_meter, acc_meter
+
+

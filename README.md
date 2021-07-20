@@ -4,6 +4,10 @@
 Data Preprocessing and Auxiliary functions
 
 ------
+0.8
+- Create a ModelTrainer class to wrap train/val functions 
+
+
 0.7
 - Update __str__ for AverageMeter class to show only avg value
 - Update preprocess __getitem__ to return class_num instead of class name
