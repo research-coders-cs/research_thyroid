@@ -5,6 +5,7 @@ Data Preprocessing and Auxiliary functions
 
 ------
 0.7
+- Update preprocess __getitem__ to return class_num instead of class name
 - Add test case on average meter
 - Add extra parameter to take in transform function for Dataset
 - Add set_reproducible function

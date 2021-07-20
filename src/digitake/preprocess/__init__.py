@@ -157,11 +157,13 @@ class ThyroidDataset(Dataset):
         if index < 0:
             raise IndexError(f"Index must not be negative")
 
+        class_num = 0
         for (k, v) in self.partition:
             if index >= v:
                 index -= v
+                class_num += 1
             else:
-                return k, index
+                return k, class_num, index
         raise IndexError(f"Index is out of range {index}")
 
     def __getitem__(self, index) -> T_co:
@@ -171,11 +173,13 @@ class ThyroidDataset(Dataset):
         :return: image, label, extra
         """
         # convert linear index into index respect to its partition
-        label, index = self.__get_partitioned_index(index)
+        label, class_num, index = self.__get_partitioned_index(index)
         path = self.dataset[label][index]
 
         extra = {
-            'path': path
+            'path': path,
+            'label': label,
+            'class_index': index
         }
 
         # load and transform
@@ -183,4 +187,4 @@ class ThyroidDataset(Dataset):
         transformed_image = self.transform(image)
 
         # return image and label
-        return transformed_image, label, extra
+        return transformed_image, class_num, extra
