@@ -3,7 +3,7 @@ import random
 import numpy as np
 import torch
 import shutil
-from torch import nn, ones
+from torch import nn, ones, optim
 
 
 def check_model_last_layer(m):
@@ -95,8 +95,24 @@ class AverageMeter(Metric):
         return self.avg
 
     def __str__(self):
-        fmtstr = '{name} {val' + self.fmt + '} ({avg' + self.fmt + '})'
+        fmtstr = '{name} {avg' + self.fmt + '}'
         return fmtstr.format(**self.__dict__)
+
+
+def train_one_batch(m, inputs, labels, optimizer_ft):
+    pass
+
+
+def try_overfit_model(m, inputs, labels, device):
+    m.train()
+
+    optimizer = optim.SGD(m.parameters(), lr=0.001, momentum=0.9)
+
+    # Test on 100-epoch with the same data to see if network beable to overfit
+    for i in range(100):
+        loss = train_one_batch(m, inputs, labels, optimizer)
+        if i % 10 == 0:
+            print(f"{i}:{loss:.6f}")
 
 
 class ProgressMeter(Metric):
