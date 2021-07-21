@@ -5,7 +5,8 @@ Data Preprocessing and Auxiliary functions
 
 ------
 0.8
-- Add ProgressBar tqdm to train method
+- Fix callback on start batch
+- Add ProgressBar `tqdm` to train method
 - Add `data_points` to AverageMeter
 - Create a ModelTrainer class to wrap train/val functions
 

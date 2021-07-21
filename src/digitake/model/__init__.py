@@ -151,7 +151,7 @@ class BatchCallback(Callback):
     def __init__(self):
         self.progress_bar = tqdm(total=100, unit=' batches')
 
-    def on_batch_start(self, total_batches):
+    def on_batch_start(self, *args):
         pass
 
     def on_batch_end(self, *args):
