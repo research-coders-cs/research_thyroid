@@ -173,13 +173,13 @@ class ThyroidDataset(Dataset):
         :return: image, label, extra
         """
         # convert linear index into index respect to its partition
-        label, class_num, index = self.__get_partitioned_index(index)
+        label, class_index, index = self.__get_partitioned_index(index)
         path = self.dataset[label][index]
 
         extra = {
             'path': path,
             'label': label,
-            'class_index': index
+            'class_index': class_index
         }
 
         # load and transform
@@ -187,4 +187,4 @@ class ThyroidDataset(Dataset):
         transformed_image = self.transform(image)
 
         # return image and label
-        return transformed_image, class_num, extra
+        return transformed_image, class_index, extra
