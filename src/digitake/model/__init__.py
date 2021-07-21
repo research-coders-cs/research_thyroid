@@ -149,7 +149,7 @@ def accuracy(output, target, topk=(1,)):
 
 class BatchCallback(Callback):
     def __init__(self):
-        self.progress_bar = tqdm(total=100, unit=' batches')
+        pass
 
     def on_batch_start(self, *args):
         pass
@@ -158,7 +158,8 @@ class BatchCallback(Callback):
         self.progress_bar.update()
 
     def on_epoch_begin(self, total_batches):
-        self.progress_bar.reset(total_batches)
+        #self.progress_bar.reset(total_batches)
+        self.progress_bar = tqdm(total=total_batches, unit=' batches')
 
     def on_epoch_end(self, *args):
         self.progress_bar.close()
@@ -275,8 +276,8 @@ class ModelTrainer:
         for i in range(total_epochs):
             total_train_batches = len(self.dataloaders["train"])
             total_val_batches = len(self.dataloaders["val"])
+            print(f"Epoch {i + 1}/{total_epochs}:")
             callback and callback.on_epoch_begin(total_train_batches + total_val_batches)
-            print(f"Epoch {i}/{total_epochs}:")
 
             # 1. train one epoch for entire dataset
             loss, acc = self.train_epoch(callback)
@@ -287,6 +288,7 @@ class ModelTrainer:
             log = f"[{loss}, {acc}] : [{val_loss}, {val_acc}]"
             callback and callback.on_epoch_end(i)
             print(log)
+            print()
 
     def try_overfit_model(self, inputs, labels, n_epochs=100):
         self.model.train()
