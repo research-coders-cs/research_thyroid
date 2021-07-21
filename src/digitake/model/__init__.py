@@ -4,6 +4,10 @@ import numpy as np
 import torch
 import shutil
 from torch import nn, ones, optim
+from torch.utils.data import DataLoader
+from tqdm.notebook import tqdm
+
+from .callbacks import Callback
 
 
 def check_model_last_layer(m):
@@ -83,8 +87,10 @@ class AverageMeter(Metric):
         self.avg = 0
         self.sum = 0
         self.count = 0
+        self.data_points = []
 
     def update(self, val, n=1):
+        self.data_points.append(val)
         self.val = val
         self.sum += val * n
         self.count += n
@@ -98,21 +104,6 @@ class AverageMeter(Metric):
         fmtstr = '{name} {avg' + self.fmt + '}'
         return fmtstr.format(**self.__dict__)
 
-
-def train_one_batch(m, inputs, labels, optimizer_ft):
-    pass
-
-
-def try_overfit_model(m, inputs, labels, device):
-    m.train()
-
-    optimizer = optim.SGD(m.parameters(), lr=0.001, momentum=0.9)
-
-    # Test on 100-epoch with the same data to see if network beable to overfit
-    for i in range(100):
-        loss = train_one_batch(m, inputs, labels, optimizer)
-        if i % 10 == 0:
-            print(f"{i}:{loss:.6f}")
 
 
 class ProgressMeter(Metric):
@@ -156,22 +147,39 @@ def accuracy(output, target, topk=(1,)):
         return res
 
 
+class BatchCallback(Callback):
+    def __init__(self):
+        self.progress_bar = tqdm(total=100, unit=' batches')
+
+    def on_batch_start(self, total_batches):
+        pass
+
+    def on_batch_end(self, *args):
+        self.progress_bar.update()
+
+    def on_epoch_begin(self, total_batches):
+        self.progress_bar.reset(total_batches)
+
+    def on_epoch_end(self, *args):
+        self.progress_bar.close()
+
+
 class ModelTrainer:
-    def __init__(self, model, criterion, optimizer, train_dataloader, val_dataloader, device=None):
+    def __init__(self, model, criterion, optimizer, train_ds, val_ds, device=None):
         self.model = model
         self.criterion = criterion
         self.optimizer = optimizer
+        # Use dataset to create dataloader
         self.dataloaders = {
-            "train": train_dataloader,
-            "val": val_dataloader
+            "train": DataLoader(train_ds, batch_size=8, shuffle=True, num_workers=2, pin_memory=True),
+            "val": DataLoader(val_ds, batch_size=16, shuffle=False, num_workers=2, pin_memory=True)
         }
         self.device = device
 
-    def train_one_batch(self, inputs, labels):
+    def train_one_batch(self, inputs, labels, callback=None):
         # forward
         # track history if only in train
         with torch.set_grad_enabled(True):
-
             # Raw model prediction of size [batch_size, output_classes]
             outputs = self.model(inputs)
 
@@ -212,7 +220,7 @@ class ModelTrainer:
 
             return loss.item(), corrects / inputs.shape[0]
 
-    def train_epoch(self):
+    def train_epoch(self, callback=None):
         # Set model to be in training mode
         self.model.train()
         batch = 1
@@ -225,7 +233,9 @@ class ModelTrainer:
                 inputs = inputs.to(self.device)
                 labels = labels.to(self.device)
 
+            callback and callback.on_batch_start()
             loss, acc = self.train_one_batch(inputs, labels)
+            callback and callback.on_batch_end(loss, acc)
 
             with torch.no_grad():
                 loss_meter(loss)
@@ -234,7 +244,7 @@ class ModelTrainer:
 
         return loss_meter, acc_meter
 
-    def val_epoch(self):
+    def val_epoch(self, callback=None):
         # Set model to be in tranning mode
         self.model.eval()
         batch = 1
@@ -247,7 +257,9 @@ class ModelTrainer:
                 inputs = inputs.to(self.device)
                 labels = labels.to(self.device)
 
+            callback and callback.on_batch_start()
             loss, acc = self.val_one_batch(inputs, labels)
+            callback and callback.on_batch_end(loss, acc)
 
             with torch.no_grad():
                 loss_meter(loss)
@@ -255,5 +267,39 @@ class ModelTrainer:
                 batch += 1
 
         return loss_meter, acc_meter
+
+    def train(self, total_epochs, callback=None):
+        if callback is None:
+            callback = BatchCallback()
+
+        for i in range(total_epochs):
+            total_train_batches = len(self.dataloaders["train"])
+            total_val_batches = len(self.dataloaders["val"])
+            callback and callback.on_epoch_begin(total_train_batches + total_val_batches)
+            print(f"Epoch {i}/{total_epochs}:")
+
+            # 1. train one epoch for entire dataset
+            loss, acc = self.train_epoch(callback)
+
+            # 2. validate one epoch for entire dataset (no gradient update)
+            val_loss, val_acc = self.val_epoch(callback)
+
+            log = f"Train: [{loss:.4f}, {acc:.2f}], Val: [{val_loss:.4}, {val_acc:.2f}]"
+            callback and callback.on_epoch_end(i)
+            print(log)
+
+    def try_overfit_model(self, inputs, labels, n_epochs=100):
+        self.model.train()
+
+        loss_meter = AverageMeter('train_overfit_loss')
+
+        # Test on 100-epoch with the same data to see if network beable to overfit
+        for i in range(n_epochs):
+            loss = self.train_one_batch(inputs, labels)
+            loss_meter(loss)
+            if i % 10 == 0:
+                print(f"{i}:{loss:.6f}")
+
+        return loss_meter
 
 
