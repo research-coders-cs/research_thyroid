@@ -179,7 +179,8 @@ class ThyroidDataset(Dataset):
         extra = {
             'path': path,
             'label': label,
-            'class_index': class_index
+            'class_index': class_index,
+            'inclass_index': index
         }
 
         # load and transform
@@ -188,3 +189,8 @@ class ThyroidDataset(Dataset):
 
         # return image and label
         return transformed_image, class_index, extra
+
+    def get_class_label(self, class_index):
+        assert class_index < len(self.partition), 'The class_index is beyond number of class available'
+        return self.partition[class_index][0]
+
