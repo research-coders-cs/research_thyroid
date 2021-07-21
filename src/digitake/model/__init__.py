@@ -225,7 +225,7 @@ class ModelTrainer:
         self.model.train()
         batch = 1
         loss_meter = AverageMeter('train_loss')
-        acc_meter = AverageMeter('train_acc')
+        acc_meter = AverageMeter('train_acc', fmt=':.2f')
 
         for inputs, labels, extra in self.dataloaders["train"]:
             # move inputs and labels to target device (GPU/CPU/TPU)
@@ -249,7 +249,7 @@ class ModelTrainer:
         self.model.eval()
         batch = 1
         loss_meter = AverageMeter('val_loss')
-        acc_meter = AverageMeter('val_acc')
+        acc_meter = AverageMeter('val_acc',fmt=':.2f')
 
         for inputs, labels, extra in self.dataloaders['val']:
             # move inputs and labels to target device (GPU/CPU/TPU)
@@ -284,7 +284,7 @@ class ModelTrainer:
             # 2. validate one epoch for entire dataset (no gradient update)
             val_loss, val_acc = self.val_epoch(callback)
 
-            log = f"Train: [{loss:.4f}, {acc:.2f}], Val: [{val_loss:.4}, {val_acc:.2f}]"
+            log = f"[{loss}, {acc}] : [{val_loss}, {val_acc}]"
             callback and callback.on_epoch_end(i)
             print(log)
 
