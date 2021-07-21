@@ -157,9 +157,10 @@ class BatchCallback(Callback):
     def on_batch_end(self, *args):
         self.progress_bar.update()
 
-    def on_epoch_begin(self, total_batches):
+    def on_epoch_begin(self, description, total_batches):
         #self.progress_bar.reset(total_batches)
         self.progress_bar = tqdm(total=total_batches, unit=' batches')
+        self.progress_bar.set_description(description)
 
     def on_epoch_end(self, *args):
         self.progress_bar.close()
@@ -250,7 +251,7 @@ class ModelTrainer:
         self.model.eval()
         batch = 1
         loss_meter = AverageMeter('val_loss')
-        acc_meter = AverageMeter('val_acc',fmt=':.2f')
+        acc_meter = AverageMeter('val_acc', fmt=':.2f')
 
         for inputs, labels, extra in self.dataloaders['val']:
             # move inputs and labels to target device (GPU/CPU/TPU)
@@ -276,8 +277,7 @@ class ModelTrainer:
         for i in range(total_epochs):
             total_train_batches = len(self.dataloaders["train"])
             total_val_batches = len(self.dataloaders["val"])
-            print(f"Epoch {i + 1}/{total_epochs}:")
-            callback and callback.on_epoch_begin(total_train_batches + total_val_batches)
+            callback and callback.on_epoch_begin(f"Epoch {i + 1}/{total_epochs}:", total_train_batches + total_val_batches)
 
             # 1. train one epoch for entire dataset
             loss, acc = self.train_epoch(callback)

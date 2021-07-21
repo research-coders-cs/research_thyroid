@@ -5,6 +5,7 @@ Data Preprocessing and Auxiliary functions
 
 ------
 0.8
+- Fix 
 - Fix formatter
 - Fix callback on start batch
 - Add ProgressBar `tqdm` to train method
