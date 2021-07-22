@@ -63,7 +63,7 @@ def set_reproducible(seed):
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
 
-    #torch.use_deterministic_algorithms(True)
+    # torch.use_deterministic_algorithms(True)
 
 
 ## Credit, from pytorch imagenet example
@@ -103,7 +103,6 @@ class AverageMeter(Metric):
     def __str__(self):
         fmtstr = '{name} {avg' + self.fmt + '}'
         return fmtstr.format(**self.__dict__)
-
 
 
 class ProgressMeter(Metric):
@@ -158,7 +157,7 @@ class BatchCallback(Callback):
         self.progress_bar.update()
 
     def on_epoch_begin(self, description, total_batches):
-        #self.progress_bar.reset(total_batches)
+        # self.progress_bar.reset(total_batches)
         self.progress_bar = tqdm(total=total_batches, unit=' batches')
         self.progress_bar.set_description(description)
 
@@ -200,11 +199,11 @@ class ModelTrainer:
             self.optimizer.step()
 
             # prediction as a class number for each outputs
-            with torch.no_grad(): # disable grad (we don't need it to cal loss and acc)
-              _, preds = torch.max(outputs, 1)
-              corrects = torch.sum(preds == labels.data)
+            with torch.no_grad():  # disable grad (we don't need it to cal loss and acc)
+                _, preds = torch.max(outputs, 1)
+                corrects = torch.sum(preds == labels.data)
 
-            return loss.item(), corrects/inputs.shape[0]
+            return loss.item(), corrects / inputs.shape[0], preds
 
     def val_one_batch(self, inputs, labels):
         # forward
@@ -220,7 +219,7 @@ class ModelTrainer:
             _, preds = torch.max(outputs, 1)
             corrects = torch.sum(preds == labels.data)
 
-            return loss.item(), corrects / inputs.shape[0]
+            return loss.item(), corrects / inputs.shape[0], preds
 
     def train_epoch(self, callback=None):
         # Set model to be in training mode
@@ -236,8 +235,8 @@ class ModelTrainer:
                 labels = labels.to(self.device)
 
             callback and callback.on_batch_start()
-            loss, acc = self.train_one_batch(inputs, labels)
-            callback and callback.on_batch_end(loss, acc)
+            loss, acc, preds = self.train_one_batch(inputs, labels)
+            callback and callback.on_batch_end(loss, acc, preds)
 
             with torch.no_grad():
                 loss_meter(loss)
@@ -253,17 +252,17 @@ class ModelTrainer:
         loss_meter = AverageMeter('val_loss')
         acc_meter = AverageMeter('val_acc', fmt=':.2f')
 
-        for inputs, labels, extra in self.dataloaders['val']:
-            # move inputs and labels to target device (GPU/CPU/TPU)
-            if self.device:
-                inputs = inputs.to(self.device)
-                labels = labels.to(self.device)
+        with torch.no_grad():
+            for inputs, labels, extra in self.dataloaders['val']:
+                # move inputs and labels to target device (GPU/CPU/TPU)
+                if self.device:
+                    inputs = inputs.to(self.device)
+                    labels = labels.to(self.device)
 
-            callback and callback.on_batch_start()
-            loss, acc = self.val_one_batch(inputs, labels)
-            callback and callback.on_batch_end(loss, acc)
+                callback and callback.on_batch_start()
+                loss, acc, preds = self.val_one_batch(inputs, labels)
+                callback and callback.on_batch_end(loss, acc, preds)
 
-            with torch.no_grad():
                 loss_meter(loss)
                 acc_meter(acc)
                 batch += 1
@@ -277,7 +276,8 @@ class ModelTrainer:
         for i in range(total_epochs):
             total_train_batches = len(self.dataloaders["train"])
             total_val_batches = len(self.dataloaders["val"])
-            callback and callback.on_epoch_begin(f"Epoch {i + 1}/{total_epochs}:", total_train_batches + total_val_batches)
+            callback and callback.on_epoch_begin(f"Epoch {i + 1}/{total_epochs}:",
+                                                 total_train_batches + total_val_batches)
 
             # 1. train one epoch for entire dataset
             loss, acc = self.train_epoch(callback)
@@ -303,5 +303,3 @@ class ModelTrainer:
                 print(f"{i}:{loss:.6f}")
 
         return loss_meter
-
-

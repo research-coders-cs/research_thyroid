@@ -5,6 +5,7 @@ Data Preprocessing and Auxiliary functions
 
 ------
 0.8
+- Send out preds from one batch as well
 - Update ThyroidDataset to return class_index
 - Fix formatter
 - Fix callback on start batch
