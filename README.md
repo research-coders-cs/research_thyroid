@@ -5,6 +5,7 @@ Data Preprocessing and Auxiliary functions
 
 ------
 0.8
+- Adjust image augmentation to include perspective random
 - Send out preds from one batch as well
 - Update ThyroidDataset to return class_index
 - Fix formatter
