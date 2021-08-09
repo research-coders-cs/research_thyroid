@@ -270,11 +270,11 @@ class ModelTrainer:
 
         return loss_meter, acc_meter
 
-    def train(self, total_epochs, callback=None):
+    def train(self, total_epochs, start_epoch=0, callback=None):
         if callback is None:
             callback = BatchCallback()
 
-        for i in range(total_epochs):
+        for i in range(start_epoch, total_epochs):
             total_train_batches = len(self.dataloaders["train"])
             total_val_batches = len(self.dataloaders["val"])
             callback and callback.on_epoch_begin(f"Epoch {i + 1}/{total_epochs}:",
@@ -289,7 +289,7 @@ class ModelTrainer:
                 self.best_val_loss = val_loss
 
             log = f"[{loss}, {acc}] : [{val_loss}, {val_acc}]"
-            callback and callback.on_epoch_end(i)
+            callback and callback.on_epoch_end(i, self.best_val_loss)
             print(log)
             print()
 
@@ -307,7 +307,7 @@ class ModelTrainer:
 
         return loss_meter
 
-    def save_model(self, checkpoint_path, model_state, optimizer_state, val_loss, epoch=1):
+    def save_model(self, checkpoint_path, val_loss, epoch=1):
         """
         model_state: checkpoint we want to save
         checkpoint_path: path to save checkpoint
@@ -316,8 +316,8 @@ class ModelTrainer:
         checkpoint = {
             'epoch': epoch,
             'val_loss': val_loss,
-            'model_state': model_state,
-            'optimizer_state': optimizer_state,
+            'model_state': self.model.state_dict(),
+            'optimizer_state': self.model.optimizer.state_dict(),
         }
         # save checkpoint data to the path given, checkpoint_path
         torch.save(checkpoint, checkpoint_path)
