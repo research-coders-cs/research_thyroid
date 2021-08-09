@@ -177,6 +177,7 @@ class ModelTrainer:
         }
         self.device = device
         self.best_val_loss = np.inf
+        self.best_epoch = 0
 
     def train_one_batch(self, inputs, labels, callback=None):
         # forward
@@ -317,7 +318,7 @@ class ModelTrainer:
             'epoch': epoch,
             'val_loss': val_loss,
             'model_state': self.model.state_dict(),
-            'optimizer_state': self.model.optimizer.state_dict(),
+            'optimizer_state': self.optimizer.state_dict(),
         }
         # save checkpoint data to the path given, checkpoint_path
         torch.save(checkpoint, checkpoint_path)
@@ -336,3 +337,4 @@ class ModelTrainer:
         self.optimizer.load_state_dict(checkpoint['optimizer_state'])
         # initialize val_loss from checkpoint to val_loss
         self.best_val_loss = checkpoint['val_loss'].item()
+        self.best_epoch = checkpoint['epoch'].item()
