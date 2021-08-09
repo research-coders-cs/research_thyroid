@@ -176,6 +176,7 @@ class ModelTrainer:
             "val": DataLoader(val_ds, batch_size=16, shuffle=False, num_workers=2, pin_memory=True)
         }
         self.device = device
+        self.best_val_loss = np.inf
 
     def train_one_batch(self, inputs, labels, callback=None):
         # forward
@@ -246,7 +247,7 @@ class ModelTrainer:
         return loss_meter, acc_meter
 
     def val_epoch(self, callback=None):
-        # Set model to be in tranning mode
+        # Set model to be in trianing mode
         self.model.eval()
         batch = 1
         loss_meter = AverageMeter('val_loss')
@@ -284,6 +285,8 @@ class ModelTrainer:
 
             # 2. validate one epoch for entire dataset (no gradient update)
             val_loss, val_acc = self.val_epoch(callback)
+            if val_loss < self.best_val_loss:
+                self.best_val_loss = val_loss
 
             log = f"[{loss}, {acc}] : [{val_loss}, {val_acc}]"
             callback and callback.on_epoch_end(i)
@@ -303,3 +306,33 @@ class ModelTrainer:
                 print(f"{i}:{loss:.6f}")
 
         return loss_meter
+
+    def save_model(self, checkpoint_path, model_state, optimizer_state, val_loss, epoch=1):
+        """
+        model_state: checkpoint we want to save
+        checkpoint_path: path to save checkpoint
+        """
+        # create checkpoint variable and add important data
+        checkpoint = {
+            'epoch': epoch,
+            'val_loss': val_loss,
+            'model_state': model_state,
+            'optimizer_state': optimizer_state,
+        }
+        # save checkpoint data to the path given, checkpoint_path
+        torch.save(checkpoint, checkpoint_path)
+
+    def load_model(self, checkpoint_path):
+        """
+        checkpoint_path: path to save checkpoint
+        model: model that we want to load checkpoint parameters into
+        optimizer: optimizer we defined in previous training
+        """
+        # load check point
+        checkpoint = torch.load(checkpoint_path)
+        # initialize state_dict from checkpoint to model
+        self.model.load_state_dict(checkpoint['model_state'])
+        # initialize optimizer from checkpoint to optimizer
+        self.optimizer.load_state_dict(checkpoint['optimizer_state'])
+        # initialize val_loss from checkpoint to val_loss
+        self.best_val_loss = checkpoint['val_loss'].item()
