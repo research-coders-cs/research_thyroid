@@ -285,11 +285,11 @@ class ModelTrainer:
 
             # 2. validate one epoch for entire dataset (no gradient update)
             val_loss, val_acc = self.val_epoch(callback)
-            if val_loss < self.best_val_loss:
-                self.best_val_loss = val_loss
+            if val_loss.avg < self.best_val_loss:
+                self.best_val_loss = val_loss.avg
 
             log = f"[{loss}, {acc}] : [{val_loss}, {val_acc}]"
-            callback and callback.on_epoch_end(i, self.best_val_loss)
+            callback and callback.on_epoch_end(i, val_loss.avg)
             print(log)
             print()
 
