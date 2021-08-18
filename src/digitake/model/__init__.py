@@ -336,5 +336,5 @@ class ModelTrainer:
         # initialize optimizer from checkpoint to optimizer
         self.optimizer.load_state_dict(checkpoint['optimizer_state'])
         # initialize val_loss from checkpoint to val_loss
-        self.best_val_loss = checkpoint['val_loss'].item()
-        self.best_epoch = checkpoint['epoch'].item()
+        self.best_val_loss = checkpoint['val_loss']
+        self.best_epoch = checkpoint['epoch']
