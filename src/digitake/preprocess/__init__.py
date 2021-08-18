@@ -5,6 +5,7 @@ from PIL import Image
 from torch.utils.data import Dataset
 from torch.utils.data.dataset import T_co
 from torchvision.transforms.functional import InterpolationMode
+from typing import Dict
 
 # imagenet mean and std
 imagenet_mean = [0.485, 0.456, 0.406]
@@ -64,7 +65,7 @@ def get_transform(target_size, phase='train'):
         raise Exception("Unknown pharse specified")
 
 
-def build_dataset(datasource: dict[str, str], root="", ext="*.png"):
+def build_dataset(datasource: Dict[str, str], root="", ext="*.png"):
     """
     Build dataset by consuming data from root/<datasource-key>
 
