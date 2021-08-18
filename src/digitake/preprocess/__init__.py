@@ -64,6 +64,26 @@ def get_transform(target_size, phase='train'):
         raise Exception("Unknown pharse specified")
 
 
+def build_dataset(datasource: dict[str, str], root="", ext="*.png"):
+    """
+    Build dataset by consuming data from root/<datasource-key>
+
+    :param datasource: the datasource dictionary that maps from label to path
+    eg. datasource = {
+        'malignant': 'Malignant_Markers_Crop',
+        'benign': 'Benign_Markers_Crop'
+    }
+    :param root: the root path to be prepended to datasource-key, default is emptu
+    :param ext: the file extension to search for
+    :return: a dictionary of data split by corresponding label name e.g. { 'benign', 'malignant'}
+    """
+    datasets = {}
+    for key in datasource:
+        datasets[key] = glob.glob(os.path.join(root, datasource[key], ext))
+
+    return datasets
+
+
 def build_train_validation_set(datasource, val_size, root="", ext="*.png"):
     """
     :param datasource: dictionary with key as label of data, and value is a list of image path
