@@ -155,6 +155,7 @@ class ThyroidDataset(Dataset):
             val_size=ThyroidDataset.training_params['val_size'],
             root=ThyroidDataset.datasource_root
         )
+        dataset = None
 
         if phase == 'train':
             dataset = train  # sum(train.values(), [])  # monoid flatten
