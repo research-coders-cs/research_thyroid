@@ -98,7 +98,9 @@ def explain_dataset(ds):
 
 def build_train_validation_set(datasource, val_size, root="", ext="*.png"):
     """
-    :param datasource: dictionary with key as label of data, and value is a list of image path
+    This function loop over each datasource's key and append it to <root> to make a search path to scan for
+    files with given extension. The list of file then, will be splitted into training and validation set.
+    :param datasource: dictionary with key as the class of data, and value is an image path
     :param val_size: validation size, must be greater than total datasource size of each class's dataset
     :param root: the root path to be prepended to datasource, default is emptu
     :param ext: the file extension to search for
@@ -119,7 +121,7 @@ def build_train_validation_set(datasource, val_size, root="", ext="*.png"):
         ds_size = len(datasets[key])  # size of each dataset
         total_dataset += ds_size
 
-        assert val_size < ds_size, f"The size of dataset '{key}'({ds_size}) is smaller than validation size({val_size})"
+        assert val_size < ds_size, f"The size of '{key}'({ds_size}) is smaller than the specific val_size({val_size})"
         training_set[key] = datasets[key][val_size:]  # Cut from val_size-th onward
         t_size = len(training_set[key])
         total_training_set += t_size
@@ -140,53 +142,24 @@ class ThyroidDataset(Dataset):
     """
     Dataset for Thyroid Image
     """
-    datasource_root = 'thyroid-ds3'  # base path to be prepend to each data source
-    datasource_paths = {
-        'malignant': 'Malignant_Markers_Crop',
-        'benign': 'Benign_Markers_Crop'
-    }
 
-    training_params = {
-        'val_size': 24,
-        'test_size': 24
-    }
-
-    def __init__(self, phase, target_size, transform=None):
+    def __init__(self, phase, dataset, target_size, transform):
+        assert phase is not None
+        assert dataset is not None
+        assert transform is not None
         self.phase = phase
-        train, val = build_train_validation_set(
-            ThyroidDataset.datasource_paths,
-            val_size=ThyroidDataset.training_params['val_size'],
-            root=ThyroidDataset.datasource_root
-        )
-        dataset = None
-
-        if phase == 'train':
-            dataset = train  # sum(train.values(), [])  # monoid flatten
-        elif phase == 'val':
-            dataset = val
-        elif phase == 'test':
-            dataset = val
-        else:
-            assert transform is not None, "You need to specify transform for custom phase"
-            print("Custom phase is specified, please call set_dataset before start.")
-
-        if dataset:
-            self.set_dataset(dataset)
+        self.dataset = dataset
+        self.partition = [(k, len(v)) for k, v in sorted(self.dataset.items())]
+        self.transform = transform
 
         if type(target_size) is int:
             target_size = (target_size, target_size)
 
         assert type(target_size) is tuple, "target_size must be tuple of (W:int, H:int) or int if square is needed"
 
-        if transform:
-            self.transform = transform
-        else:
-            self.transform = get_transform(target_size, phase)
-
     def set_dataset(self, dataset):
         self.dataset = dataset
-        # Create a partition indices
-        self.partition = [(k, len(v)) for k, v in sorted(self.dataset.items())]
+        self.partition = [(k, len(v)) for k, v in sorted(self.dataset.items())]     # Create a partition indices
 
     def __len__(self):
         size = len(sum(self.dataset.values(), []))  # monoid flatten, it's counting item so order doesn't matter
@@ -207,7 +180,7 @@ class ThyroidDataset(Dataset):
 
     def __getitem__(self, index) -> T_co:
         """
-        getitem takes index of linear data, meaning that the label key will be used to keep track of partition
+        __getitem__ takes index of linear data, meaning that the label key will be used to keep track of partition
         :param index: linear index
         :return: image, label, extra
         """
