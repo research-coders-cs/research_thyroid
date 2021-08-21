@@ -87,11 +87,13 @@ def build_dataset(datasource: Dict[str, str], root="", ext="*.png"):
 
 def explain_dataset(ds):
     total_dataitem = 0
+    s = ""
     for key in ds:
         path_count = len(ds[key])
         total_dataitem += path_count
-        print(f'Found total {path_count} for {key}')
-    print(f"Total dataitem: {total_dataitem}")
+        s += f'Found total {path_count} for {key}\n'
+    s += f"Total dataitem: {total_dataitem}\n"
+    return s
 
 
 def build_train_validation_set(datasource, val_size, root="", ext="*.png"):
@@ -102,6 +104,7 @@ def build_train_validation_set(datasource, val_size, root="", ext="*.png"):
     :param ext: the file extension to search for
     :return a dictionary of data split by corresponding class name e.g. { 'benign', 'malignant'}
     """
+    # Build dataset according to datasource dict[class: path]. e.g. { 'benign': 'benign/folder' }
     datasets = build_dataset(datasource, root=root, ext=ext)
 
     training_set = {}
@@ -109,7 +112,7 @@ def build_train_validation_set(datasource, val_size, root="", ext="*.png"):
     total_training_set = 0
     total_validation_set = 0
 
-    print("--" * 25)
+    #print("--" * 25)
 
     total_dataset = 0
     for key in datasets:    # for each class
@@ -120,15 +123,15 @@ def build_train_validation_set(datasource, val_size, root="", ext="*.png"):
         training_set[key] = datasets[key][val_size:]  # Cut from val_size-th onward
         t_size = len(training_set[key])
         total_training_set += t_size
-        print(f'Total train {key} size = {t_size}/{ds_size} ({t_size / ds_size:0.2f})')
+        #print(f'Total train {key} size = {t_size}/{ds_size} ({t_size / ds_size:0.2f})')
 
         validation_set[key] = datasets[key][:val_size]  # Validation data is the first n elements from the dataset
         v_size = len(validation_set[key])
         total_validation_set += v_size
-        print(f'Total validation {key} size = {v_size}/{ds_size} ({v_size / ds_size:0.2f})')
+        #print(f'Total validation {key} size = {v_size}/{ds_size} ({v_size / ds_size:0.2f})')
 
-    print("--" * 25)
-    print(f"Total dataset size = {total_dataset}")
+    #print("--" * 25)
+    #print(f"Total dataset size = {total_dataset}")
 
     return training_set, validation_set
 
@@ -164,6 +167,7 @@ class ThyroidDataset(Dataset):
         elif phase == 'test':
             dataset = val
         else:
+            assert transform is not None, "You need to specify transform for custom phase"
             print("Custom phase is specified, please call set_dataset before start.")
 
         if dataset:
