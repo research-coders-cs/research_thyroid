@@ -12,16 +12,20 @@ imagenet_mean = [0.485, 0.456, 0.406]
 imagenet_std = [0.229, 0.224, 0.225]
 
 
-##################################
+####################################################################
 # transform in dataset to target size
-##################################
+####################################################################
 def get_transform(target_size, phase='train'):
     """
-    Pre-defined transformation pipe for the dataset
+    Predefined transformation pipe for the dataset
     :param target_size: tuple of (W,H) result image from the pipe
     :param phase: train/val/test phase of different transformation e.g. test will not need RandomCrop
     :return: a transformation function to target_size
     """
+    if type(target_size) is int:
+        target_size = (target_size, target_size)
+
+    assert type(target_size) is tuple, "target_size must be tuple of (W:int, H:int) or int if square is needed"
 
     # enlarge 10% bigger for the later cropping
     enlarge = transforms.Resize(size=(int(target_size[0] * 1.1), int(target_size[1] * 1.1)))
@@ -62,7 +66,7 @@ def get_transform(target_size, phase='train'):
     if phase in transform_dict:
         return transform_dict[phase]
     else:
-        raise Exception("Unknown pharse specified")
+        raise Exception("Unknown phase specified")
 
 
 def build_dataset(datasource: Dict[str, str], root="", ext="*.png"):
@@ -143,7 +147,7 @@ class ThyroidDataset(Dataset):
     Dataset for Thyroid Image
     """
 
-    def __init__(self, phase, dataset, target_size, transform):
+    def __init__(self, phase, dataset, transform):
         assert phase is not None
         assert dataset is not None
         assert transform is not None
@@ -151,11 +155,6 @@ class ThyroidDataset(Dataset):
         self.dataset = dataset
         self.partition = [(k, len(v)) for k, v in sorted(self.dataset.items())]
         self.transform = transform
-
-        if type(target_size) is int:
-            target_size = (target_size, target_size)
-
-        assert type(target_size) is tuple, "target_size must be tuple of (W:int, H:int) or int if square is needed"
 
     def set_dataset(self, dataset):
         self.dataset = dataset

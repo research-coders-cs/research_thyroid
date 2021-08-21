@@ -4,6 +4,10 @@
 Data Preprocessing and Auxiliary functions
 
 ------
+0.9
+- Refactor before stable API bump(v1)
+- Reduce redundancy specification
+
 0.8
 - Add build_dataset function
 - Add save_model and load_model
