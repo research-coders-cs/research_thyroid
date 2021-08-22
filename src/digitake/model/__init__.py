@@ -221,10 +221,10 @@ class ModelTrainer:
             corrects = torch.sum(preds == labels.data)
 
             try:
-                print("-------------------------------------------------")
+                print("*-------------------------------------------------")
                 print("loss =", loss)
                 print(f"batch compare> {list(zip(preds.tolist(), labels.tolist(), preds == labels.data and 'T' or 'F'))}")
-                print("-------------------------------------------------")
+                print("*-------------------------------------------------")
             except:
                 pass
 
