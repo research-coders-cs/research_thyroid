@@ -223,10 +223,10 @@ class ModelTrainer:
             pred_vs_label = list(zip(preds.tolist(), labels.tolist()))
             try:
                 print("*-------------------------------------------------")
-                print("loss =", loss)
-                print(f"batch compare> {pred_vs_label}")
-                print(f"result> {[x==y for (x,y) in pred_vs_label]}")
-                print("*-------------------------------------------------")
+                #print("loss =", loss)
+                #print(f"batch compare> {pred_vs_label}")
+                print(f"result> {[f'{x}{y}'  for (x,y) in pred_vs_label]} - {loss.item()}")
+
             except:
                 pass
 
@@ -264,6 +264,7 @@ class ModelTrainer:
         acc_meter = AverageMeter('val_acc', fmt=':.2f')
 
         with torch.no_grad():
+            running_loss = 0
             for inputs, labels, extra in self.dataloaders['val']:
                 # move inputs and labels to target device (GPU/CPU/TPU)
                 if self.device:
@@ -274,9 +275,12 @@ class ModelTrainer:
                 loss, acc, preds = self.val_one_batch(inputs, labels)
                 callback and callback.on_batch_end(loss, acc, preds)
 
+                running_loss += loss
+
                 loss_meter(loss)
                 acc_meter(acc)
                 batch += 1
+            print("epoch loss=", running_loss / len(self.dataloaders['val']))
 
         return loss_meter, acc_meter
 
