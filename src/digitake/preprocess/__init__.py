@@ -73,10 +73,15 @@ def build_dataset(datasource: Dict[str, str], root="", ext="*.png"):
     """
     Build dataset by consuming data from root/<datasource-key>
 
-    :param datasource: the datasource dictionary that maps from label to path
+    :param datasource: the datasource dictionary that maps from label to path or list of paths
     eg. datasource = {
         'malignant': 'Malignant_Markers_Crop',
         'benign': 'Benign_Markers_Crop'
+    }
+    or
+    datasource = {
+        'malignant': ['path/a/malignant', 'path/b/malignant'],
+        'benign': ['path/a/benign', 'path/b/benign']
     }
     :param root: the root path to be prepended to datasource-key, default is emptu
     :param ext: the file extension to search for
@@ -84,7 +89,13 @@ def build_dataset(datasource: Dict[str, str], root="", ext="*.png"):
     """
     datasets = {}
     for key in datasource:
-        datasets[key] = glob.glob(os.path.join(root, datasource[key], ext))
+        if isinstance(datasource[key], list):
+            files = []
+            for path in datasource[key]:
+                files += glob.glob(os.path.join(root, path, ext))
+            datasets[key] = files
+        else:
+            datasets[key] = glob.glob(os.path.join(root, datasource[key], ext))
 
     return datasets
 

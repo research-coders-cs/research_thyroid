@@ -7,6 +7,7 @@ Data Preprocessing and Auxiliary functions
 0.9
 - Refactor before stable API bump(v1)
 - Reduce redundancy specification
+- Make build dataset taking both path(string) and list of path
 
 0.8
 - Add build_dataset function
