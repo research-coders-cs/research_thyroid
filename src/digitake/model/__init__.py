@@ -220,10 +220,12 @@ class ModelTrainer:
             _, preds = torch.max(outputs, 1)
             corrects = torch.sum(preds == labels.data)
 
+            pred_vs_label = list(zip(preds.tolist(), labels.tolist()))
             try:
                 print("*-------------------------------------------------")
                 print("loss =", loss)
-                print(f"batch compare> {list(zip(preds.tolist(), labels.tolist(), preds == labels.data and 'T' or 'F'))}")
+                print(f"batch compare> {pred_vs_label}")
+                print(f"result> {[x==y for (x,y) in pred_vs_label]}")
                 print("*-------------------------------------------------")
             except:
                 pass
