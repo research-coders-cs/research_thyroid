@@ -264,6 +264,8 @@ class ModelTrainer:
 
         with torch.no_grad():
             for inputs, labels, extra in self.dataloaders['val']:
+                for x in extra:
+                    print(f"{labels} >>", x)
                 # move inputs and labels to target device (GPU/CPU/TPU)
                 if self.device:
                     inputs = inputs.to(self.device)
