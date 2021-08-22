@@ -223,8 +223,7 @@ class ModelTrainer:
             try:
                 print("-------------------------------------------------")
                 print("loss =", loss)
-                print(f"batch compare> {list(zip(outputs.tolist(), labels.tolist()))}")
-                print("pred =", preds)
+                print(f"batch compare> {list(zip(preds.tolist(), labels.tolist(), preds == labels.data and 'T' or 'F'))}")
                 print("-------------------------------------------------")
             except:
                 pass
@@ -264,8 +263,6 @@ class ModelTrainer:
 
         with torch.no_grad():
             for inputs, labels, extra in self.dataloaders['val']:
-                for x in extra:
-                    print(f"{labels} >>", x)
                 # move inputs and labels to target device (GPU/CPU/TPU)
                 if self.device:
                     inputs = inputs.to(self.device)
