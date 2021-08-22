@@ -121,7 +121,6 @@ class ProgressMeter(Metric):
         entries += [str(meter) for meter in self.meters]
         return '\t'.join(entries)
 
-
 def adjust_learning_rate(optimizer, epoch, args):
     """Sets the learning rate to the initial LR decayed by 10 every 30 epochs"""
     lr = args.lr * (0.1 ** (epoch // 30))
@@ -208,8 +207,8 @@ class ModelTrainer:
             return loss.item(), corrects / inputs.shape[0], preds
 
     def val_one_batch(self, inputs, labels):
-        # forward
-        # track history if only in train
+
+        # We don't need gradient on validation
         with torch.set_grad_enabled(False):
             # Raw model prediction of size [batch_size, output_classes]
             outputs = self.model(inputs)
@@ -220,6 +219,13 @@ class ModelTrainer:
             # prediction as a class number for each outputs
             _, preds = torch.max(outputs, 1)
             corrects = torch.sum(preds == labels.data)
+
+            try:
+                print("loss =", loss)
+                print(f"batch compare> {zip(outputs.tolist(), labels.tolist())}")
+                print("pred =", preds)
+            except:
+                pass
 
             return loss.item(), corrects / inputs.shape[0], preds
 
@@ -248,7 +254,7 @@ class ModelTrainer:
         return loss_meter, acc_meter
 
     def val_epoch(self, callback=None):
-        # Set model to be in trianing mode
+        # Set model to be in eval mode
         self.model.eval()
         batch = 1
         loss_meter = AverageMeter('val_loss')
