@@ -147,15 +147,15 @@ def accuracy(output, target, topk=(1,)):
 
 class BatchCallback(Callback):
     def __init__(self):
-        pass
+        self.progress_bar = None
 
     def on_batch_start(self, *args):
         pass
 
     def on_batch_end(self, *args):
         loss, acc, _, _, phase = args
-        self.progress.set_postfix(loss=loss, acc=loss)
-        self.progress.colour = "#FF00FF" if phase == "val" else "#4CAF50"
+        self.progress_bar.set_postfix(loss=loss, acc=loss)
+        self.progress_bar.colour = "#FF00FF" if phase == "val" else "#4CAF50"
         self.progress_bar.update()
 
     def on_epoch_begin(self, description, total_batches):
