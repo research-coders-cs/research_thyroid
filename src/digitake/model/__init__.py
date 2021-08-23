@@ -207,7 +207,8 @@ class ModelTrainer:
                 _, preds = torch.max(outputs, 1)
                 corrects = torch.sum(preds == labels.data)
 
-            return loss.item(), corrects / inputs.shape[0], preds, labels, "train"
+            acc = corrects / inputs.shape[0]
+            return loss.item(), acc.item(), preds, labels, "train"
 
     def val_one_batch(self, inputs, labels):
 
@@ -222,8 +223,8 @@ class ModelTrainer:
             # prediction as a class number for each outputs
             _, preds = torch.max(outputs, 1)
             corrects = torch.sum(preds == labels.data)
-
-            return loss.item(), corrects / inputs.shape[0], preds, labels, "val"
+            acc = corrects / inputs.shape[0]
+            return loss.item(), acc.item(), preds, labels, "val"
 
     def train_epoch(self, callback=None):
         # Set model to be in training mode
