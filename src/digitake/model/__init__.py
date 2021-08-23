@@ -153,6 +153,9 @@ class BatchCallback(Callback):
         pass
 
     def on_batch_end(self, *args):
+        loss, acc, _, _, phase = args
+        self.progress.set_postfix(loss=loss, acc=loss)
+        self.progress.colour = "#FF00FF" if phase == "val" else "#4CAF50"
         self.progress_bar.update()
 
     def on_epoch_begin(self, description, total_batches):
@@ -204,7 +207,7 @@ class ModelTrainer:
                 _, preds = torch.max(outputs, 1)
                 corrects = torch.sum(preds == labels.data)
 
-            return loss.item(), corrects / inputs.shape[0], preds
+            return loss.item(), corrects / inputs.shape[0], preds, labels, "train"
 
     def val_one_batch(self, inputs, labels):
 
@@ -220,16 +223,7 @@ class ModelTrainer:
             _, preds = torch.max(outputs, 1)
             corrects = torch.sum(preds == labels.data)
 
-            pred_vs_label = list(zip(preds.tolist(), labels.tolist()))
-            try:
-                #print("loss =", loss)
-                #print(f"batch compare> {pred_vs_label}")
-                print(f"{loss.item():07.4f}> {[f'{x}{y}'  for (x,y) in pred_vs_label]}")
-
-            except:
-                pass
-
-            return loss.item(), corrects / inputs.shape[0], preds
+            return loss.item(), corrects / inputs.shape[0], preds, labels, "val"
 
     def train_epoch(self, callback=None):
         # Set model to be in training mode
@@ -245,8 +239,8 @@ class ModelTrainer:
                 labels = labels.to(self.device)
 
             callback and callback.on_batch_start()
-            loss, acc, preds = self.train_one_batch(inputs, labels)
-            callback and callback.on_batch_end(loss, acc, preds)
+            loss, acc, preds, labels, phase = self.train_one_batch(inputs, labels)
+            callback and callback.on_batch_end(loss, acc, preds, labels, phase)
 
             with torch.no_grad():
                 loss_meter(loss)
@@ -270,8 +264,8 @@ class ModelTrainer:
                     labels = labels.to(self.device)
 
                 callback and callback.on_batch_start()
-                loss, acc, preds = self.val_one_batch(inputs, labels)
-                callback and callback.on_batch_end(loss, acc, preds)
+                loss, acc, preds, labels, phase = self.val_one_batch(inputs, labels)
+                callback and callback.on_batch_end(loss, acc, preds, labels, phase)
 
                 loss_meter(loss)
                 acc_meter(acc)
@@ -297,10 +291,10 @@ class ModelTrainer:
             if val_loss.avg < self.best_val_loss:
                 self.best_val_loss = val_loss.avg
 
-            log = f"[{loss}, {acc}] : [{val_loss}, {val_acc}]"
-            callback and callback.on_epoch_end(i, val_loss.avg)
-            print(log)
-            print()
+            #log = f"[{loss}, {acc}] : [{val_loss}, {val_acc}]"
+            callback and callback.on_epoch_end(i, loss, acc, val_loss, val_acc)
+            #print(log)
+            #print()
 
     def try_overfit_model(self, inputs, labels, n_epochs=100):
         self.model.train()
