@@ -161,7 +161,7 @@ class BatchCallback(Callback):
     def on_epoch_begin(self, description, total_batches):
         # self.progress_bar.reset(total_batches)
         self.progress_bar = tqdm(total=total_batches, unit=' batches')
-        self.progress_bar.set_description(f"\033[92m{description}\x1b[0m")
+        self.progress_bar.set_description(f"{description}")
 
     def on_epoch_end(self, *args):
         self.progress_bar.close()
