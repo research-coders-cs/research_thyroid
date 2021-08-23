@@ -154,14 +154,14 @@ class BatchCallback(Callback):
 
     def on_batch_end(self, *args):
         loss, acc, _, _, phase = args
-        self.progress_bar.set_postfix(loss=loss, acc=loss)
+        self.progress_bar.set_postfix(loss=loss, acc=acc)
         self.progress_bar.colour = "#FF00FF" if phase == "val" else "#4CAF50"
         self.progress_bar.update()
 
     def on_epoch_begin(self, description, total_batches):
         # self.progress_bar.reset(total_batches)
         self.progress_bar = tqdm(total=total_batches, unit=' batches')
-        self.progress_bar.set_description(description)
+        self.progress_bar.set_description(f"\033[92m{description}\x1b[0m")
 
     def on_epoch_end(self, *args):
         self.progress_bar.close()
