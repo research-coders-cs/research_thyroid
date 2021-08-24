@@ -172,14 +172,14 @@ class BatchCallback(Callback):
 
 
 class ModelTrainer:
-    def __init__(self, model, criterion, optimizer, train_ds, val_ds, device=None):
+    def __init__(self, model, criterion, optimizer, train_ds, val_ds, device=None, shuffle_valset=False):
         self.model = model
         self.criterion = criterion
         self.optimizer = optimizer
         # Use dataset to create dataloader
         self.dataloaders = {
             "train": DataLoader(train_ds, batch_size=8, shuffle=True, num_workers=2, pin_memory=True),
-            "val": DataLoader(val_ds, batch_size=16, shuffle=False, num_workers=2, pin_memory=True)
+            "val": DataLoader(val_ds, batch_size=16, shuffle=shuffle_valset, num_workers=2, pin_memory=True)
         }
         self.device = device
         self.best_val_loss = np.inf
