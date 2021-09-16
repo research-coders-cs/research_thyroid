@@ -254,7 +254,10 @@ class ModelTrainer:
 
         return loss_meter, acc_meter
 
-    def val_epoch(self, callback=None):
+    def val_epoch(self, callback=None, val_loader=None):
+        # Custom vs embedded val set
+        val_loader = val_loader or self.dataloaders['val']
+
         # Set model to be in eval mode
         self.model.eval()
         batch = 1
@@ -262,7 +265,7 @@ class ModelTrainer:
         acc_meter = AverageMeter('val_acc', fmt=':.2f')
 
         with torch.no_grad():
-            for inputs, labels, extra in self.dataloaders['val']:
+            for inputs, labels, extra in val_loader:
                 # move inputs and labels to target device (GPU/CPU/TPU)
                 if self.device:
                     inputs = inputs.to(self.device)
@@ -300,6 +303,12 @@ class ModelTrainer:
             callback and callback.on_epoch_end(i, loss, acc, val_loss, val_acc)
             #print(log)
             #print()
+
+    def eval(self, ext_val_ds, batch_size=16, shuffle=True):
+        ext_val = DataLoader(ext_val_ds, batch_size=batch_size, shuffle=shuffle, num_workers=2, pin_memory=True)
+        val_loss, val_acc = self.val_epoch(val_loader=ext_val)
+
+        return (val_loss, val_acc)
 
     def try_overfit_model(self, inputs, labels, n_epochs=100):
         self.model.train()

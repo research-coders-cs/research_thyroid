@@ -5,6 +5,7 @@ Data Preprocessing and Auxiliary functions
 
 ------
 0.9
+- Add `eval` for a custom validation(test)
 - Refactor before stable API bump(v1)
 - Reduce redundancy specification
 - Make build dataset taking both path(string) and list of path
