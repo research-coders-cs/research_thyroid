@@ -158,7 +158,14 @@ class ThyroidDataset(Dataset):
     Dataset for Thyroid Image
     """
 
-    def __init__(self, phase, dataset, transform):
+    def __init__(self, phase, dataset, transform, mask_dict=dict):
+        """
+
+        :param phase: Train/Validation/Test phase
+        :param dataset: the dataset to be loaded(in form on path)
+        :param transform: the transform function
+        :param mask_dict: (optional) dictionary that map from a given path in the dataset to mask path
+        """
         assert phase is not None
         assert dataset is not None
         assert transform is not None
@@ -166,6 +173,8 @@ class ThyroidDataset(Dataset):
         self.dataset = dataset
         self.partition = [(k, len(v)) for k, v in sorted(self.dataset.items())]
         self.transform = transform
+        self.mask_dict = mask_dict
+
 
     def set_dataset(self, dataset):
         self.dataset = dataset
@@ -207,6 +216,14 @@ class ThyroidDataset(Dataset):
 
         # load and transform
         image = Image.open(path).convert('RGB')
+
+        # if it has mask, find the mask path pair and load
+        if path in self.mask_dict:
+            # Gray scale image(this could actually be just B/W Image(0/1)
+            mask_image = Image.open(self.mask_dict[path]).convert('L')
+            r, g, b = image.split()
+            image = Image.merge('RGBA', (r, g, b, mask_image))
+
         transformed_image = self.transform(image)
 
         # return image and label
