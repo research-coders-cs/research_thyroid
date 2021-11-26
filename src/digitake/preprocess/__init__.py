@@ -158,7 +158,7 @@ class ThyroidDataset(Dataset):
     Dataset for Thyroid Image
     """
 
-    def __init__(self, phase, dataset, transform, mask_dict=dict):
+    def __init__(self, phase, dataset, transform, mask_dict=None):
         """
 
         :param phase: Train/Validation/Test phase
@@ -173,8 +173,8 @@ class ThyroidDataset(Dataset):
         self.dataset = dataset
         self.partition = [(k, len(v)) for k, v in sorted(self.dataset.items())]
         self.transform = transform
-        self.mask_dict = mask_dict
-
+        if mask_dict is not None and type(mask_dict) == dict:
+            self.mask_dict = mask_dict
 
     def set_dataset(self, dataset):
         self.dataset = dataset
