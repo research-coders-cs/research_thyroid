@@ -173,8 +173,7 @@ class ThyroidDataset(Dataset):
         self.dataset = dataset
         self.partition = [(k, len(v)) for k, v in sorted(self.dataset.items())]
         self.transform = transform
-        if mask_dict is not None and type(mask_dict) == dict:
-            self.mask_dict = mask_dict
+        self.mask_dict = mask_dict if mask_dict is not None and type(mask_dict) == dict else {}
 
     def set_dataset(self, dataset):
         self.dataset = dataset
