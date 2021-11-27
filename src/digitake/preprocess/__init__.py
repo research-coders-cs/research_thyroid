@@ -218,7 +218,7 @@ class ThyroidDataset(Dataset):
         image = Image.open(path).convert('RGB')
 
         # if it has mask, find the mask path pair and load
-        if path in self.mask_dict:
+        if label in self.mask_dict and path in self.mask_dict[label]:
             # Gray scale image(this could actually be just B/W Image(0/1)
             mask_image = Image.open(self.mask_dict[path]).convert('L')
             r, g, b = image.split()
