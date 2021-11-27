@@ -225,7 +225,9 @@ class ThyroidDataset(Dataset):
             image = Image.merge('RGBA', (r, g, b, mask_image))
             print("RGBA", image.mode)
         else:
-            print(path, "not in", self.mask_dict)
+            print(path, "not in the list below:")
+            for x in self.mask_dict[label]:
+                print(f">>{x}")
 
         transformed_image = self.transform(image)
 
