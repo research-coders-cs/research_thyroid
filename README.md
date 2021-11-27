@@ -4,6 +4,9 @@
 Data Preprocessing and Auxiliary functions
 
 ------
+0.10
+- Add masking enable data loader
+
 0.9
 - Add `eval` for a custom validation(test)
 - Refactor before stable API bump(v1)
