@@ -217,17 +217,22 @@ class ThyroidDataset(Dataset):
         # load and transform
         image = Image.open(path).convert('RGB')
 
+        try:
+            extracted_filename = path.split('/')[-1]    #extract the filename of image to find its counterpart
+            mask_path = next(p for p in self.mask_dict[label] if extracted_filename in p)
+        except StopIteration:
+            mask_path = None
+
+        extracted_filename = path.split('/')[-1]
         # if it has mask, find the mask path pair and load
-        if label in self.mask_dict and path in self.mask_dict[label]:
+        if mask_path:
             # Gray scale image(this could actually be just B/W Image(0/1)
-            mask_image = Image.open(self.mask_dict[path]).convert('L')
+            mask_image = Image.open(mask_path).convert('L')
             r, g, b = image.split()
             image = Image.merge('RGBA', (r, g, b, mask_image))
             print("RGBA", image.mode)
         else:
-            print(path, "not in the list below:")
-            for x in self.mask_dict[label]:
-                print(f">>{x}")
+            print(path, "not in the list")
 
         transformed_image = self.transform(image)
 
