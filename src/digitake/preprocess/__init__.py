@@ -222,6 +222,7 @@ class ThyroidDataset(Dataset):
             mask_image = Image.open(self.mask_dict[path]).convert('L')
             r, g, b = image.split()
             image = Image.merge('RGBA', (r, g, b, mask_image))
+            print("RGBA", image.mode)
 
         transformed_image = self.transform(image)
 
