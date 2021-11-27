@@ -202,7 +202,8 @@ class ThyroidDataset(Dataset):
         :param index: linear index
         :return: image, label, extra
         """
-        # convert linear index into index respect to its partition
+        # convert linear index into index respecting its partition
+        # e.g. [0,1,2,3,4,5,6,7,8] --> [0,1,2,3,0,1,2,3,4]
         label, class_index, index = self.__get_partitioned_index(index)
         path = self.dataset[label][index]
 
@@ -223,6 +224,8 @@ class ThyroidDataset(Dataset):
             r, g, b = image.split()
             image = Image.merge('RGBA', (r, g, b, mask_image))
             print("RGBA", image.mode)
+        else:
+            print(path, "not in", self.mask_dict)
 
         transformed_image = self.transform(image)
 
