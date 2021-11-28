@@ -115,9 +115,13 @@ def build_train_validation_set(datasource, val_size, root="", ext="*.png"):
     """
     This function loop over each datasource's key and append it to <root> to make a search path to scan for
     files with given extension. The list of file then, will be splitted into training and validation set.
+
+    The difference to `build_dataset` is the train/validation split(In fact, this method call build_dataset
+    to begin with, then loop over keys to split train/validation data)
+
     :param datasource: dictionary with key as the class of data, and value is an image path
     :param val_size: validation size, must be greater than total datasource size of each class's dataset
-    :param root: the root path to be prepended to datasource, default is emptu
+    :param root: the root path to be prepended to datasource, default is empty
     :param ext: the file extension to search for
     :return a dictionary of data split by corresponding class name e.g. { 'benign', 'malignant'}
     """
