@@ -9,7 +9,6 @@ from tqdm.notebook import tqdm
 
 from .callbacks import Callback
 
-
 def check_model_last_layer(m):
     layers = list(m.children())
     total_layer = len(layers)
@@ -117,7 +116,7 @@ class ProgressMeter(Metric):
         return '[' + fmt + '/' + fmt.format(num_batches) + ']'
 
     def __str__(self):
-        entries = [self.prefix + self.batch_fmtstr.format(batch)]
+        entries = [self.prefix + self.batch_fmtstr.format(self.meters.batch)]
         entries += [str(meter) for meter in self.meters]
         return '\t'.join(entries)
 
