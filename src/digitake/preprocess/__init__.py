@@ -133,8 +133,6 @@ def build_train_validation_set(datasource, val_size, root="", ext="*.png"):
     total_training_set = 0
     total_validation_set = 0
 
-    #print("--" * 25)
-
     total_dataset = 0
     for key in datasets:    # for each class
         ds_size = len(datasets[key])  # size of each dataset
@@ -225,6 +223,8 @@ class ThyroidDataset(Dataset):
             extracted_filename = path.split('/')[-1]    #extract the filename of image to find its counterpart
             mask_path = next(p for p in self.mask_dict[label] if extracted_filename in p)
         except StopIteration:
+            mask_path = None
+        except KeyError:
             mask_path = None
 
         extracted_filename = path.split('/')[-1]
