@@ -6,6 +6,8 @@ Data Preprocessing and Auxiliary functions
 ------
 0.10
 - Add masking enable data loader
+- Fix KeyError handling when mask is not present
+- Fix ProgressMeter __str__ formater to use meters.batch
 
 0.9
 - Add `eval` for a custom validation(test)
