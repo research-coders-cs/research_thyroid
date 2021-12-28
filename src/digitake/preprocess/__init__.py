@@ -176,6 +176,7 @@ class ThyroidDataset(Dataset):
         self.partition = [(k, len(v)) for k, v in sorted(self.dataset.items())]
         self.transform = transform
         self.mask_dict = mask_dict if mask_dict is not None and type(mask_dict) == dict else {}
+        self.extra_channel_default = None
 
     def set_dataset(self, dataset):
         self.dataset = dataset
@@ -236,6 +237,8 @@ class ThyroidDataset(Dataset):
             image = Image.merge('RGBA', (r, g, b, mask_image))
         else:
             gray_image = Image.open(path).convert('L')
+            if self.extra_channel_default and type(self.extra_channel_default) == int:
+                gray_image.point(lambda _i: self.extra_channel_default)
             r, g, b = image.split()
             image = Image.merge('RGBA', (r, g, b, gray_image))
 
