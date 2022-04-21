@@ -4,6 +4,9 @@
 Data Preprocessing and Auxiliary functions
 
 ------
+0.11
+- Add with_alpha_channel option to ThyroidDataSet class to specify weather RGB or RGBA mode
+
 0.10
 - Add masking enable data loader
 - Fix KeyError handling when mask is not present
