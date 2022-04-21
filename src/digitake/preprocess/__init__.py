@@ -8,6 +8,8 @@ from typing import Dict
 imagenet_mean = [0.485, 0.456, 0.406]
 imagenet_std = [0.229, 0.224, 0.225]
 
+from thyroid import ThyroidDataSet
+
 
 ####################################################################
 # transform in dataset to target size
