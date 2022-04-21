@@ -30,7 +30,7 @@ class ThyroidDataset(Dataset):
 
     def set_dataset(self, dataset):
         self.dataset = dataset
-        self.partition = [(k, len(v)) for k, v in sorted(self.dataset.items())]     # Create a partition indices
+        self.partition = [(k, len(v)) for k, v in sorted(self.dataset.items())]  # Create a partition indices
 
     def __len__(self):
         size = len(sum(self.dataset.values(), []))  # monoid flatten, it's counting item so order doesn't matter
@@ -71,15 +71,14 @@ class ThyroidDataset(Dataset):
         image = Image.open(path).convert('RGB')
 
         try:
-            extracted_filename = path.split('/')[-1]    #extract the filename of image to find its counterpart
+            extracted_filename = path.split('/')[-1]  # extract the filename of image to find its counterpart
             mask_path = next(p for p in self.mask_dict[label] if extracted_filename in p)
         except StopIteration:
             mask_path = None
         except KeyError:
             mask_path = None
 
-
-        if self.with_alpha:
+        if self.with_alpha_channel:
             # if it has mask, find the mask path pair and load
             if mask_path:
                 # Gray scale image(this could actually be just B/W Image(0/1)
@@ -95,7 +94,6 @@ class ThyroidDataset(Dataset):
         else:
             # load and transform
             image = Image.open(path).convert('RGB')
-
 
         transformed_image = self.transform(image)
 
