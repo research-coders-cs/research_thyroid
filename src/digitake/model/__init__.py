@@ -1,13 +1,15 @@
 import random
+import shutil
 
 import numpy as np
 import torch
-import shutil
-from torch import nn, ones, optim
-from torch.utils.data import DataLoader
-from tqdm.notebook import tqdm
+from torch import nn, ones
+from torchvision import models
 
-from .callbacks import Callback
+from .callbacks import Callback, BatchCallback
+from .model_trainer import ModelTrainer
+from .resnet_multichannel import Resnet_multichannel, get_arch
+
 
 def check_model_last_layer(m):
     layers = list(m.children())
@@ -65,61 +67,6 @@ def set_reproducible(seed):
     # torch.use_deterministic_algorithms(True)
 
 
-## Credit, from pytorch imagenet example
-## https://github.com/pytorch/examples/blob/master/imagenet/main.py
-
-class Metric(object):
-    pass
-
-
-class AverageMeter(Metric):
-    """Computes and stores the average and current value"""
-
-    def __init__(self, name, fmt=':.4f'):
-        super(AverageMeter, self).__init__()
-        self.name = name
-        self.fmt = fmt
-        self.reset()
-
-    def reset(self):
-        self.val = 0
-        self.avg = 0
-        self.sum = 0
-        self.count = 0
-        self.data_points = []
-
-    def update(self, val, n=1):
-        self.data_points.append(val)
-        self.val = val
-        self.sum += val * n
-        self.count += n
-        self.avg = self.sum / self.count
-
-    def __call__(self, batch_score, sample_num=1):
-        self.update(batch_score, sample_num)
-        return self.avg
-
-    def __str__(self):
-        fmtstr = '{name} {avg' + self.fmt + '}'
-        return fmtstr.format(**self.__dict__)
-
-
-class ProgressMeter(Metric):
-    def __init__(self, num_batches, meters, prefix=""):
-        self.batch_fmtstr = self._get_batch_fmtstr(num_batches)
-        self.meters = meters
-        self.prefix = prefix
-
-    def _get_batch_fmtstr(self, num_batches):
-        num_digits = len(str(num_batches // 1))
-        fmt = '{:' + str(num_digits) + 'd}'
-        return '[' + fmt + '/' + fmt.format(num_batches) + ']'
-
-    def __str__(self):
-        entries = [self.prefix + self.batch_fmtstr.format(self.meters.batch)]
-        entries += [str(meter) for meter in self.meters]
-        return '\t'.join(entries)
-
 def adjust_learning_rate(optimizer, epoch, args):
     """Sets the learning rate to the initial LR decayed by 10 every 30 epochs"""
     lr = args.lr * (0.1 ** (epoch // 30))
@@ -144,212 +91,47 @@ def accuracy(output, target, topk=(1,)):
         return res
 
 
-class BatchCallback(Callback):
-    def __init__(self):
-        self.progress_bar = None
+def get_densenet161():
+    model_ft = models.densenet161(pretrained=True)
+    the_layer = replace_prediction_layer(model_ft, 2)
 
-    def on_batch_start(self, *args):
-        pass
+    print("Last Layer", the_layer)
 
-    def on_batch_end(self, *args):
-        loss, acc, _, _, phase = args
-        if phase == "train":
-            self.progress_bar.set_postfix(train_loss=loss, train_acc=acc)
-            self.progress_bar.colour = "#4CAF50"
-        else:
-            self.progress_bar.set_postfix(val_loss=loss, val_acc=acc)
-            self.progress_bar.colour = "#FF00FF"
-        self.progress_bar.update()
-
-    def on_epoch_begin(self, description, total_batches):
-        # self.progress_bar.reset(total_batches)
-        self.progress_bar = tqdm(total=total_batches, unit=' batches')
-        self.progress_bar.set_description(f"{description}")
-
-    def on_epoch_end(self, *args):
-        self.progress_bar.close()
+    return model_ft
 
 
-class ModelTrainer:
-    def __init__(self, model, criterion, optimizer, train_ds, val_ds, device=None, shuffle_valset=False):
-        self.model = model
-        self.criterion = criterion
-        self.optimizer = optimizer
-        # Use dataset to create dataloader
-        self.dataloaders = {
-            "train": DataLoader(train_ds, batch_size=8, shuffle=True, num_workers=2, pin_memory=True),
-            "val": DataLoader(val_ds, batch_size=16, shuffle=shuffle_valset, num_workers=2, pin_memory=True)
-        }
-        self.device = device
-        self.best_val_loss = np.inf
-        self.best_epoch = 0
+def get_densenet121():
+    model_ft = models.densenet121(pretrained=True)
+    the_layer = replace_prediction_layer(model_ft, 2)
 
-    def train_one_batch(self, inputs, labels, callback=None):
-        # forward
-        # track history if only in train
-        with torch.set_grad_enabled(True):
-            # Raw model prediction of size [batch_size, output_classes]
-            outputs = self.model(inputs)
+    print("Last Layer", the_layer)
 
-            # batch_loss
-            loss = self.criterion(outputs, labels)
+    return model_ft
 
-            # zero the parameter gradients
-            # we do this because the optimizer can accumulate loss across batches.
-            # so if we don't want to make a big gradient update(it can overshoot), better to reset every batch.
-            self.optimizer.zero_grad()
 
-            # Calculate gradient
-            loss.backward()
+def get_resnet50_4channel():
+    resnet50_4_channel = get_arch(50, 4)
+    model_ft = resnet50_4_channel(pretrained=True)
+    the_layer = replace_prediction_layer(model_ft, 2)
 
-            # Update weight parameter
-            self.optimizer.step()
+    print("Last Layer", the_layer)
 
-            # prediction as a class number for each outputs
-            with torch.no_grad():  # disable grad (we don't need it to cal loss and acc)
-                _, preds = torch.max(outputs, 1)
-                corrects = torch.sum(preds == labels.data)
+    return model_ft
 
-            acc = corrects / inputs.shape[0]
-            return loss.item(), acc.item(), preds, labels, "train"
+def get_resnet101_4channel():
+    resnet101_4_channel = get_arch(101, 4)
+    model_ft = resnet101_4_channel(pretrained=True)
+    the_layer = replace_prediction_layer(model_ft, 2)
 
-    def val_one_batch(self, inputs, labels):
+    print("Last Layer", the_layer)
 
-        # We don't need gradient on validation
-        with torch.set_grad_enabled(False):
-            # Raw model prediction of size [batch_size, output_classes]
-            outputs = self.model(inputs)
+    return model_ft
 
-            # batch_loss
-            loss = self.criterion(outputs, labels)
+def get_resnet152_4channel():
+    resnet152_4_channel = get_arch(152, 4)
+    model_ft = resnet152_4_channel(pretrained=True)
+    the_layer = replace_prediction_layer(model_ft, 2)
 
-            # prediction as a class number for each outputs
-            _, preds = torch.max(outputs, 1)
-            corrects = torch.sum(preds == labels.data)
-            acc = corrects / inputs.shape[0]
-            return loss.item(), acc.item(), preds, labels, "val"
+    print("Last Layer", the_layer)
 
-    def train_epoch(self, callback=None):
-        # Set model to be in training mode
-        self.model.train()
-        batch = 1
-        loss_meter = AverageMeter('train_loss')
-        acc_meter = AverageMeter('train_acc', fmt=':.2f')
-
-        for inputs, labels, extra in self.dataloaders["train"]:
-            # move inputs and labels to target device (GPU/CPU/TPU)
-            if self.device:
-                inputs = inputs.to(self.device)
-                labels = labels.to(self.device)
-
-            callback and callback.on_batch_start()
-            loss, acc, preds, labels, phase = self.train_one_batch(inputs, labels)
-            callback and callback.on_batch_end(loss, acc, preds, labels, phase)
-
-            with torch.no_grad():
-                loss_meter(loss)
-                acc_meter(acc)
-                batch += 1
-
-        return loss_meter, acc_meter
-
-    def val_epoch(self, callback=None, val_loader=None):
-        # Custom vs embedded val set
-        val_loader = val_loader or self.dataloaders['val']
-
-        # Set model to be in eval mode
-        self.model.eval()
-        batch = 1
-        loss_meter = AverageMeter('val_loss')
-        acc_meter = AverageMeter('val_acc', fmt=':.2f')
-
-        with torch.no_grad():
-            for inputs, labels, extra in val_loader:
-                # move inputs and labels to target device (GPU/CPU/TPU)
-                if self.device:
-                    inputs = inputs.to(self.device)
-                    labels = labels.to(self.device)
-
-                callback and callback.on_batch_start()
-                loss, acc, preds, labels, phase = self.val_one_batch(inputs, labels)
-                callback and callback.on_batch_end(loss, acc, preds, labels, phase)
-
-                loss_meter(loss)
-                acc_meter(acc)
-                batch += 1
-
-        return loss_meter, acc_meter
-
-    def train(self, total_epochs, start_epoch=0, callback=None):
-        if callback is None:
-            callback = BatchCallback()
-
-        for i in range(start_epoch, total_epochs):
-            total_train_batches = len(self.dataloaders["train"])
-            total_val_batches = len(self.dataloaders["val"])
-            callback and callback.on_epoch_begin(f"Epoch {i + 1}/{total_epochs}:",
-                                                 total_train_batches + total_val_batches)
-
-            # 1. train one epoch for entire dataset
-            loss, acc = self.train_epoch(callback)
-
-            # 2. validate one epoch for entire dataset (no gradient update)
-            val_loss, val_acc = self.val_epoch(callback)
-            if val_loss.avg < self.best_val_loss:
-                self.best_val_loss = val_loss.avg
-
-            #log = f"[{loss}, {acc}] : [{val_loss}, {val_acc}]"
-            callback and callback.on_epoch_end(i, loss, acc, val_loss, val_acc)
-            #print(log)
-            #print()
-
-    def eval(self, ext_val_ds, batch_size=16, shuffle=True):
-        ext_val = DataLoader(ext_val_ds, batch_size=batch_size, shuffle=shuffle, num_workers=2, pin_memory=True)
-        val_loss, val_acc = self.val_epoch(val_loader=ext_val)
-
-        return (val_loss, val_acc)
-
-    def try_overfit_model(self, inputs, labels, n_epochs=100):
-        self.model.train()
-
-        loss_meter = AverageMeter('train_overfit_loss')
-
-        # Test on 100-epoch with the same data to see if network beable to overfit
-        for i in range(n_epochs):
-            loss = self.train_one_batch(inputs, labels)
-            loss_meter(loss)
-            if i % 10 == 0:
-                print(f"{i}:{loss:.6f}")
-
-        return loss_meter
-
-    def save_model(self, checkpoint_path, val_loss, epoch=1):
-        """
-        model_state: checkpoint we want to save
-        checkpoint_path: path to save checkpoint
-        """
-        # create checkpoint variable and add important data
-        checkpoint = {
-            'epoch': epoch,
-            'val_loss': val_loss,
-            'model_state': self.model.state_dict(),
-            'optimizer_state': self.optimizer.state_dict(),
-        }
-        # save checkpoint data to the path given, checkpoint_path
-        torch.save(checkpoint, checkpoint_path)
-
-    def load_model(self, checkpoint_path):
-        """
-        checkpoint_path: path to save checkpoint
-        model: model that we want to load checkpoint parameters into
-        optimizer: optimizer we defined in previous training
-        """
-        # load check point
-        checkpoint = torch.load(checkpoint_path)
-        # initialize state_dict from checkpoint to model
-        self.model.load_state_dict(checkpoint['model_state'])
-        # initialize optimizer from checkpoint to optimizer
-        self.optimizer.load_state_dict(checkpoint['optimizer_state'])
-        # initialize val_loss from checkpoint to val_loss
-        self.best_val_loss = checkpoint['val_loss']
-        self.best_epoch = checkpoint['epoch']
+    return model_ft

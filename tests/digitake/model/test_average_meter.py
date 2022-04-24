@@ -1,4 +1,4 @@
-from src.digitake.model import AverageMeter
+from src.digitake.model.meter import AverageMeter
 
 
 def test_average_meter():
