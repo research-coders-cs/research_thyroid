@@ -25,5 +25,7 @@ jobs:
       run: pip install pipenv
     - name: Run test
       run: |
+          sudo apt update
+          sudo apt install nvidia-cuda-toolkit
           pipenv install
           make ci
