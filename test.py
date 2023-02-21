@@ -514,31 +514,30 @@ def print_scores(results):  # @@
     for (i, (y_hat,y)) in enumerate(zip(pred,true)):
         print("Case {}--{}Predict:{}---True:{}".format(i+1, softmax(y_hat.cpu().numpy()), 'Malignant' if torch.argmax(y_hat)==1 else "Benign", 'Malignant' if y==1 else 'Benign'))
 
-def print_auc(results, enable_plot=False):  # @@
+def print_auc(results, test_size, enable_plot=False):  # @@
     from sklearn.metrics import roc_curve, auc, roc_auc_score
 
     # Compute ROC curve and ROC area for each class
     y_pred_b = np.zeros((test_size), dtype=float)
     y_pred_m = np.zeros((test_size), dtype=float)
-    y_b = np.ones((test_size), dtype=float)
-    y_b[53:] = 0
-    y_m = np.zeros((test_size), dtype=float)
-    y_m[53:] = 1
-    #y_true = np.zeros((test_size), dtype=float)
 
     pred = results[2]
     true = results[3]
 
+    y_m = true.detach().cpu().numpy()
+    y_b = 1 - y_m
+
     for i, (y_hat, y) in enumerate(zip(pred, true)):
         y_pred_b[i] = float(y_hat[0])
         y_pred_m[i] = float(y_hat[1])
-        #y_true[i] = float(y == 1)
 
     fpr_b, tpr_b, _ = roc_curve(y_b, y_pred_b)
     fpr_m, tpr_m, _ = roc_curve(y_m, y_pred_m)
     roc_auc_b = auc(fpr_b, tpr_b)
     roc_auc_m = auc(fpr_m, tpr_m)
 
+    print('@@ y_b:', y_b)
+    print('@@ y_m:', y_m)
     # print('@@ fpr_b:', fpr_b)
     # print('@@ tpr_b:', tpr_b)
     # print('@@ fpr_m:', fpr_m)
@@ -691,4 +690,4 @@ if __name__ == '__main__':
 
     _enable_plot = 0  # @@
     print(f'\n\n@@ ======== print_auc(results, enable_plot={_enable_plot})')
-    print_auc(results, enable_plot=_enable_plot)
+    print_auc(results, test_size, enable_plot=_enable_plot)
