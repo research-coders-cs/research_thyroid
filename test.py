@@ -512,7 +512,10 @@ def print_scores(results):  # @@
     pred = results[2]
     true = results[3]
     for (i, (y_hat,y)) in enumerate(zip(pred,true)):
-        print("Case {}--{}Predict:{}---True:{}".format(i+1, softmax(y_hat.cpu().numpy()), 'Malignant' if torch.argmax(y_hat)==1 else "Benign", 'Malignant' if y==1 else 'Benign'))
+        print("Case {}--{} Predict:{}---True:{}".format(
+            i + 1, softmax(y_hat.cpu().numpy()),
+            'Malignant' if torch.argmax(y_hat) == 1 else "Benign",
+            'Malignant' if y == 1 else 'Benign'))
 
 def print_auc(results, test_size, enable_plot=False):  # @@
     from sklearn.metrics import roc_curve, auc, roc_auc_score
