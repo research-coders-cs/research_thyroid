@@ -5,10 +5,10 @@ ci:
 	make test
 
 DL_ASSETS := https://github.com/research-coders-cs/research_thyroid/releases/download/assets-0.1
-DATASET_ZIP := Dataset_train_test_val-20210114T081031Z-001.zip
+DATASET_ZIP := Dataset_train_test_val.rar
 Dataset_train_test_val:
 	curl -O -L $(DL_ASSETS)/$(DATASET_ZIP)
-	unzip $(DATASET_ZIP)
+	unrar x $(DATASET_ZIP)
 net_debug.pth:
 	curl -O -L $(DL_ASSETS)/$@
 
