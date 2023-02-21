@@ -3,6 +3,7 @@ SHELL := /bin/bash
 # 'test' or 'ci'
 TARGET ?= test
 ci:
+	pipenv install
 	TARGET=ci make test
 
 test:

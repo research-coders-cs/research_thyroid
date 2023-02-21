@@ -21,12 +21,13 @@ jobs:
             os: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
-    - name: Install pipenv
-      run: pip install pipenv
-    - name: Run test
+    - name: Install apt packages
       run: |
           sudo apt update
           sudo apt install nvidia-cuda-toolkit
           sudo apt install nvidia-cudnn
-          pipenv install
-          make ci
+          sudo /usr/sbin/update-nvidia-cudnn
+    - name: Install pipenv
+      run: pip install pipenv
+    - name: Run test
+      run: make ci
