@@ -9,8 +9,10 @@ DATASET_ZIP := Dataset_train_test_val-20210114T081031Z-001.zip
 Dataset_train_test_val:
 	curl -O -L $(DL_ASSETS)/$(DATASET_ZIP)
 	unzip $(DATASET_ZIP)
+net_debug.pth:
+	curl -O -L $(DL_ASSETS)/$@
 
-test: Dataset_train_test_val
+test: Dataset_train_test_val net_debug.pth
 	rm -rf result && mkdir result
 	@echo "(first time, make sure \`pipenv install\`)"
 	pipenv run python3 test.py
