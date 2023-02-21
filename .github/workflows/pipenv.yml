@@ -25,7 +25,7 @@ jobs:
       run: |
           sudo apt update
           sudo apt install nvidia-cuda-toolkit
-          sudo apt install nvidia-cudnn && sudo /usr/sbin/update-nvidia-cudnn -d
+          sudo apt install nvidia-cudnn && sudo /usr/sbin/update-nvidia-cudnn -u
     - name: Install pipenv
       run: pip install pipenv
     - name: Run test
