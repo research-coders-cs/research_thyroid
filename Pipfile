@@ -11,6 +11,8 @@ matplotlib = "*"
 tqdm = "*"
 scikit-learn = "*"
 research-thyroid-digitake = {editable = true, path = "./digitake"}
+gspread = "*"
+pyparsing = "==2.4.7"
 
 [dev-packages]
 
