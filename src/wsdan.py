@@ -1,9 +1,16 @@
 import logging
-
 import torch
 from torch import nn
-
 import torchvision
+import numpy as np
+
+EPSILON = 1e-12
+
+
+"""## 3.1 Create Custom Layers & Modules
+
+### 3.1.1 Create Bilinear Attention Pooling Layer
+"""
 
 # Bilinear Attention Pooling
 class BAP(nn.Module):

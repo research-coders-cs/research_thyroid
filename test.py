@@ -9,7 +9,6 @@ import logging
 # import wandb
 from datetime import datetime
 
-
 import torch
 from torch import nn
 from torch.nn import functional
@@ -28,19 +27,9 @@ from tqdm import tqdm
 import matplotlib.pyplot as plt
 # import cv2
 
-from src.wsdan import WSDAN
-
-
 import numpy as np
 
-EPSILON = 1e-12
-
-"""## 3.1 Create Custom Layers & Modules
-
-### 3.1.1 Create Bilinear Attention Pooling Layer
-"""
-
-
+from src.wsdan import WSDAN
 
 
 if __name__ == '__main__':
