@@ -15,6 +15,7 @@ gspread = "*"
 pyparsing = "==2.4.7"
 pytz = "*"
 oauth2client = "*"
+tensorboard = "*"
 
 [dev-packages]
 

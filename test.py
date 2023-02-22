@@ -1,31 +1,230 @@
 
+
+import os
+import gc
+import math
+import time
+import random
+import requests
+import itertools
+import logging
+# import wandb
+from datetime import datetime
+
+
 import torch
+from torch import nn
+from torch.nn import functional
+# from torch.utils.tensorboard import SummaryWriter
 
+import torchvision
+from torchvision import transforms
+ToPILImage = transforms.ToPILImage()
 
+# from torchsummary import summary
 import digitake
 
+from tqdm import tqdm
+#from tqdm.notebook import tqdm
+
+import matplotlib.pyplot as plt
+# import cv2
+
+import numpy as np
+
+EPSILON = 1e-12
+
+"""## 3.1 Create Custom Layers & Modules
+
+### 3.1.1 Create Bilinear Attention Pooling Layer
+"""
+
+# Bilinear Attention Pooling
+class BAP(nn.Module):
+    def __init__(self, pool='GAP'):
+        super(BAP, self).__init__()
+        assert pool in ['GAP', 'GMP']
+        if pool == 'GAP':
+            self.pool = None
+        else:
+            self.pool = nn.AdaptiveMaxPool2d(1)
+
+    def forward(self, features, attentions):
+        B, C, H, W = features.size()
+        _, M, AH, AW = attentions.size()
+
+        # match size
+        if AH != H or AW != W:
+            attentions = functional.interpolate(attentions, size=(H, W))
+
+        # feature_matrix: (B, M, C) -> (B, M * C)
+        if self.pool is None:
+            feature_matrix = (torch.einsum('imjk,injk->imn', (attentions, features)) / float(H * W)).view(B, -1)
+        else:
+            feature_matrix = []
+            for i in range(M):
+                AiF = self.pool(features * attentions[:, i:i + 1, ...]).view(B, -1)
+                feature_matrix.append(AiF)
+            feature_matrix = torch.cat(feature_matrix, dim=1)
+
+        # sign-sqrt
+        feature_matrix = torch.sign(feature_matrix) * torch.sqrt(torch.abs(feature_matrix) + EPSILON)
+
+        # l2 normalization along dimension M and C
+        feature_matrix = functional.normalize(feature_matrix, dim=-1)
+        return feature_matrix
+
+"""### 3.1.2 Create BasicConv2d Layer and also perform a batch normalization operation."""
+
+# BasicConv2d
+class BasicConv2d(nn.Module):
+
+    def __init__(self, in_channels, out_channels, **kwargs):
+        super(BasicConv2d, self).__init__()
+        self.conv = nn.Conv2d(in_channels, out_channels, bias=False, **kwargs)
+        self.bn = nn.BatchNorm2d(out_channels, eps=0.001)
+
+    def forward(self, x):
+        x = self.conv(x)
+        x = self.bn(x)
+        return functional.relu(x, inplace=True)
 
 
+"""#### 3.1.4.2 DenseNet"""
 
+pretrain = torchvision.models.densenet121(pretrained=False)
 
+"""## 3.2 Create WS-DAN Module"""
 
-"""## 2.2 Global config for training environment and reproducibility"""
+# WS-DAN: Weakly Supervised Data Augmentation Network for FGVC
+class WSDAN(nn.Module):
+    def __init__(self, num_classes, M=32, net='inception', pretrained=False):
+        super(WSDAN, self).__init__()
+        self.num_classes = num_classes
+        self.M = M
+        self.net = net
 
-USE_GPU = False#True
-digitake.model.set_reproducible(2565)
+        # Network Initialization
+        if 'densenet' in net:
+            pretrain = torchvision.models.densenet121(pretrained=pretrained)
+            modules = list(list(pretrain.children())[0])[:-2]
+            self.features = nn.Sequential(*modules)
+            self.num_features = 512
+        elif 'inception' in net:
+            self.features = inception_v3(pretrained=pretrained).get_features_mixed_6e()
+            self.num_features = 768
+        elif 'vgg' in net:
+            pretrain = torchvision.models.vgg16(pretrained=pretrained)
+            modules = list(pretrain.children())[:-2]
+            self.features = nn.Sequential(*modules)
+            self.num_features = 512
+        elif 'resnet' in net:
+            pretrain = torchvision.models.resnet50(pretrained=pretrained)
+            modules = list(pretrain.children())[:-2]              # delete the last fc layer.
+            self.features = nn.Sequential(*modules)
+            self.num_features = 512 * self.features[-1][-1].expansion
+        else:
+            raise ValueError('Unsupported net: %s' % net)
 
-if USE_GPU:
-    # GPU settings
-    assert torch.cuda.is_available(), "Don't forget to turn on gpu runtime!"
-    os.environ['CUDA_VISIBLE_DEVICES'] = '0'
-    device = torch.device("cuda")
-    torch.backends.cudnn.benchmark = True
-else:
-    device = "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
+        # Attention Maps
+        self.attentions = BasicConv2d(self.num_features, self.M, kernel_size=1)
 
-print("@@ device:", device)
+        # Bilinear Attention Pooling
+        self.bap = BAP(pool='GAP')
+
+        # Classification Layer
+        self.fc = nn.Linear(self.M * self.num_features, self.num_classes, bias=False)
+
+        logging.info('WSDAN: using {} as feature extractor, num_classes: {}, num_attentions: {}'.format(net, self.num_classes, self.M))
+
+    def forward(self, x):
+        batch_size = x.size(0)
+
+        # Feature Maps, Attention Maps and Feature Matrix
+        feature_maps = self.features(x)
+        # if self.net != 'inception_mixed_7c':
+        if self.net != 'inception_mixed_7c':
+            attention_maps = self.attentions(feature_maps)
+        else:
+            attention_maps = feature_maps[:, :self.M, ...]
+        feature_matrix = self.bap(feature_maps, attention_maps)
+
+        # Classification
+        p = self.fc(feature_matrix * 100.)
+
+        # Generate Attention Map
+        if self.training:
+            # Randomly choose one of attention maps Ak
+            attention_map = []
+            for i in range(batch_size):
+                attention_weights = torch.sqrt(attention_maps[i].sum(dim=(1, 2)).detach() + EPSILON)
+                attention_weights = functional.normalize(attention_weights, p=1, dim=0)
+                # Randomly picked out two.
+                k_index = np.random.choice(self.M, 2, p=attention_weights.cpu().numpy())
+                attention_map.append(attention_maps[i, k_index, ...])
+            attention_map = torch.stack(attention_map)  # (B, 2, H, W) - one for cropping, the other for dropping
+        else:
+            # Object Localization Am = mean(Ak)
+            # In the testing case, it will avrage all the attention(combine) into single attention map
+            attention_map = torch.mean(attention_maps, dim=1, keepdim=True)  # (B, 1, H, W)
+
+        # p: (B, self.num_classes)
+        # feature_matrix: (B, M * C)
+        # attention_map: (B, 2, H, W) in training, (B, 1, H, W) in val/testing
+        return p, feature_matrix, attention_map
+
+    def load_state_dict(self, state_dict, strict=True):
+        model_dict = self.state_dict()
+        pretrained_dict = {k: v for k, v in state_dict.items()
+                           if k in model_dict and model_dict[k].size() == v.size()}
+
+        if len(pretrained_dict) == len(state_dict):
+            logging.info('%s: All params loaded' % type(self).__name__)
+        else:
+            logging.info('%s: Some params were not loaded:' % type(self).__name__)
+            not_loaded_keys = [k for k in state_dict.keys() if k not in pretrained_dict.keys()]
+            logging.info(('%s, ' * (len(not_loaded_keys) - 1) + '%s') % tuple(not_loaded_keys))
+
+        model_dict.update(pretrained_dict)
+        super(WSDAN, self).load_state_dict(model_dict)
 
 
 
 if __name__ == '__main__':
-    pass
+
+    print("@@ torch.__version__:", torch.__version__)
+
+    #
+
+    """## 2.2 Global config for training environment and reproducibility"""
+
+    USE_GPU = False#True
+    digitake.model.set_reproducible(2565)
+
+    if USE_GPU:
+        # GPU settings
+        assert torch.cuda.is_available(), "Don't forget to turn on gpu runtime!"
+        os.environ['CUDA_VISIBLE_DEVICES'] = '0'
+        device = torch.device("cuda")
+        torch.backends.cudnn.benchmark = True
+    else:
+        device = "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
+
+    print("@@ device:", device)
+
+    #
+
+    # pretrain = 'resnet' #@param ["resnet", "densenet", "inception", "vgg"]
+    pretrain = 'densenet' #@param ["resnet", "densenet", "inception", "vgg"]
+
+    num_classes = 2
+    num_attention_maps = 32
+
+
+    print('\n\n@@ ======== Calling `net = WSDAN(...)`')
+    net = WSDAN(num_classes=num_classes, M=num_attention_maps, net=pretrain, pretrained=True)
+
+
+
+
+    print('\n\n@@ ======== done')
