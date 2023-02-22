@@ -14,6 +14,7 @@ research-thyroid-digitake = {editable = true, path = "./digitake"}
 gspread = "*"
 pyparsing = "==2.4.7"
 pytz = "*"
+oauth2client = "*"
 
 [dev-packages]
 
