@@ -104,34 +104,35 @@ def test(net, data_loader, visualize, ckpt=None):  # @@
 
           y_pred = (y_pred_raw + (y_pred_crop * 2 * importance)) / 3.
 
+          # if visualize:
+          channel = 3
+
+          # reshape attention maps
+          print(f"Input Shape:{X.shape} vs Attention Shape: {attention_maps.shape}")
+          A = attention_maps.expand(-1, 4, 8, 8) if channel == 4 else attention_maps
+          print(f"New Attention: {A.shape}, size={(X.size(2), X.size(3))}")
+          attention_maps = functional.interpolate(A, size=(X.size(2), X.size(3)))
+          attention_maps = attention_maps.cpu() / attention_maps.max().item()
+
+          # get heat attention maps
+          heat_threshold = 0.5
+          heat_attention_maps = generate_heatmap(attention_maps, threshold=heat_threshold)
+
+          # raw_image, heat_attention, raw_attention
+          raw_image = X.cpu() * STD + MEAN
+
+          print(f"X:{raw_image.shape} vs HEAT Shape: {heat_attention_maps.shape}")
+          #H = heat_attention_maps.repeat(1, 4, 1, 1)
+          grays_dim = heat_attention_maps.shape[:]
+          grays_dim = [grays_dim[0], 1, grays_dim[2], grays_dim[3]]
+          ones = torch.ones(grays_dim)
+
+          H = torch.hstack([heat_attention_maps, ones]) if channel == 4 else heat_attention_maps
+          heat_attention_image = raw_image * 0.5 + H *0.5
+
+          raw_attention_image = raw_image * attention_maps
+
           if visualize:
-              channel = 3
-
-              # reshape attention maps
-              print(f"Input Shape:{X.shape} vs Attention Shape: {attention_maps.shape}")
-              A = attention_maps.expand(-1, 4, 8, 8) if channel == 4 else attention_maps
-              print(f"New Attention: {A.shape}, size={(X.size(2), X.size(3))}")
-              attention_maps = functional.interpolate(A, size=(X.size(2), X.size(3)))
-              attention_maps = attention_maps.cpu() / attention_maps.max().item()
-
-              # get heat attention maps
-              heat_threshold = 0.5
-              heat_attention_maps = generate_heatmap(attention_maps, threshold=heat_threshold)
-
-              # raw_image, heat_attention, raw_attention
-              raw_image = X.cpu() * STD + MEAN
-
-              print(f"X:{raw_image.shape} vs HEAT Shape: {heat_attention_maps.shape}")
-              #H = heat_attention_maps.repeat(1, 4, 1, 1)
-              grays_dim = heat_attention_maps.shape[:]
-              grays_dim = [grays_dim[0], 1, grays_dim[2], grays_dim[3]]
-              ones = torch.ones(grays_dim)
-
-              H = torch.hstack([heat_attention_maps, ones]) if channel == 4 else heat_attention_maps
-              heat_attention_image = raw_image * 0.5 + H *0.5
-
-              raw_attention_image = raw_image * attention_maps
-
               for batch_idx in range(X.size(0)):
                   rimg = ToPILImage(raw_image[batch_idx])
                   raimg = ToPILImage(raw_attention_image[batch_idx])
