@@ -2,7 +2,7 @@ import torch
 from torch.nn import functional
 
 import numpy as np
-import cv2
+# import cv2
 import random
 
 
@@ -40,10 +40,10 @@ def batch_augment(images, attention_map, mode='crop', theta=0.5, padding_ratio=0
             print('crop : ', (height_min,width_min), ((height_min+height_max),(width_min+width_max)))
             img = img_gpu_to_cpu(images[0])
             img =  np.array(img).astype(np.uint8).copy()
-            img_ = cv2.rectangle(img, (height_min,width_min), ((height_min+height_max),(width_min+width_max)), (0, 0, 255), 1)
-
-            img_ = img_[height_min:height_max, width_min:width_max, :].copy()
-            cv2_imshow(img_)
+            # img_ = cv2.rectangle(img, (height_min,width_min), ((height_min+height_max),(width_min+width_max)), (0, 0, 255), 1)
+            #
+            # img_ = img_[height_min:height_max, width_min:width_max, :].copy()
+            # cv2_imshow(img_)
 
             crop_images.append(
                 functional.interpolate(images[batch_index:batch_index + 1, :, height_min:height_max, width_min:width_max],
@@ -64,8 +64,8 @@ def batch_augment(images, attention_map, mode='crop', theta=0.5, padding_ratio=0
         drop_images = images * drop_masks.float()
 
         # cv2_imshow
-        print("drop_images : ", drop_images.shape)
-        cv2_imshow(img_gpu_to_cpu(drop_images[0]))
+        # print("drop_images : ", drop_images.shape)
+        # cv2_imshow(img_gpu_to_cpu(drop_images[0]))
         return drop_images
 
     else:
