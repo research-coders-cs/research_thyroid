@@ -7,11 +7,6 @@ import numpy as np
 EPSILON = 1e-12
 
 
-"""## 3.1 Create Custom Layers & Modules
-
-### 3.1.1 Create Bilinear Attention Pooling Layer
-"""
-
 # Bilinear Attention Pooling
 class BAP(nn.Module):
     def __init__(self, pool='GAP'):
@@ -63,11 +58,9 @@ class BasicConv2d(nn.Module):
         return functional.relu(x, inplace=True)
 
 
-"""#### 3.1.4.2 DenseNet"""
-
+# @@ TODO check
 pretrain = torchvision.models.densenet121(pretrained=False)
 
-"""## 3.2 Create WS-DAN Module"""
 
 # WS-DAN: Weakly Supervised Data Augmentation Network for FGVC
 class WSDAN(nn.Module):
