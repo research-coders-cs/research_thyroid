@@ -238,4 +238,13 @@ if __name__ == '__main__':
 
     #
 
+    print('\n\n@@ ======== print_scores(results)')
+    print_scores(results)
+
+    _enable_plot = 0  # @@
+    print(f'\n\n@@ ======== print_auc(results, enable_plot={_enable_plot})')
+    print_auc(results, len(test_dataset_no), enable_plot=_enable_plot)
+
+    #
+
     print('\n\n@@ ======== done')
