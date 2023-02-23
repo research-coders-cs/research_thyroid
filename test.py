@@ -36,6 +36,7 @@ import numpy as np
 from src.wsdan import WSDAN
 from src.metric import TopKAccuracyMetric
 from src.transform import ThyroidDataset, get_transform, get_transform_center_crop, transform_fn
+from src.augment import batch_augment
 
 
 #@@ def test(**kwargs):
