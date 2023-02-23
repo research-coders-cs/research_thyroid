@@ -261,6 +261,8 @@ class CenterLoss(nn.Module):
     def forward(self, outputs, targets):
         return self.l2_loss(outputs, targets) / outputs.size(0)
 
+#
+
 # Skeleton based class
 class Metric(object):
     pass
@@ -302,6 +304,8 @@ class TopKAccuracyMetric(Metric):
             self.corrects[i] += correct_k.item()
 
         return self.corrects * 100. / self.num_samples
+
+#
 
 class Callback(object):
     def __init__(self):
@@ -365,6 +369,8 @@ class ModelCheckpoint(Callback):
                 torch.save({
                     'logs': logs,
                     'state_dict': state_dict}, (self.savepath+"_%.3f") % self.best_score)
+
+#
 
 def batch_augment(images, attention_map, mode='crop', theta=0.5, padding_ratio=0.1):
     batches, _, imgH, imgW = images.size()

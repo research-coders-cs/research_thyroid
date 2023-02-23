@@ -33,6 +33,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from src.wsdan import WSDAN
+from src.metric import TopKAccuracyMetric
 
 
 #@@ def test(**kwargs):
@@ -58,13 +59,14 @@ def test(net, data_loader, visualize, ckpt=None):  # @@
     logging.info('Network loaded from {}'.format(ckpt))
 
   ToPILImage = transforms.ToPILImage()
-  return None  # @@ !!!!!!!!
+
   raw_accuracy = TopKAccuracyMetric()
   ref_accuracy = TopKAccuracyMetric()
   raw_accuracy.reset()
 
   results = []
   net.eval()
+  return None  # @@ !!!!!!!!
 
   with torch.no_grad():
 
