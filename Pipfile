@@ -16,6 +16,7 @@ pyparsing = "==2.4.7"
 pytz = "*"
 oauth2client = "*"
 tensorboard = "*"
+opencv-python = "*"
 
 [dev-packages]
 
