@@ -5,7 +5,10 @@ import time
 import random
 import requests
 import itertools
+
 import logging
+logging.basicConfig(level=logging.INFO)
+
 # import wandb
 from datetime import datetime
 
@@ -32,18 +35,21 @@ import numpy as np
 from src.wsdan import WSDAN
 
 
-def test(**kwargs):
-  data_loader = kwargs['data_loader']
-  visualize = kwargs['visualize']
+#@@ def test(**kwargs):
+def test(net, data_loader, visualize, ckpt=None):  # @@
+  #@@ data_loader = kwargs['data_loader']
+  #@@ visualize = kwargs['visualize']
   global name
 
-  savepath = f"classifier/result_{name}/"
-  if not os.path.exists(savepath):
-    os.mkdir(savepath)
+  if visualize:  # @@
+      savepath = f"classifier/result_{name}/"
+      if not os.path.exists(savepath):
+        os.mkdir(savepath)
 
   # Load ckpt and get state_dict
-  if kwargs['ckpt']:
-    ckpt = kwargs['ckpt']
+  #@@ if kwargs['ckpt']:
+  #@@   ckpt = kwargs['ckpt']
+  if ckpt is not None:  # @@
     checkpoint = torch.load(ckpt)
     state_dict = checkpoint['state_dict']
 
@@ -52,7 +58,7 @@ def test(**kwargs):
     logging.info('Network loaded from {}'.format(ckpt))
 
   ToPILImage = transforms.ToPILImage()
-
+  return None  # @@ !!!!!!!!
   raw_accuracy = TopKAccuracyMetric()
   ref_accuracy = TopKAccuracyMetric()
   raw_accuracy.reset()
@@ -184,6 +190,18 @@ if __name__ == '__main__':
 
     net.to(device)
 
+    #
 
+    data_loader = 99  # !!!!
+
+    #
+
+    print('\n\n@@ ======== Calling `test()`')
+    visualize = False
+    ckpt = "densenet_224_16_lr-1e5_n5_220905-1309_78.571.ckpt"
+    results = test(net, data_loader, visualize, ckpt=ckpt)
+    print('@@ results:', results)
+
+    #
 
     print('\n\n@@ ======== done')
