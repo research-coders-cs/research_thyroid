@@ -16,6 +16,7 @@ import torch
 from torch import nn
 from torch.nn import functional
 # from torch.utils.tensorboard import SummaryWriter
+from torch.utils.data import DataLoader
 
 import torchvision
 from torchvision import transforms
@@ -34,6 +35,7 @@ import numpy as np
 
 from src.wsdan import WSDAN
 from src.metric import TopKAccuracyMetric
+from src.transform import ThyroidDataset, get_transform, get_transform_center_crop, transform_fn
 
 
 #@@ def test(**kwargs):
@@ -66,13 +68,13 @@ def test(net, data_loader, visualize, ckpt=None):  # @@
 
   results = []
   net.eval()
-  return None  # @@ !!!!!!!!
 
   with torch.no_grad():
 
       pbar = tqdm(total=len(data_loader), unit=' batches')
       pbar.set_description('Test data')
 
+      return None  # @@ !!!!!!!!
       for i, (X, y, p) in enumerate(data_loader):
           # obtain data for testing
           X = X.to(device)
@@ -186,6 +188,35 @@ if __name__ == '__main__':
     num_classes = 2
     num_attention_maps = 32
 
+    #
+
+    # No Markers
+    test_dataset_no = ThyroidDataset(
+        phase='test',
+        dataset=test_ds_path_no,
+        transform=get_transform(target_resize, phase='basic'),
+        with_alpha_channel=False)
+    exit(1)  # @@ !!!!!!!!
+    test_loader_no = DataLoader(
+        test_dataset_no,
+        batch_size=batch_size * 4,
+        shuffle=False,
+        num_workers=workers,
+        pin_memory=True)
+
+    if 0:  # @@ REF-ONLY: legacy
+        test_dataset = ThyroidDataset(phase='test', resize=target_resize)
+
+        test_size = len(test_dataset)
+        test_loader = DataLoader(test_dataset,
+            batch_size=test_size,
+            shuffle=False,
+            num_workers=0,  # @@ !!!!
+            pin_memory=True)
+
+        print('@@ test_size:', test_size)
+
+    #
 
     print('\n\n@@ ======== Calling `net = WSDAN(...)`')
     net = WSDAN(num_classes=num_classes, M=num_attention_maps, net=pretrain, pretrained=True)
@@ -194,14 +225,10 @@ if __name__ == '__main__':
 
     #
 
-    data_loader = 99  # !!!!
-
-    #
-
     print('\n\n@@ ======== Calling `test()`')
     visualize = False
     ckpt = "densenet_224_16_lr-1e5_n5_220905-1309_78.571.ckpt"
-    results = test(net, data_loader, visualize, ckpt=ckpt)
+    results = test(net, test_loader_no, visualize, ckpt=ckpt)
     print('@@ results:', results)
 
     #
