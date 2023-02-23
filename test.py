@@ -74,7 +74,6 @@ def test(net, data_loader, visualize, ckpt=None):  # @@
       pbar = tqdm(total=len(data_loader), unit=' batches')
       pbar.set_description('Test data')
 
-      return None  # @@ !!!!!!!!
       for i, (X, y, p) in enumerate(data_loader):
           # obtain data for testing
           X = X.to(device)

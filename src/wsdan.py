@@ -1,8 +1,10 @@
-import logging
 import torch
 from torch import nn
+from torch.nn import functional
 import torchvision
+
 import numpy as np
+import logging
 
 EPSILON = 1e-12
 
