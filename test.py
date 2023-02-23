@@ -39,6 +39,8 @@ from src.transform import ThyroidDataset, get_transform, get_transform_center_cr
 from src.augment import batch_augment
 
 
+
+
 #@@ def test(**kwargs):
 def test(net, data_loader, visualize, ckpt=None):  # @@
   #@@ data_loader = kwargs['data_loader']
@@ -158,6 +160,18 @@ def test(net, data_loader, visualize, ckpt=None):  # @@
   return results
 
 
+def generate_heatmap(attention_maps, threshold=0.5):
+    print("Total attentions map. =", attention_maps.shape)
+
+    amax = attention_maps.max()
+    threshold=attention_maps.mean()
+    heat_attention_maps = []
+    heat_attention_maps.append(attention_maps[:, 0, ...]/amax)  # R
+    heat_attention_maps.append(attention_maps[:, 0, ...] * (attention_maps[:, 0, ...] < threshold).float() + \
+        (1. - attention_maps[:, 0, ...]) * (attention_maps[:, 0, ...] >= threshold).float())  # G
+    heat_attention_maps.append((1. - attention_maps[:, 0, ...]))  # B
+    return torch.stack(heat_attention_maps, dim=1)
+
 
 if __name__ == '__main__':
 
@@ -240,12 +254,15 @@ if __name__ == '__main__':
 
     #
 
-    print('\n\n@@ ======== print_scores(results)')
-    print_scores(results)
+    if 1:  #  legacy
+        from src.legacy import print_scores, print_auc
 
-    _enable_plot = 0  # @@
-    print(f'\n\n@@ ======== print_auc(results, enable_plot={_enable_plot})')
-    print_auc(results, len(test_dataset_no), enable_plot=_enable_plot)
+        print('\n\n@@ ======== print_scores(results)')
+        print_scores(results)
+
+        _enable_plot = 0  # @@
+        print(f'\n\n@@ ======== print_auc(results, enable_plot={_enable_plot})')
+        print_auc(results, len(test_dataset_no), enable_plot=_enable_plot)
 
     #
 
