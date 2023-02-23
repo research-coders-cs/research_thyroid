@@ -182,11 +182,14 @@ if __name__ == '__main__':
 
     #
 
-    # pretrain = 'resnet' #@param ["resnet", "densenet", "inception", "vgg"]
-    pretrain = 'densenet' #@param ["resnet", "densenet", "inception", "vgg"]
+    test_ds_path_no = digitake.preprocess.build_dataset({
+      'malignant': ['Test/Malignant'],
+      'benign': ['Test/Benign'],
+    }, root='Dataset_train_test_val')
 
-    num_classes = 2
-    num_attention_maps = 32
+    print('@@ test_ds_path_no:', test_ds_path_no)
+    print("@@ len(test_ds_path_no['malignant']):", len(test_ds_path_no['malignant']))
+    print("@@ len(test_ds_path_no['benign']):", len(test_ds_path_no['benign']))
 
     #
 
@@ -194,7 +197,7 @@ if __name__ == '__main__':
     test_dataset_no = ThyroidDataset(
         phase='test',
         dataset=test_ds_path_no,
-        transform=get_transform(target_resize, phase='basic'),
+        transform=get_transform(target_resize, phase='basic'),  # @@ target_resize !!!! to resolve
         with_alpha_channel=False)
     exit(1)  # @@ !!!!!!!!
     test_loader_no = DataLoader(
@@ -217,6 +220,12 @@ if __name__ == '__main__':
         print('@@ test_size:', test_size)
 
     #
+
+    # pretrain = 'resnet' #@param ["resnet", "densenet", "inception", "vgg"]
+    pretrain = 'densenet' #@param ["resnet", "densenet", "inception", "vgg"]
+
+    num_classes = 2
+    num_attention_maps = 32
 
     print('\n\n@@ ======== Calling `net = WSDAN(...)`')
     net = WSDAN(num_classes=num_classes, M=num_attention_maps, net=pretrain, pretrained=True)
