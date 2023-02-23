@@ -193,13 +193,27 @@ if __name__ == '__main__':
 
     #
 
+    # pretrain = 'resnet' #@param ["resnet", "densenet", "inception", "vgg"]
+    pretrain = 'densenet' #@param ["resnet", "densenet", "inception", "vgg"]
+
+    target_resize = 250
+    batch_size = 8 #@param ["8", "16", "4", "1"] {type:"raw"}
+
+    num_classes = 2
+    num_attention_maps = 32
+
+    #@@workers = 2
+    workers = 0  # @@
+
+    #
+
     # No Markers
     test_dataset_no = ThyroidDataset(
         phase='test',
         dataset=test_ds_path_no,
-        transform=get_transform(target_resize, phase='basic'),  # @@ target_resize !!!! to resolve
+        transform=get_transform(target_resize, phase='basic'),
         with_alpha_channel=False)
-    exit(1)  # @@ !!!!!!!!
+
     test_loader_no = DataLoader(
         test_dataset_no,
         batch_size=batch_size * 4,
@@ -207,25 +221,7 @@ if __name__ == '__main__':
         num_workers=workers,
         pin_memory=True)
 
-    if 0:  # @@ REF-ONLY: legacy
-        test_dataset = ThyroidDataset(phase='test', resize=target_resize)
-
-        test_size = len(test_dataset)
-        test_loader = DataLoader(test_dataset,
-            batch_size=test_size,
-            shuffle=False,
-            num_workers=0,  # @@ !!!!
-            pin_memory=True)
-
-        print('@@ test_size:', test_size)
-
     #
-
-    # pretrain = 'resnet' #@param ["resnet", "densenet", "inception", "vgg"]
-    pretrain = 'densenet' #@param ["resnet", "densenet", "inception", "vgg"]
-
-    num_classes = 2
-    num_attention_maps = 32
 
     print('\n\n@@ ======== Calling `net = WSDAN(...)`')
     net = WSDAN(num_classes=num_classes, M=num_attention_maps, net=pretrain, pretrained=True)
