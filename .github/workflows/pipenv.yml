@@ -35,5 +35,5 @@ jobs:
       with:
         name: artifact-run
         path: |
-          log_legacy.txt
-          result_legacy.zip
+          log.txt
+          result.zip

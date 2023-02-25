@@ -20,7 +20,6 @@ from torch.utils.data import DataLoader
 
 import torchvision
 from torchvision import transforms
-ToPILImage = transforms.ToPILImage()
 
 # from torchsummary import summary
 import digitake
@@ -39,23 +38,10 @@ from src.transform import ThyroidDataset, get_transform, get_transform_center_cr
 from src.augment import batch_augment
 
 
-
-
-#@@ def test(**kwargs):
-def test(net, data_loader, visualize, ckpt=None):  # @@
-  #@@ data_loader = kwargs['data_loader']
-  #@@ visualize = kwargs['visualize']
-  global name
-
-  if visualize:  # @@
-      savepath = f"classifier/result_{name}/"
-      if not os.path.exists(savepath):
-        os.mkdir(savepath)
+def test(net, data_loader, ckpt, savepath=None):
 
   # Load ckpt and get state_dict
-  #@@ if kwargs['ckpt']:
-  #@@   ckpt = kwargs['ckpt']
-  if ckpt is not None:  # @@
+  if ckpt is not None:
     checkpoint = torch.load(ckpt)
     state_dict = checkpoint['state_dict']
 
@@ -106,7 +92,6 @@ def test(net, data_loader, visualize, ckpt=None):  # @@
 
           y_pred = (y_pred_raw + (y_pred_crop * 2 * importance)) / 3.
 
-          # if visualize:
           channel = 3
 
           # reshape attention maps
@@ -134,7 +119,7 @@ def test(net, data_loader, visualize, ckpt=None):  # @@
 
           raw_attention_image = raw_image * attention_maps
 
-          if visualize:
+          if savepath is not None:
               for batch_idx in range(X.size(0)):
                   rimg = ToPILImage(raw_image[batch_idx])
                   raimg = ToPILImage(raw_attention_image[batch_idx])
@@ -246,10 +231,17 @@ if __name__ == '__main__':
     #
 
     print('\n\n@@ ======== Calling `test()`')
-    visualize = False
+
+    # name = "xx"
+    # savepath = f"classifier/result_{name}/"
+    # if not os.path.exists(savepath):
+    #     os.mkdir(savepath)
+
     #ckpt = "WSDAN_densenet_224_16_lr-1e5_n1-remove_220828-0837_85.714.ckpt"
     ckpt = "WSDAN_doppler_densenet_224_16_lr-1e5_n5_220905-1309_78.571.ckpt"
-    results = test(net, test_loader_no, visualize, ckpt=ckpt)
+
+    results = test(net, test_loader_no, ckpt, savepath='./result')
+
     print('@@ results:', results)
 
     #
