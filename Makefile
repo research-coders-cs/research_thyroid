@@ -17,7 +17,7 @@ net_debug.pth:
 test-legacy: Dataset_train_test_val net_debug.pth
 	rm -rf log_legacy.txt result_legacy && mkdir result_legacy
 	pipenv run python3 test_legacy.py 2>&1 | tee log_legacy.txt
-	zip -r result_legacy.zip result_legacy >> log_legacy.txt
+	zip -r result_legacy.zip result_legacy > /dev/null
 
 
 WSDAN_densenet_224_16_lr-1e5_n1-remove_220828-0837_85.714.ckpt:
@@ -27,5 +27,5 @@ WSDAN_doppler_densenet_224_16_lr-1e5_n5_220905-1309_78.571.ckpt:
 test: Dataset_train_test_val WSDAN_densenet_224_16_lr-1e5_n1-remove_220828-0837_85.714.ckpt WSDAN_doppler_densenet_224_16_lr-1e5_n5_220905-1309_78.571.ckpt
 	rm -rf log.txt result && mkdir result
 	pipenv run python3 test.py | tee log.txt
-	zip -r result.zip result >> log.txt
+	zip -r result.zip result > /dev/null
 
