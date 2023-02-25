@@ -237,8 +237,8 @@ if __name__ == '__main__':
     # if not os.path.exists(savepath):
     #     os.mkdir(savepath)
 
-    #ckpt = "WSDAN_densenet_224_16_lr-1e5_n1-remove_220828-0837_85.714.ckpt"
-    ckpt = "WSDAN_doppler_densenet_224_16_lr-1e5_n5_220905-1309_78.571.ckpt"
+    ckpt = "WSDAN_densenet_224_16_lr-1e5_n1-remove_220828-0837_85.714.ckpt"
+    #ckpt = "WSDAN_doppler_densenet_224_16_lr-1e5_n5_220905-1309_78.571.ckpt"
 
     results = test(net, test_loader_no, ckpt, savepath='./result')
 
