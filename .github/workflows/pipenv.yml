@@ -31,3 +31,6 @@ jobs:
       run: pip install pipenv
     - name: Run test
       run: make ci
+    - uses: actions/upload-artifact@v3
+      with:
+        path: result_legacy.zip

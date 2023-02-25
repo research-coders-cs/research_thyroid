@@ -425,7 +425,7 @@ def generate_heatmap(attention_maps):
     heat_attention_maps.append(1. - attention_maps[:, 0, ...])  # B
     return torch.stack(heat_attention_maps, dim=1)
 
-def test(visualize):  # @@
+def test(batch_size, savepath=None):  # @@
     raw_accuracy = TopKAccuracyMetric()
     ref_accuracy = TopKAccuracyMetric()
     raw_accuracy.reset()
@@ -457,19 +457,6 @@ def test(visualize):  # @@
             y_pred = (y_pred_raw + y_pred_crop) / 2.
 
 
-            # if visualize:
-            #     # reshape attention maps
-            #     attention_maps = F.upsample_bilinear(attention_maps, size=(X.size(2), X.size(3)))
-            #     attention_maps = torch.sqrt(attention_maps.cpu() / attention_maps.max().item())
-            #
-            #     # get heat attention maps
-            #     heat_attention_maps = generate_heatmap(attention_maps)
-            #
-            #     # raw_image, heat_attention, raw_attention
-            #     raw_image = X.cpu() * STD + MEAN
-            #     heat_attention_image = raw_image * 0.5 + heat_attention_maps * 0.5
-            #     raw_attention_image = raw_image * attention_maps
-            #==== @@ begin fix ??
             # reshape attention maps
             attention_maps = F.upsample_bilinear(attention_maps, size=(X.size(2), X.size(3)))
             attention_maps = torch.sqrt(attention_maps.cpu() / attention_maps.max().item())
@@ -482,8 +469,8 @@ def test(visualize):  # @@
             heat_attention_image = raw_image * 0.5 + heat_attention_maps * 0.5
             raw_attention_image = raw_image * attention_maps
 
-            if visualize:
-            #==== @@ end fix ??
+            if savepath is not None:
+                ToPILImage = transforms.ToPILImage()  # @@
                 for batch_idx in range(X.size(0)):
                     rimg = ToPILImage(raw_image[batch_idx])
                     raimg = ToPILImage(raw_attention_image[batch_idx])
@@ -678,19 +665,7 @@ if __name__ == '__main__':
 
     #
 
-    visualize = True
-    # ToPILImage = transforms.ToPILImage()
-    # savepath = './result'
-    # batch_size = test_size
-
-    #
-
-    print('\n\n@@ ======== Calling `test()`')
-    if 0:
-        results = test(visualize)
-    else:
-        print("@@ force visualize=False (skipping './results/*.jpg') !!!!")
-        results = test(False)
+    results = test(test_size, savepath='./result_legacy')
 
     #
 
