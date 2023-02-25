@@ -16,7 +16,7 @@ net_debug.pth:
 	curl -O -L $(DL_ASSETS)/$@
 test-legacy: Dataset_train_test_val net_debug.pth
 	rm -rf result_legacy && mkdir result_legacy
-	pipenv run python3 test_legacy.py
+	pipenv run python3 test_legacy.py 2>&1 | tee log_legacy.txt
 	zip -r result_legacy.zip result_legacy > /dev/null
 
 

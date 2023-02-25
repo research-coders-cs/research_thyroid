@@ -33,4 +33,7 @@ jobs:
       run: make ci
     - uses: actions/upload-artifact@v3
       with:
-        path: result_legacy.zip
+        name: artifact-run##-${{ RUN_ID }}
+        path: |
+          log_legacy.txt
+          result_legacy.zip
