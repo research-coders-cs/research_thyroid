@@ -94,25 +94,23 @@ def get_iou(truth, pred):
     area_of_union = gt_height * gt_width + pd_height * pd_width - area_of_intersection
     print("area_of_union : ", area_of_union)
 
-    iou = area_of_intersection / area_of_union
-    print("iou : ", np.round(iou * 100, 2))
+    _iou = area_of_intersection / area_of_union
+    iou = np.round(_iou * 100, 2)
 
-    intersection_of_mark = area_of_intersection / area_mark
-    print("intersection_of_mark : ", np.round(intersection_of_mark * 100, 2))
+    _intersection_of_mark = area_of_intersection / area_mark
+    intersection_of_mark = np.round(_intersection_of_mark * 100, 2)
 
-    return np.round(iou * 100, 2), np.round(intersection_of_mark * 100, 2)
+    return iou, intersection_of_mark
 
 
-def doppler_comp(name_doppler, name_markers, name_markers_label):
+def doppler_comp(path_doppler, path_markers, path_markers_label):
     print('@@ doppler_comp(): ^^')
 
-    src_doppler = cv2.imread(name_doppler)
+    src_doppler = cv2.imread(path_doppler)
     width = int(src_doppler.shape[1])
     height = int(src_doppler.shape[0])
-    print(width, height)
 
-    temp = detect_doppler(name_doppler)
-    print(temp)
+    temp = detect_doppler(path_doppler)
 
     x1_doppler_calc = int(temp[0])
     y1_doppler_calc = int(temp[1])
@@ -120,13 +118,11 @@ def doppler_comp(name_doppler, name_markers, name_markers_label):
     y2_doppler_calc = int(temp[3])
 
     bbox_doppler = np.array([x1_doppler_calc, y1_doppler_calc, x2_doppler_calc, y2_doppler_calc], dtype=np.float32)
-    print(bbox_doppler)
-
     border_img_doppler = cv2.rectangle(src_doppler, (x1_doppler_calc, y1_doppler_calc), (x2_doppler_calc, y2_doppler_calc), (255, 255, 0), 2)
 
     #
 
-    label_markers = pd.read_csv(name_markers_label, header=None, index_col=False).to_numpy()
+    label_markers = pd.read_csv(path_markers_label, header=None, index_col=False).to_numpy()
     temp_row = []
     for row in label_markers:
         temp_col = []
@@ -148,11 +144,10 @@ def doppler_comp(name_doppler, name_markers, name_markers_label):
     bbox_markers = np.array(
         [x1_markers_calc, y1_markers_calc, x2_markers_calc, y2_markers_calc],
         dtype=np.float32)
-    print(bbox_markers)
 
     #
 
-    src_markers = cv2.imread(name_markers)
+    src_markers = cv2.imread(path_markers)
 
     unborder_img_markers = cv2.resize(src_markers, (width, height))
     unborder_img_markers = cv2.rectangle(
@@ -176,17 +171,17 @@ def doppler_comp(name_doppler, name_markers, name_markers_label):
     return bbox_doppler, bbox_markers, border_img_doppler, border_img_markers
 
 
-def plot_comp(border_img_doppler, border_img_markers, name_doppler, name_markers):
+def plot_comp(border_img_doppler, border_img_markers, path_doppler, path_markers):
     import matplotlib.pyplot as plt
     fig, ax = plt.subplots(1, 2, figsize=(20, 15))
 
-    ax[0].title.set_text(f'Doppler : {os.path.basename(name_doppler)}')
+    ax[0].title.set_text(f'Doppler : {os.path.basename(path_doppler)}')
     ax[0].imshow(border_img_doppler)
     ax[0].grid(False)
     ax[0].set_xticks([])
     ax[0].set_yticks([])
 
-    ax[1].title.set_text(f'Markers : {os.path.basename(name_markers)}')
+    ax[1].title.set_text(f'Markers : {os.path.basename(path_markers)}')
     ax[1].imshow(border_img_markers)
     ax[1].grid(False)
     ax[1].set_xticks([])
