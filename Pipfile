@@ -17,6 +17,7 @@ pytz = "*"
 oauth2client = "*"
 tensorboard = "*"
 opencv-python = "*"
+pandas = "*"
 
 [dev-packages]
 
