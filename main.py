@@ -145,7 +145,7 @@ def demo_doppler_comp():
     from src.doppler import doppler_comp, get_iou, plot_comp, get_sample_paths
 
     for path_doppler, path_markers, path_markers_label in get_sample_paths():
-        print('@@ -------- calling doppler_comp() for')
+        print('\n@@ -------- calling doppler_comp() for')
         print(f'  {os.path.basename(path_doppler)} vs')
         print(f'  {os.path.basename(path_markers)}')
 
@@ -157,7 +157,7 @@ def demo_doppler_comp():
         iou = get_iou(bbox_doppler, bbox_markers)
         print('@@ iou:', iou)
 
-        if 0 and 'benign_nodule1_0001-0100_c0011_1_p0022.png' in path_doppler:  # @@ first sample
+        if 0 and 'benign_nodule1_0001-0100_c0011_1_p0022.png' in path_doppler:  # first sample
             plot_comp(border_img_doppler, border_img_markers, path_doppler, path_markers)
 
     print('@@ demo_doppler_comp(): vv')
