@@ -141,16 +141,22 @@ def demo_test():
 
 def demo_doppler_comp():
     print('@@ demo_doppler_comp(): ^^')
-    from src.doppler import doppler_comp, plot_comp
+    from src.doppler import doppler_comp, get_iou, plot_comp
 
     name_doppler = './Siriraj/Doppler_Train_Crop/Benign/benign_nodule1_0001-0100_c0011_1_p0022.png'
     name_markers = './Siriraj/Markers_Train/Benign/benign_nodule1_0001-0100_c0011_2_p0022.png'
     name_markers_label = './Siriraj/Markers_Train_Markers_Labels/Benign/benign_nodule1_0001-0100_c0011_2_p0022.txt'
 
-    border_img_doppler, border_img_markers = doppler_comp(
+    bbox_doppler, bbox_markers, border_img_doppler, border_img_markers = doppler_comp(
         name_doppler, name_markers, name_markers_label)
+    print('@@ bbox_doppler:', bbox_doppler)
+    print('@@ bbox_markers:', bbox_markers)
 
-    plot_comp(border_img_doppler, border_img_markers, name_doppler, name_markers)
+    iou = get_iou(bbox_doppler, bbox_markers)
+    print('@@ iou:', iou)
+
+    if 0:
+        plot_comp(border_img_doppler, border_img_markers, name_doppler, name_markers)
 
 #           ./Siriraj/Doppler_Train_Crop/Benign/benign_nodule1_0001-0100_c0076_1_p0152.png
 #                ./Siriraj/Markers_Train/Benign/benign_nodule1_0001-0100_c0076_2_p0152.png

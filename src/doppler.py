@@ -119,8 +119,8 @@ def doppler_comp(name_doppler, name_markers, name_markers_label):
     x2_doppler_calc = int(temp[2])
     y2_doppler_calc = int(temp[3])
 
-    doppler_bbox =   np.array([x1_doppler_calc, y1_doppler_calc, x2_doppler_calc, y2_doppler_calc], dtype=np.float32)
-    print(doppler_bbox)
+    bbox_doppler = np.array([x1_doppler_calc, y1_doppler_calc, x2_doppler_calc, y2_doppler_calc], dtype=np.float32)
+    print(bbox_doppler)
 
     border_img_doppler = cv2.rectangle(src_doppler, (x1_doppler_calc, y1_doppler_calc), (x2_doppler_calc, y2_doppler_calc), (255, 255, 0), 2)
 
@@ -145,10 +145,10 @@ def doppler_comp(name_doppler, name_markers, name_markers_label):
     y1_markers_calc = int(height * y1_markers)
     x2_markers_calc = int(width * x2_markers)
     y2_markers_calc = int(height * y2_markers)
-    markers_bbox = np.array(
+    bbox_markers = np.array(
         [x1_markers_calc, y1_markers_calc, x2_markers_calc, y2_markers_calc],
         dtype=np.float32)
-    print(markers_bbox)
+    print(bbox_markers)
 
     #
 
@@ -173,11 +173,7 @@ def doppler_comp(name_doppler, name_markers, name_markers_label):
         (x2_doppler_calc, y2_doppler_calc),
         (255, 255, 0), 2)
 
-    # IOU
-    iou = get_iou(doppler_bbox, markers_bbox)
-    print('IOU: ', iou)
-
-    return border_img_doppler, border_img_markers
+    return bbox_doppler, bbox_markers, border_img_doppler, border_img_markers
 
 
 def plot_comp(border_img_doppler, border_img_markers, name_doppler, name_markers):
