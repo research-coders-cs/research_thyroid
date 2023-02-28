@@ -52,7 +52,7 @@ def get_device():
 
 
 def demo_test():
-    print('@@ demo_test(): ^^')
+    print('\n\n\n\n@@ demo_test(): ^^')
     from src.test import test  # "Prediction"
 
     device = get_device()
@@ -140,55 +140,25 @@ def demo_test():
 
 
 def demo_doppler_comp():
-    print('@@ demo_doppler_comp(): ^^')
-    from src.doppler import doppler_comp, get_iou, plot_comp
+    print('\n\n\n\n@@ demo_doppler_comp(): ^^')
 
-    path_doppler = './Siriraj/Doppler_Train_Crop/Benign/benign_nodule1_0001-0100_c0011_1_p0022.png'
-    path_markers = './Siriraj/Markers_Train/Benign/benign_nodule1_0001-0100_c0011_2_p0022.png'
-    path_markers_label = './Siriraj/Markers_Train_Markers_Labels/Benign/benign_nodule1_0001-0100_c0011_2_p0022.txt'
+    from src.doppler import doppler_comp, get_iou, plot_comp, get_sample_paths
 
-    bbox_doppler, bbox_markers, border_img_doppler, border_img_markers = doppler_comp(
-        path_doppler, path_markers, path_markers_label)
-    print('@@ bbox_doppler:', bbox_doppler)
-    print('@@ bbox_markers:', bbox_markers)
+    for path_doppler, path_markers, path_markers_label in get_sample_paths():
+        print('@@ -------- calling doppler_comp() for')
+        print(f'  {os.path.basename(path_doppler)} vs')
+        print(f'  {os.path.basename(path_markers)}')
 
-    iou = get_iou(bbox_doppler, bbox_markers)
-    print('@@ iou:', iou)
+        bbox_doppler, bbox_markers, border_img_doppler, border_img_markers = doppler_comp(
+            path_doppler, path_markers, path_markers_label)
+        print('@@ bbox_doppler:', bbox_doppler)
+        print('@@ bbox_markers:', bbox_markers)
 
-    if 0:
-        plot_comp(border_img_doppler, border_img_markers, path_doppler, path_markers)
+        iou = get_iou(bbox_doppler, bbox_markers)
+        print('@@ iou:', iou)
 
-#           ./Siriraj/Doppler_Train_Crop/Benign/benign_nodule1_0001-0100_c0076_1_p0152.png
-#                ./Siriraj/Markers_Train/Benign/benign_nodule1_0001-0100_c0076_2_p0152.png
-# ./Siriraj/Markers_Train_Markers_Labels/Benign/benign_nodule1_0001-0100_c0076_2_p0152.txt
-#
-#           ./Siriraj/Doppler_Train_Crop/Benign/benign_nodule1_0001-0100_c0022_1_p0044.png
-#                ./Siriraj/Markers_Train/Benign/benign_nodule1_0001-0100_c0022_2_p0044.png
-# ./Siriraj/Markers_Train_Markers_Labels/Benign/benign_nodule1_0001-0100_c0022_2_p0044.txt
-#
-#           ./Siriraj/Doppler_Train_Crop/Benign/benign_nodule3_0001-0030_c0024_2_p0071.png
-#                ./Siriraj/Markers_Train/Benign/benign_nodule3_0001-0030_c0024_1_p0071.png
-# ./Siriraj/Markers_Train_Markers_Labels/Benign/benign_nodule3_0001-0030_c0024_1_p0071.txt
-#
-#           ./Siriraj/Doppler_Train_Crop/Benign/benign_nodule2_0001-0016_c0001_3_p0002.jpg
-#                ./Siriraj/Markers_Train/Benign/benign_nodule2_0001-0016_c0001_1_p0002.png
-# ./Siriraj/Markers_Train_Markers_Labels/Benign/benign_nodule2_0001-0016_c0001_1_p0002.txt
-#
-#           ./Siriraj/Doppler_Train_Crop/Benign/benign_siriraj_0001-0160_c0128_2_p0089.png
-#                ./Siriraj/Markers_Train/Benign/benign_siriraj_0001-0160_c0128_1_p0088.png
-# ./Siriraj/Markers_Train_Markers_Labels/Benign/benign_siriraj_0001-0160_c0128_1_p0088.txt
-#
-#           ./Siriraj/Doppler_Train_Crop/Benign/benign_nodule1_0001-0100_c0008_1_p0016.png
-#                ./Siriraj/Markers_Train/Benign/benign_nodule1_0001-0100_c0008_2_p0016.png
-# ./Siriraj/Markers_Train_Markers_Labels/Benign/benign_nodule1_0001-0100_c0008_2_p0016.txt
-#
-#           ./Siriraj/Doppler_Train_Crop/Malignant/malignant_siriraj_0001-0124_c0110_3_p0257.png
-#                ./Siriraj/Markers_Train/Malignant/malignant_siriraj_0001-0124_c0110_2_p0256.png
-# ./Siriraj/Markers_Train_Markers_Labels/Malignant/malignant_siriraj_0001-0124_c0110_2_p0256.txt
-#
-#           ./Siriraj/Doppler_Train_Crop/Malignant/malignant_nodule3_0001-0030_c0004_3_p0011.png
-#                ./Siriraj/Markers_Train/Malignant/malignant_nodule3_0001-0030_c0004_1_p0011.png
-# ./Siriraj/Markers_Train_Markers_Labels/Malignant/malignant_nodule3_0001-0030_c0004_1_p0011.txt
+        if 0 and 'benign_nodule1_0001-0100_c0011_1_p0022.png' in path_doppler:  # @@ first sample
+            plot_comp(border_img_doppler, border_img_markers, path_doppler, path_markers)
 
     print('@@ demo_doppler_comp(): vv')
 
@@ -196,7 +166,7 @@ def demo_doppler_comp():
 if __name__ == '__main__':
     print("@@ torch.__version__:", torch.__version__)
 
-    if 0:  # the "Prediction" flow of 'WSDAN_Pytorch_Revised_v1_01_a.ipynb'
+    if 1:  # the "Prediction" flow of 'WSDAN_Pytorch_Revised_v1_01_a.ipynb'
         demo_test()
 
     if 0:  # the "Traning/Validation" flow of 'WSDAN_Pytorch_Revised_v1_01_a.ipynb'

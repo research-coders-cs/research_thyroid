@@ -104,8 +104,6 @@ def get_iou(truth, pred):
 
 
 def doppler_comp(path_doppler, path_markers, path_markers_label):
-    print('@@ doppler_comp(): ^^')
-
     src_doppler = cv2.imread(path_doppler)
     width = int(src_doppler.shape[1])
     height = int(src_doppler.shape[0])
@@ -189,3 +187,35 @@ def plot_comp(border_img_doppler, border_img_markers, path_doppler, path_markers
 
     plt.show()
     plt.clf()
+
+
+def get_sample_paths():
+    return (
+        ('./Siriraj/Doppler_Train_Crop/Benign/benign_nodule1_0001-0100_c0011_1_p0022.png',
+        './Siriraj/Markers_Train/Benign/benign_nodule1_0001-0100_c0011_2_p0022.png',
+        './Siriraj/Markers_Train_Markers_Labels/Benign/benign_nodule1_0001-0100_c0011_2_p0022.txt'),
+        ('./Siriraj/Doppler_Train_Crop/Benign/benign_nodule1_0001-0100_c0076_1_p0152.png',
+        './Siriraj/Markers_Train/Benign/benign_nodule1_0001-0100_c0076_2_p0152.png',
+        './Siriraj/Markers_Train_Markers_Labels/Benign/benign_nodule1_0001-0100_c0076_2_p0152.txt'),
+        ('./Siriraj/Doppler_Train_Crop/Benign/benign_nodule1_0001-0100_c0022_1_p0044.png',
+        './Siriraj/Markers_Train/Benign/benign_nodule1_0001-0100_c0022_2_p0044.png',
+        './Siriraj/Markers_Train_Markers_Labels/Benign/benign_nodule1_0001-0100_c0022_2_p0044.txt'),
+        ('./Siriraj/Doppler_Train_Crop/Benign/benign_nodule3_0001-0030_c0024_2_p0071.png',
+        './Siriraj/Markers_Train/Benign/benign_nodule3_0001-0030_c0024_1_p0071.png',
+        './Siriraj/Markers_Train_Markers_Labels/Benign/benign_nodule3_0001-0030_c0024_1_p0071.txt'),
+        ('./Siriraj/Doppler_Train_Crop/Benign/benign_nodule2_0001-0016_c0001_3_p0002.jpg',
+        './Siriraj/Markers_Train/Benign/benign_nodule2_0001-0016_c0001_1_p0002.png',
+        './Siriraj/Markers_Train_Markers_Labels/Benign/benign_nodule2_0001-0016_c0001_1_p0002.txt'),
+        ('./Siriraj/Doppler_Train_Crop/Benign/benign_siriraj_0001-0160_c0128_2_p0089.png',
+        './Siriraj/Markers_Train/Benign/benign_siriraj_0001-0160_c0128_1_p0088.png',
+        './Siriraj/Markers_Train_Markers_Labels/Benign/benign_siriraj_0001-0160_c0128_1_p0088.txt'),
+        ('./Siriraj/Doppler_Train_Crop/Benign/benign_nodule1_0001-0100_c0008_1_p0016.png',
+        './Siriraj/Markers_Train/Benign/benign_nodule1_0001-0100_c0008_2_p0016.png',
+        './Siriraj/Markers_Train_Markers_Labels/Benign/benign_nodule1_0001-0100_c0008_2_p0016.txt'),
+        ('./Siriraj/Doppler_Train_Crop/Malignant/malignant_siriraj_0001-0124_c0110_3_p0257.png',
+        './Siriraj/Markers_Train/Malignant/malignant_siriraj_0001-0124_c0110_2_p0256.png',
+        './Siriraj/Markers_Train_Markers_Labels/Malignant/malignant_siriraj_0001-0124_c0110_2_p0256.txt'),
+        ('./Siriraj/Doppler_Train_Crop/Malignant/malignant_nodule3_0001-0030_c0004_3_p0011.png',
+        './Siriraj/Markers_Train/Malignant/malignant_nodule3_0001-0030_c0004_1_p0011.png',
+        './Siriraj/Markers_Train_Markers_Labels/Malignant/malignant_nodule3_0001-0030_c0004_1_p0011.txt'),
+    )
