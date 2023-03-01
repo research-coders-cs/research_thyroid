@@ -6,12 +6,12 @@ ci:
 	make test
 
 DL_ASSETS := https://github.com/research-coders-cs/research_thyroid/releases/download/assets-0.1
-DATASET_ZIP := Dataset_train_test_val.rar
+
+#
+
 Dataset_train_test_val:
-	curl -O -L $(DL_ASSETS)/$(DATASET_ZIP)
-	unrar x $(DATASET_ZIP)
-
-
+	curl -O -L $(DL_ASSETS)/$@.rar
+	unrar x $@.rar
 net_debug.pth:
 	curl -O -L $(DL_ASSETS)/$@
 test-legacy: Dataset_train_test_val net_debug.pth
@@ -19,6 +19,7 @@ test-legacy: Dataset_train_test_val net_debug.pth
 	pipenv run python3 main_legacy.py 2>&1 | tee log_legacy.txt
 	zip -r result_legacy.zip result_legacy > /dev/null
 
+#
 
 WSDAN_densenet_224_16_lr-1e5_n1-remove_220828-0837_85.714.ckpt:
 	curl -O -L $(DL_ASSETS)/$@

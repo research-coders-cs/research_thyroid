@@ -16,7 +16,7 @@ $ pip install pipenv
 $ git clone https://github.com/research-coders-cs/research_thyroid
 $ cd research_thyroid
 $ pipenv install  # set up the pre-configured python3 environment
-$ make test       # run 'test.py'
+$ make test       # run 'main.py'
 
 ...
 
