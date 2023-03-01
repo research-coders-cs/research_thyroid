@@ -150,13 +150,13 @@ def doppler_comp(path_doppler, path_markers, path_markers_label):
     unborder_img_markers = cv2.resize(src_markers, (width, height))
     unborder_img_markers = cv2.rectangle(
         unborder_img_markers,
-        (int(width*x1_doppler_calc), int(height*y1_doppler_calc)),
-        (int(width*x2_doppler_calc), int(height*y2_doppler_calc)),
+        (int(width * x1_doppler_calc), int(height * y1_doppler_calc)),
+        (int(width * x2_doppler_calc), int(height * y2_doppler_calc)),
         (255, 255, 0), 2)
     border_img_markers = cv2.rectangle(
         unborder_img_markers.copy(),
-        (int(width*x1_markers), int(height*y1_markers)),
-        (int(width*x2_markers), int(height*y2_markers)),
+        (int(width * x1_markers), int(height * y1_markers)),
+        (int(width * x2_markers), int(height * y2_markers)),
         (255, 0, 0), 2)
 
     # doppler
@@ -171,19 +171,16 @@ def doppler_comp(path_doppler, path_markers, path_markers_label):
 
 def plot_comp(border_img_doppler, border_img_markers, path_doppler, path_markers):
     import matplotlib.pyplot as plt
+
     fig, ax = plt.subplots(1, 2, figsize=(20, 15))
-
-    ax[0].title.set_text(f'Doppler : {os.path.basename(path_doppler)}')
-    ax[0].imshow(border_img_doppler)
-    ax[0].grid(False)
-    ax[0].set_xticks([])
-    ax[0].set_yticks([])
-
-    ax[1].title.set_text(f'Markers : {os.path.basename(path_markers)}')
-    ax[1].imshow(border_img_markers)
-    ax[1].grid(False)
-    ax[1].set_xticks([])
-    ax[1].set_yticks([])
+    for idx, (title, border_img) in enumerate((
+            (f'Doppler : {os.path.basename(path_doppler)}', border_img_doppler),
+            (f'Markers : {os.path.basename(path_markers)}', border_img_markers))):
+        ax[idx].title.set_text(title)
+        ax[idx].imshow(border_img)
+        ax[idx].grid(False)
+        ax[idx].set_xticks([])
+        ax[idx].set_yticks([])
 
     plt.show()
     plt.clf()
