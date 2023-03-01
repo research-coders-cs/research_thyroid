@@ -34,7 +34,7 @@ jobs:
     - name: Upload artifacts
       uses: actions/upload-artifact@v3
       with:
-        name: artifacts.zip
+        name: artifacts
         path: |
           log.txt
           output.zip
