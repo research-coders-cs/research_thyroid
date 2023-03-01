@@ -33,7 +33,7 @@ import numpy as np
 
 from src.wsdan import WSDAN
 from src.transform import ThyroidDataset, get_transform##, get_transform_center_crop, transform_fn
-# from src.thyroid_train import train  # "Training"/"Validation"
+
 
 ARTIFACTS_OUTPUT = './output'
 
@@ -56,6 +56,7 @@ def get_device():
     else:
         device = "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
 
+    return device
 
 def demo_thyroid_test():
     print('\n\n\n\n@@ demo_thyroid_test(): ^^')
@@ -140,6 +141,20 @@ def demo_thyroid_test():
     print('@@ demo_thyroid_test(): vv')
 
 
+def demo_thyroid_train():
+    print('\n\n\n\n@@ demo_thyroid_train(): ^^')
+
+    from src.thyroid_train import train  # "Training"/"Validation"
+
+    device = get_device()
+    print("@@ device:", device)
+
+    #
+
+
+    print('@@ demo_thyroid_train(): vv')
+
+
 def demo_doppler_comp():
     print('\n\n\n\n@@ demo_doppler_comp(): ^^')
 
@@ -171,11 +186,11 @@ def demo_doppler_comp():
 if __name__ == '__main__':
     print("@@ torch.__version__:", torch.__version__)
 
-    if 1:  # the "Prediction" flow of 'WSDAN_Pytorch_Revised_v1_01_a.ipynb'
+    if 0:  # the "Prediction" flow of 'WSDAN_Pytorch_Revised_v1_01_a.ipynb'
         demo_thyroid_test()
 
-    if 0:  # the "Traning/Validation" flow of 'WSDAN_Pytorch_Revised_v1_01_a.ipynb'
-        demo_thyroid_train()  # TBA
+    if 1:  # the "Traning/Validation" flow of 'WSDAN_Pytorch_Revised_v1_01_a.ipynb'
+        demo_thyroid_train()
 
-    if 1:  # adaptation of 'compare.{ipynb,py}' exported from https://colab.research.google.com/drive/1kxMFgo1LyVqPYqhS6_UJKUsVvA2-l9wk
+    if 0:  # adaptation of 'compare.{ipynb,py}' exported from https://colab.research.google.com/drive/1kxMFgo1LyVqPYqhS6_UJKUsVvA2-l9wk
         demo_doppler_comp()
