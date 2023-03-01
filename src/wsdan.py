@@ -60,10 +60,6 @@ class BasicConv2d(nn.Module):
         return functional.relu(x, inplace=True)
 
 
-# @@ TODO check
-pretrain = torchvision.models.densenet121(pretrained=False)
-
-
 # WS-DAN: Weakly Supervised Data Augmentation Network for FGVC
 class WSDAN(nn.Module):
     def __init__(self, num_classes, M=32, net='inception', pretrained=False):
