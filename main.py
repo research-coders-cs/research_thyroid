@@ -186,11 +186,11 @@ def demo_doppler_comp():
 if __name__ == '__main__':
     print("@@ torch.__version__:", torch.__version__)
 
-    if 0:  # the "Prediction" flow of 'WSDAN_Pytorch_Revised_v1_01_a.ipynb'
+    if 1:  # the "Prediction" flow of 'WSDAN_Pytorch_Revised_v1_01_a.ipynb'
         demo_thyroid_test()
 
     if 1:  # the "Traning/Validation" flow of 'WSDAN_Pytorch_Revised_v1_01_a.ipynb'
         demo_thyroid_train()
 
-    if 0:  # adaptation of 'compare.{ipynb,py}' exported from https://colab.research.google.com/drive/1kxMFgo1LyVqPYqhS6_UJKUsVvA2-l9wk
+    if 1:  # adaptation of 'compare.{ipynb,py}' exported from https://colab.research.google.com/drive/1kxMFgo1LyVqPYqhS6_UJKUsVvA2-l9wk
         demo_doppler_comp()
