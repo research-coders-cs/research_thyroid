@@ -31,9 +31,10 @@ jobs:
       run: pip install pipenv
     - name: Run test
       run: make ci
-    - uses: actions/upload-artifact@v3
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v3
       with:
-        name: artifact-run
+        name: artifacts.zip
         path: |
           log.txt
-          result.zip
+          output.zip

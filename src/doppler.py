@@ -182,8 +182,7 @@ def plot_comp(border_img_doppler, border_img_markers, path_doppler, path_markers
         ax[idx].set_xticks([])
         ax[idx].set_yticks([])
 
-    plt.show()
-    plt.clf()
+    return plt
 
 
 def get_sample_paths():

@@ -35,6 +35,13 @@ from src.wsdan import WSDAN
 from src.transform import ThyroidDataset, get_transform##, get_transform_center_crop, transform_fn
 # from src.thyroid_train import train  # "Training"/"Validation"
 
+ARTIFACTS_OUTPUT = './output'
+
+def mk_artifact_dir(dirname):
+    path = f'{ARTIFACTS_OUTPUT}/{dirname}'
+    if not os.path.exists(path):
+        os.makedirs(path, exist_ok=True)
+    return path
 
 def get_device():
     USE_GPU = False#True
@@ -109,15 +116,11 @@ def demo_thyroid_test():
 
     print('\n\n@@ ======== Calling `test()`')
 
-    # name = "xx"
-    # savepath = f"classifier/result_{name}/"
-    # if not os.path.exists(savepath):
-    #     os.mkdir(savepath)
-
     ckpt = "WSDAN_densenet_224_16_lr-1e5_n1-remove_220828-0837_85.714.ckpt"
     #ckpt = "WSDAN_doppler_densenet_224_16_lr-1e5_n5_220905-1309_78.571.ckpt"
 
-    results = test(device, net, batch_size, test_loader_no, ckpt, savepath='./result')
+    results = test(device, net, batch_size, test_loader_no, ckpt,
+                   savepath=mk_artifact_dir('demo_thyroid_test'))
     # print('@@ results:', results)
 
     #
@@ -141,6 +144,7 @@ def demo_doppler_comp():
     print('\n\n\n\n@@ demo_doppler_comp(): ^^')
 
     from src.doppler import doppler_comp, get_iou, plot_comp, get_sample_paths
+    savepath = mk_artifact_dir('demo_doppler_comp')
 
     for path_doppler, path_markers, path_markers_label in get_sample_paths():
         print('\n@@ -------- calling doppler_comp() for')
@@ -155,8 +159,11 @@ def demo_doppler_comp():
         iou = get_iou(bbox_doppler, bbox_markers)
         print('@@ iou:', iou)
 
-        if 0 and 'benign_nodule1_0001-0100_c0011_1_p0022.png' in path_doppler:  # first sample
-            plot_comp(border_img_doppler, border_img_markers, path_doppler, path_markers)
+        plt = plot_comp(border_img_doppler, border_img_markers, path_doppler, path_markers)
+        stem = os.path.splitext(os.path.basename(path_doppler))[0]
+        fname = f'{savepath}/comp-doppler-{stem}.jpg'
+        plt.savefig(fname, bbox_inches='tight')
+        print('@@ saved -', fname)
 
     print('@@ demo_doppler_comp(): vv')
 
