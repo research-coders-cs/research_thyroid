@@ -204,6 +204,11 @@ def demo_thyroid_train():
     target_resize = 250
     batch_size = 8 #@param ["8", "16", "4", "1"] {type:"raw"}
 
+    number = 4 #@param ["1", "2", "3", "4", "5"] {type:"raw", allow-input: true}
+
+    num_classes = 2
+    num_attention_maps = 32
+
     #@@workers = 2
     workers = 0  # @@
 
@@ -212,6 +217,9 @@ def demo_thyroid_train():
 
     start_epoch = 0
     total_epochs = 5         ################### 60
+
+    name = f"{pretrain}_{target_resize}_{batch_size}_{lr_}_n{number}"
+    print('@@ name:', name)
 
     #
 
@@ -252,7 +260,48 @@ def demo_thyroid_train():
 
     #
 
-    net = None  # !!!!
+    net = WSDAN(num_classes=num_classes, M=num_attention_maps, net=pretrain, pretrained=True)
+    feature_center = torch.zeros(num_classes, num_attention_maps * net.num_features).to(device)
+
+    net.to(device)
+
+    #
+
+    logs = {
+        'epoch': 0,
+        'train/loss': float("Inf"),
+        'val/loss': float("Inf"),
+        'train/raw_topk_accuracy': 0.,
+        'train/crop_topk_accuracy': 0.,
+        'train/drop_topk_accuracy': 0.,
+        'val/topk_accuracy': 0.
+    }
+
+    learning_rate = logs['lr'] if 'lr' in logs else lr
+
+    opt_type = 'SGD'
+    optimizer = torch.optim.SGD(net.parameters(), lr=learning_rate, momentum=0.9, weight_decay=1e-5)
+    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=2, gamma=0.99)
+
+    if 0:  # @@
+        wandb.init(
+            # Set the project where this run will be logged
+            # project=f"Wsdan_Thyroid_{total_epochs}epochs_RecheckRemove_Upsampling_v2",
+            project=f"Wsdan_Thyroid",
+            # We pass a run name (otherwise it’ll be randomly assigned, like sunshine-lollypop-10)
+            name=name,
+            # Track hyperparameters and run metadata
+            config={
+            "learning_rate": learning_rate,
+            "architecture": f"WS-DAN-{pretrain}",
+            "optimizer": opt_type,
+            "dataset": "Thyroid",
+            "train-data-augment": f"{channel}-channel",
+            "epochs": f"{total_epochs - start_epoch}({start_epoch}->{total_epochs})" ,
+        })
+
+    #
+
     #training(device, net, batch_size, train_loader, validate_loader)
 
     #
