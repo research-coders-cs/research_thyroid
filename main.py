@@ -305,7 +305,8 @@ def demo_thyroid_train():
     logging.info('Start training: Total epochs: {}, Batch size: {}, Training size: {}, Validation size: {}'
         .format(total_epochs, batch_size, len(train_dataset), len(validate_dataset)))
 
-    training(device, net, batch_size, train_loader, validate_loader, logs, start_epoch, total_epochs)
+    training(device, net, feature_center, batch_size, train_loader, validate_loader,
+             logs, start_epoch, total_epochs, optimizer)
 
     #
 

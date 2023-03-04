@@ -6,6 +6,9 @@ from .callback import ModelCheckpoint
 
 import logging
 
+from tqdm import tqdm
+#from tqdm.notebook import tqdm
+
 ##############################################
 # Center Loss for Attention Regularization
 ##############################################
@@ -40,7 +43,8 @@ drop_metric = TopKAccuracyMetric()
 top_misclassified = {}
 writer = SummaryWriter()
 
-def training(device, net, batch_size, train_loader, validate_loader, logs, start_epoch, total_epochs):
+def training(device, net, feature_center, batch_size, train_loader, validate_loader,
+             logs, start_epoch, total_epochs, optimizer):
 
     callback_monitor = 'val/{}'.format(raw_metric.name)
     callback = ModelCheckpoint(
@@ -56,6 +60,48 @@ def training(device, net, batch_size, train_loader, validate_loader, logs, start
 
     #
 
+    for epoch in range(start_epoch, start_epoch + total_epochs):
+        print(('#' * 10), 'epoch ', str(epoch + 1), ('#' * 10))
 
-    
+        callback.on_epoch_begin()
 
+        logs['epoch'] = epoch + 1
+        logs['lr'] = optimizer.param_groups[0]['lr']
+
+        logging.info('Epoch {:03d}, Learning Rate {:g}'.format(epoch + 1, optimizer.param_groups[0]['lr']))
+
+        pbar = tqdm(total=len(train_loader), unit=' batches')
+        pbar.set_description('Epoch {}/{}'.format(epoch + 1, total_epochs))
+
+        train(
+            logs=logs,
+            data_loader=train_loader,
+            net=net,
+            feature_center=feature_center,
+            optimizer=optimizer,
+            pbar=pbar
+        )
+
+        validate(
+            logs=logs,
+            data_loader=validate_loader,
+            net=net,
+            pbar=pbar
+        )
+
+        # Checkpoints
+        if isinstance(scheduler, torch.optim.lr_scheduler.ReduceLROnPlateau):
+            scheduler.step(logs['val/loss'])
+        else:
+            scheduler.step()
+
+        callback.on_epoch_end(logs, net, feature_center=feature_center)
+
+        #@@wandb.log(logs)
+        pbar.close()
+        writer.flush()
+
+        gc.collect()
+        torch.cuda.empty_cache()
+
+    #@@wandb.finish()
