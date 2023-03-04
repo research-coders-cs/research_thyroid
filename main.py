@@ -235,6 +235,23 @@ def demo_thyroid_train():
 
     #
 
+    validate_dataset = ThyroidDataset(
+        phase='val',
+        dataset=val_ds_path,
+        transform=get_transform(target_resize, phase='basic'),
+        with_alpha_channel=False
+      )
+
+    validate_loader = DataLoader(
+        validate_dataset,
+        batch_size=batch_size * 4,
+        shuffle=False,
+        num_workers=workers,
+        pin_memory=True
+    )
+
+    #
+
     net = None  # !!!!
     #training(device, net, batch_size, train_loader, validate_loader)
 
