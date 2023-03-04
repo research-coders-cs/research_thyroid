@@ -78,8 +78,8 @@ def demo_thyroid_test():
 
     #
 
-    # pretrain = 'resnet' #@param ["resnet", "densenet", "inception", "vgg"]
-    pretrain = 'densenet' #@param ["resnet", "densenet", "inception", "vgg"]
+    # pretrain = 'resnet'
+    pretrain = 'densenet'
 
     target_resize = 250
     batch_size = 8 #@param ["8", "16", "4", "1"] {type:"raw"}
@@ -119,6 +119,7 @@ def demo_thyroid_test():
 
     ckpt = "WSDAN_densenet_224_16_lr-1e5_n1-remove_220828-0837_85.714.ckpt"
     #ckpt = "WSDAN_doppler_densenet_224_16_lr-1e5_n5_220905-1309_78.571.ckpt"
+    #ckpt = "densenet_250_8_lr-1e5_n4_60.000"
 
     results = test(device, net, batch_size, test_loader_no, ckpt,
                    savepath=mk_artifact_dir('demo_thyroid_test'))
@@ -144,13 +145,17 @@ def demo_thyroid_test():
 def demo_thyroid_train():
     print('\n\n\n\n@@ demo_thyroid_train(): ^^')
 
-    from src.thyroid_train import train  # "Training"/"Validation"
+    from src.thyroid_train import training
 
     device = get_device()
     print("@@ device:", device)
 
     #
 
+    net = None  # !!!!
+    #training(device, net, batch_size, train_loader, validate_loader)
+
+    #
 
     print('@@ demo_thyroid_train(): vv')
 
@@ -186,11 +191,11 @@ def demo_doppler_comp():
 if __name__ == '__main__':
     print("@@ torch.__version__:", torch.__version__)
 
-    if 1:  # the "Prediction" flow of 'WSDAN_Pytorch_Revised_v1_01_a.ipynb'
-        demo_thyroid_test()
+    if 0:  # adaptation of 'compare.{ipynb,py}' exported from https://colab.research.google.com/drive/1kxMFgo1LyVqPYqhS6_UJKUsVvA2-l9wk
+        demo_doppler_comp()  # TODO - renaming
 
     if 1:  # the "Traning/Validation" flow of 'WSDAN_Pytorch_Revised_v1_01_a.ipynb'
         demo_thyroid_train()
 
-    if 1:  # adaptation of 'compare.{ipynb,py}' exported from https://colab.research.google.com/drive/1kxMFgo1LyVqPYqhS6_UJKUsVvA2-l9wk
-        demo_doppler_comp()
+    if 0:  # the "Prediction" flow of 'WSDAN_Pytorch_Revised_v1_01_a.ipynb' - https://colab.research.google.com/drive/1LN4KjBwtq6hUG42LtSLCmIVPasehKeKq
+        demo_thyroid_test()  # TODO - generate 'confusion_matrix_test-*.png', 'test-*.png'
