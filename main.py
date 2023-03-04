@@ -159,6 +159,13 @@ def demo_thyroid_train():
     print(train_ds_path)
     print(len(train_ds_path['malignant']), len(train_ds_path['benign']))  # @@ 20 21
 
+    val_ds_path = digitake.preprocess.build_dataset({
+      'malignant': ['Val/Malignant'],
+      'benign': ['Val/Benign'],
+    }, root='Dataset_train_test_val')
+
+    print(len(val_ds_path['malignant']), len(val_ds_path['benign']))  # @@ 10 10
+
     #
 
     # pretrain = 'resnet'
