@@ -15,8 +15,6 @@ def img_gpu_to_cpu(img):
     return img_full
 
 def batch_augment(images, attention_map, mode='crop', theta=0.5, padding_ratio=0.1):
-    global count
-
     batches, _, imgH, imgW = images.size()
 
     ################################## *******
