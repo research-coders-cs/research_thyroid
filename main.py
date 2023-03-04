@@ -143,7 +143,7 @@ def demo_thyroid_test():
 
     #ckpt = "WSDAN_densenet_224_16_lr-1e5_n1-remove_220828-0837_85.714.ckpt"
     #ckpt = "WSDAN_doppler_densenet_224_16_lr-1e5_n5_220905-1309_78.571.ckpt"
-    ckpt = "densenet_250_8_lr-1e5_n4_60.000"
+    ckpt = "densenet_250_8_lr-1e5_n4_50.000"
 
     results = test(device, net, batch_size, test_loader_no, ckpt,
                    savepath=mk_artifact_dir('demo_thyroid_test'))
