@@ -306,7 +306,7 @@ def demo_thyroid_train():
         .format(total_epochs, batch_size, len(train_dataset), len(validate_dataset)))
 
     training(device, net, feature_center, batch_size, train_loader, validate_loader,
-             logs, start_epoch, total_epochs, optimizer)
+             logs, start_epoch, total_epochs, optimizer, scheduler)
 
     #
 
