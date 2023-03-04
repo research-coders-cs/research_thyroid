@@ -58,6 +58,30 @@ def get_device():
 
     return device
 
+def show_data_loader(data_loader, plt_show=False):
+    x = enumerate(data_loader)
+
+    try:
+        i, v = next(x)
+
+        shape = v[0].shape
+        batch_size = shape[0]
+        channel = shape[1]
+        w = shape[2]
+        h = shape[3]
+
+        print(shape)
+        print(f"X contains {batch_size} images with {channel}-channels of size {w}x{h}")
+        print(f"y is a {type(v[1]).__name__} of", v[1].tolist())
+        print()
+        for k in v[2]:
+            print(f"{k}=", v[2][k])
+
+    except StopIteration:
+        print('StopIteration')
+
+    return channel, batch_size, w, h
+
 def demo_thyroid_test():
     print('\n\n\n\n@@ demo_thyroid_test(): ^^')
     from src.thyroid_test import test  # "Prediction"
@@ -206,6 +230,8 @@ def demo_thyroid_train():
         pin_memory=True
     )
 
+    channel, _, _, _ = show_data_loader(train_loader)
+    print('@@ channel:', channel)
 
     #
 
