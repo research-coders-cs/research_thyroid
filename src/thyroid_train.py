@@ -92,14 +92,6 @@ def softmax(x):
 #     return None
 
 
-# def train(**kwargs):
-#     # Retrieve training configuration
-#     logs = kwargs['logs']
-#     data_loader = kwargs['data_loader']
-#     net = kwargs['net']
-#     feature_center = kwargs['feature_center']
-#     optimizer = kwargs['optimizer']
-#     pbar = kwargs['pbar']
 def train(device, logs, data_loader, net, feature_center, optimizer, pbar):  # @@
 
     # metrics initialization
@@ -209,12 +201,6 @@ def train(device, logs, data_loader, net, feature_center, optimizer, pbar):  # @
     logging.info('Train: {}, Time {:3.2f}'.format(batch_info, end_time - start_time))
 
 
-# def validate(**kwargs):
-#     # Retrieve training configuration
-#     logs = kwargs['logs']
-#     data_loader = kwargs['data_loader']
-#     net = kwargs['net']
-#     pbar = kwargs['pbar']
 def validate(device, logs, data_loader, net, pbar):  # @@
 
     # metrics initialization
@@ -366,7 +352,7 @@ def training(device, net, feature_center, batch_size, train_loader, validate_loa
     callback_monitor = 'val/{}'.format(raw_metric.name)
     callback = ModelCheckpoint(
         # savepath=os.path.join(f'./{name}'),  # @@
-        savepath=f'./xxxx',  # @@ !!!!!!!!!!
+        savepath=f'./densenet_250_8_lr-1e5_n4',  # @@ !!!!!!!!!!
         monitor=callback_monitor,
         mode='max')
 
@@ -390,22 +376,8 @@ def training(device, net, feature_center, batch_size, train_loader, validate_loa
         pbar = tqdm(total=len(train_loader), unit=' batches')
         pbar.set_description('Epoch {}/{}'.format(epoch + 1, total_epochs))
 
-        # train(
-        #     logs=logs,
-        #     data_loader=train_loader,
-        #     net=net,
-        #     feature_center=feature_center,
-        #     optimizer=optimizer,
-        #     pbar=pbar
-        # )
         train(device, logs, train_loader, net, feature_center, optimizer, pbar)
 
-        # validate(
-        #     logs=logs,
-        #     data_loader=validate_loader,
-        #     net=net,
-        #     pbar=pbar
-        # )
         validate(device, logs, validate_loader, net, pbar)
 
         # Checkpoints
