@@ -144,11 +144,55 @@ def demo_thyroid_test():
 
 def demo_thyroid_train():
     print('\n\n\n\n@@ demo_thyroid_train(): ^^')
-
     from src.thyroid_train import training
 
     device = get_device()
     print("@@ device:", device)
+
+    #
+
+    train_ds_path = digitake.preprocess.build_dataset({
+      'malignant': ['Train/Malignant'],
+      'benign': ['Train/Benign'],
+    }, root='Dataset_train_test_val')
+
+    print(train_ds_path)
+    print(len(train_ds_path['malignant']), len(train_ds_path['benign']))  # @@ 20 21
+
+    #
+
+    # pretrain = 'resnet'
+    pretrain = 'densenet'
+
+    target_resize = 250
+    batch_size = 8 #@param ["8", "16", "4", "1"] {type:"raw"}
+
+    #@@workers = 2
+    workers = 0  # @@
+
+    lr = 0.001 #@param ["0.001", "0.00001"] {type:"raw"}
+    lr_ = "lr-1e5" #@param ["lr-1e3", "lr-1e5"]
+
+    start_epoch = 0
+    total_epochs = 5         ################### 60
+
+    #
+
+    train_dataset = ThyroidDataset(
+        phase='train',
+        dataset=train_ds_path,
+        transform=get_transform(target_resize, phase='basic'),
+        with_alpha_channel=False  # if False, it will load image as RGB(3-channel)
+    )
+
+    train_loader = DataLoader(
+        train_dataset,
+        batch_size=batch_size,
+        shuffle=True,
+        num_workers=workers,
+        pin_memory=True
+    )
+
 
     #
 
