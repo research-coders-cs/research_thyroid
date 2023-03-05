@@ -113,6 +113,7 @@ def demo_thyroid_test():
 
     #@@workers = 2
     workers = 0  # @@
+    print('@@ workers:', workers)
 
     #
 
@@ -143,7 +144,9 @@ def demo_thyroid_test():
 
     #ckpt = "WSDAN_densenet_224_16_lr-1e5_n1-remove_220828-0837_85.714.ckpt"
     #ckpt = "WSDAN_doppler_densenet_224_16_lr-1e5_n5_220905-1309_78.571.ckpt"
-    ckpt = "densenet_250_8_lr-1e5_n4_50.000"
+
+    #ckpt = "./out--train--workers_0/densenet_250_8_lr-1e5_n4_55.000"
+    ckpt = "./out--train--workers_2/densenet_250_8_lr-1e5_n4_75.000"
 
     results = test(device, net, batch_size, test_loader_no, ckpt,
                    savepath=mk_artifact_dir('demo_thyroid_test'))
@@ -209,8 +212,8 @@ def demo_thyroid_train():
     num_classes = 2
     num_attention_maps = 32
 
-    #@@workers = 2
-    workers = 0  # @@
+    workers = 2
+    print('@@ workers:', workers)
 
     lr = 0.001 #@param ["0.001", "0.00001"] {type:"raw"}
     lr_ = "lr-1e5" #@param ["lr-1e3", "lr-1e5"]
@@ -218,8 +221,8 @@ def demo_thyroid_train():
     start_epoch = 0
     total_epochs = 5         ################### 60
 
-    name = f"{pretrain}_{target_resize}_{batch_size}_{lr_}_n{number}"
-    print('@@ name:', name)
+    run_name = f"{pretrain}_{target_resize}_{batch_size}_{lr_}_n{number}"
+    print('@@ run_name:', run_name)
 
     #
 
@@ -289,7 +292,7 @@ def demo_thyroid_train():
             # project=f"Wsdan_Thyroid_{total_epochs}epochs_RecheckRemove_Upsampling_v2",
             project=f"Wsdan_Thyroid",
             # We pass a run name (otherwise it’ll be randomly assigned, like sunshine-lollypop-10)
-            name=name,
+            name=run_name,
             # Track hyperparameters and run metadata
             config={
             "learning_rate": learning_rate,
@@ -306,7 +309,8 @@ def demo_thyroid_train():
         .format(total_epochs, batch_size, len(train_dataset), len(validate_dataset)))
 
     training(device, net, feature_center, batch_size, train_loader, validate_loader,
-             logs, start_epoch, total_epochs, optimizer, scheduler)
+             optimizer, scheduler,
+             run_name, logs, start_epoch, total_epochs)
 
     #
 
@@ -347,7 +351,7 @@ if __name__ == '__main__':
     if 0:  # adaptation of 'compare.{ipynb,py}' exported from https://colab.research.google.com/drive/1kxMFgo1LyVqPYqhS6_UJKUsVvA2-l9wk
         demo_doppler_comp()  # TODO - renaming
 
-    if 1:  # the "Traning/Validation" flow of 'WSDAN_Pytorch_Revised_v1_01_a.ipynb'
+    if 0:  # the "Traning/Validation" flow of 'WSDAN_Pytorch_Revised_v1_01_a.ipynb'
         demo_thyroid_train()
 
     if 1:  # the "Prediction" flow of 'WSDAN_Pytorch_Revised_v1_01_a.ipynb' - https://colab.research.google.com/drive/1LN4KjBwtq6hUG42LtSLCmIVPasehKeKq

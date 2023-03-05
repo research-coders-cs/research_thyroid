@@ -25,7 +25,7 @@ def softmax(x):
   e_x = np.exp(x - np.max(x))
   return e_x / e_x.sum()
 
-# @@ !!!!
+# @@ not used at the moment
 # class SaveFeatures():
 #     features=None
 #     def __init__(self, m): self.hook = m.register_forward_hook(self.hook_fn)
@@ -347,12 +347,12 @@ top_misclassified = {}
 writer = SummaryWriter()
 
 def training(device, net, feature_center, batch_size, train_loader, validate_loader,
-             logs, start_epoch, total_epochs, optimizer, scheduler):
+             optimizer, scheduler,
+             run_name, logs, start_epoch, total_epochs):
 
     callback_monitor = 'val/{}'.format(raw_metric.name)
     callback = ModelCheckpoint(
-        # savepath=os.path.join(f'./{name}'),  # @@
-        savepath=f'./densenet_250_8_lr-1e5_n4',  # @@ !!!!!!!!!!
+        savepath=os.path.join(f'./{run_name}.ckpt'),  # @@
         monitor=callback_monitor,
         mode='max')
 
