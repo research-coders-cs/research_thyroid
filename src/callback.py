@@ -46,6 +46,7 @@ class ModelCheckpoint(Callback):
         if (self.mode == 'max' and current_score > self.best_score) or \
             (self.mode == 'min' and current_score < self.best_score):
             self.best_score = current_score
+            savepath_with_best_score = self.get_savepath_with_best_score()
 
             if isinstance(net, torch.nn.DataParallel):
                 state_dict = net.module.state_dict()
@@ -55,7 +56,6 @@ class ModelCheckpoint(Callback):
             for key in state_dict.keys():
                 state_dict[key] = state_dict[key].cpu()
 
-            savepath_with_best_score = self.get_savepath_with_best_score()
             if 'feature_center' in kwargs:
                 feature_center = kwargs['feature_center']
                 feature_center = feature_center.cpu()
