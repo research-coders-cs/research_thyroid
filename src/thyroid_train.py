@@ -347,12 +347,12 @@ top_misclassified = {}
 writer = SummaryWriter()
 
 def training(device, net, feature_center, batch_size, train_loader, validate_loader,
-             optimizer, scheduler,
-             run_name, logs, start_epoch, total_epochs):
+             optimizer, scheduler, run_name, logs, start_epoch, total_epochs,
+             savepath='.'):
 
     callback_monitor = 'val/{}'.format(raw_metric.name)
     callback = ModelCheckpoint(
-        savepath=os.path.join(f'./{run_name}.ckpt'),  # @@
+        savepath=os.path.join(savepath, f'{run_name}.ckpt'),
         monitor=callback_monitor,
         mode='max')
 
