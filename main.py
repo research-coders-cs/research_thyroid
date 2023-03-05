@@ -211,7 +211,8 @@ def demo_thyroid_train():
     lr_ = "lr-1e5" #@param ["lr-1e3", "lr-1e5"]
 
     start_epoch = 0
-    total_epochs = 5
+    #total_epochs = 5
+    total_epochs = 10  # @@ !!!!
 
     run_name = f"{pretrain}_{target_resize}_{batch_size}_{lr_}_n{number}"
     print('@@ run_name:', run_name)
