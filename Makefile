@@ -30,6 +30,6 @@ Siriraj_sample_doppler_comp:
 	unzip $@.zip
 test: Dataset_train_test_val WSDAN_densenet_224_16_lr-1e5_n1-remove_220828-0837_85.714.ckpt WSDAN_doppler_densenet_224_16_lr-1e5_n5_220905-1309_78.571.ckpt Siriraj_sample_doppler_comp
 	rm -rf log.txt output && mkdir output
-	pipenv run python3 main.py | tee log.txt
+	time pipenv run python3 main.py | tee log.txt
 	zip -r output.zip output > /dev/null
 
