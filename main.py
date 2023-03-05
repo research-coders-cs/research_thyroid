@@ -82,7 +82,9 @@ def show_data_loader(data_loader, plt_show=False):
 
     return channel, batch_size, w, h
 
-def demo_thyroid_test():
+def demo_thyroid_test(ckpt):
+    # "Prediction" flow of 'WSDAN_Pytorch_Revised_v1_01_a.ipynb' - https://colab.research.google.com/drive/1LN4KjBwtq6hUG42LtSLCmIVPasehKeKq
+
     print('\n\n\n\n@@ demo_thyroid_test(): ^^')
     from src.thyroid_test import test  # "Prediction"
 
@@ -136,15 +138,6 @@ def demo_thyroid_test():
     net = WSDAN(num_classes=num_classes, M=num_attention_maps, net=pretrain, pretrained=True)
     net.to(device)
 
-    #
-
-    #ckpt = "WSDAN_densenet_224_16_lr-1e5_n1-remove_220828-0837_85.714.ckpt"
-    #ckpt = "WSDAN_doppler_densenet_224_16_lr-1e5_n5_220905-1309_78.571.ckpt"
-
-    #ckpt = "./out--train--workers_0/densenet_250_8_lr-1e5_n4_55.000"
-    #ckpt = "./out--train--workers_2/densenet_250_8_lr-1e5_n4_75.000"
-    #!!!! todo use the model with best score !!!!
-
     results = test(device, net, batch_size, test_loader_no, ckpt,
                    savepath=mk_artifact_dir('demo_thyroid_test'))
     # print('@@ results:', results)
@@ -167,6 +160,8 @@ def demo_thyroid_test():
 
 
 def demo_thyroid_train():
+    # "Traning/Validation" flow of 'WSDAN_Pytorch_Revised_v1_01_a.ipynb'
+
     print('\n\n\n\n@@ demo_thyroid_train(): ^^')
     from src.thyroid_train import training
 
@@ -304,13 +299,12 @@ def demo_thyroid_train():
     logging.info('Start training: Total epochs: {}, Batch size: {}, Training size: {}, Validation size: {}'
         .format(total_epochs, batch_size, len(train_dataset), len(validate_dataset)))
 
-    training(device, net, feature_center, batch_size, train_loader, validate_loader,
+    savepath_with_best_score = training(device, net, feature_center, batch_size, train_loader, validate_loader,
              optimizer, scheduler, run_name, logs, start_epoch, total_epochs,
              savepath=mk_artifact_dir('demo_thyroid_train'))
+    print('@@ done; savepath_with_best_score:', savepath_with_best_score)
 
-    #
-
-    print('@@ demo_thyroid_train(): vv')
+    return savepath_with_best_score
 
 
 def demo_doppler_comp():
@@ -347,8 +341,10 @@ if __name__ == '__main__':
     if 0:  # adaptation of 'compare.{ipynb,py}' exported from https://colab.research.google.com/drive/1kxMFgo1LyVqPYqhS6_UJKUsVvA2-l9wk
         demo_doppler_comp()  # TODO - renaming
 
-    if 1:  # the "Traning/Validation" flow of 'WSDAN_Pytorch_Revised_v1_01_a.ipynb'
-        demo_thyroid_train()
+    if 1:
+        #ckpt = "WSDAN_densenet_224_16_lr-1e5_n1-remove_220828-0837_85.714.ckpt"
+        #ckpt = "WSDAN_doppler_densenet_224_16_lr-1e5_n5_220905-1309_78.571.ckpt"
+        #ckpt = './output/demo_thyroid_train/densenet_250_8_lr-1e5_n4_60.000'
+        ckpt = demo_thyroid_train()
 
-    if 0:  # the "Prediction" flow of 'WSDAN_Pytorch_Revised_v1_01_a.ipynb' - https://colab.research.google.com/drive/1LN4KjBwtq6hUG42LtSLCmIVPasehKeKq
-        demo_thyroid_test()  # TODO - generate 'confusion_matrix_test-*.png', 'test-*.png'
+        demo_thyroid_test(ckpt)  # TODO - generate 'confusion_matrix_test-*.png', 'test-*.png'

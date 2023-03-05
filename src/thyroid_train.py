@@ -9,6 +9,7 @@ from .callback import ModelCheckpoint
 
 import numpy as np
 import logging
+import os
 import time
 import gc
 
@@ -352,7 +353,7 @@ def training(device, net, feature_center, batch_size, train_loader, validate_loa
 
     callback_monitor = 'val/{}'.format(raw_metric.name)
     callback = ModelCheckpoint(
-        savepath=os.path.join(savepath, f'{run_name}.ckpt'),
+        savepath=os.path.join(savepath, run_name),
         monitor=callback_monitor,
         mode='max')
 
@@ -396,3 +397,4 @@ def training(device, net, feature_center, batch_size, train_loader, validate_loa
         torch.cuda.empty_cache()
 
     #@@wandb.finish()
+    return callback.get_savepath_with_best_score()  # @@
