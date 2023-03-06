@@ -21,23 +21,21 @@ $ make test       # run 'main.py'
 ...
 
 @@ torch.__version__: 1.13.1+cu117
-@@ matplotlib.__version__: 3.7.0
+@@ demo_thyroid_train(): ^^
 @@ device: cpu
 
 ...
 
-@@ ======== Calling `net = WSDAN(...)`
-
-  0%|          | 0.00/83.3M [00:00<?, ?B/s]
- 36%|███▌      | 30.1M/83.3M [00:00<00:00, 316MB/s]
- 89%|████████▉ | 74.3M/83.3M [00:00<00:00, 403MB/s]
-100%|██████████| 83.3M/83.3M [00:00<00:00, 396MB/s]
-INFO:root:WSDAN: using resnet as feature extractor, num_classes: 2, num_attentions: 16
+INFO:root:WSDAN: using densenet as feature extractor, num_classes: 2, num_attentions: 32
 INFO:root:WSDAN: All params loaded
+INFO:root:Network loaded from ./output/demo_thyroid_train/densenet_250_8_lr-1e5_n4_80.000
 
 ...
 
 @@ ======== print_auc(results, enable_plot=0)
-@@ roc_auc_b: 0.42924528301886794
-@@ roc_auc_m: 0.4339622641509434
+@@ y_b: [1 1 1 1 1 1 1 1 1 1 0 0 0 0 0 0 0 0 0 0]
+@@ y_m: [0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 1 1 1]
+@@ roc_auc_b: 0.8500000000000001
+@@ roc_auc_m: 0.84
+@@ demo_thyroid_test(): vv
 ```
