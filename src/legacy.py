@@ -43,8 +43,8 @@ def print_auc(results, test_size, enable_plot=False):  # @@
     # print('@@ tpr_b:', tpr_b)
     # print('@@ fpr_m:', fpr_m)
     # print('@@ tpr_m:', tpr_m)
-    print('@@ roc_auc_b:', roc_auc_b)
-    print('@@ roc_auc_m:', roc_auc_m)
+    print('@@ roc_auc_b: %0.3f' % roc_auc_b)
+    print('@@ roc_auc_m: %0.3f' % roc_auc_m)
 
     if enable_plot:  # @@
         import matplotlib.pyplot as plt  # @@
