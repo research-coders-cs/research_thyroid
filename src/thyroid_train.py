@@ -5,7 +5,7 @@ from torch.utils.tensorboard import SummaryWriter
 
 from .metric import AverageMeter, TopKAccuracyMetric
 from .augment import batch_augment
-from .callback import ModelCheckpoint
+from .checkpoint import ModelCheckpoint
 
 import numpy as np
 import logging
@@ -353,23 +353,23 @@ def training(device, net, feature_center, batch_size, train_loader, validate_loa
 
     # TODO - include the 'Run/XX_d' tensorboard in output !!!!
 
-    callback_monitor = 'val/{}'.format(raw_metric.name)
-    callback = ModelCheckpoint(
+    mc_monitor = 'val/{}'.format(raw_metric.name)
+    mc = ModelCheckpoint(
         savepath=os.path.join(savepath, run_name),
-        monitor=callback_monitor,
+        monitor=mc_monitor,
         mode='max')
 
-    if callback_monitor in logs:
-        callback.set_best_score(logs[callback_monitor])
+    if mc_monitor in logs:
+        mc.set_best_score(logs[mc_monitor])
     else:
-        callback.reset()
+        mc.reset()
 
     #
 
     for epoch in range(start_epoch, start_epoch + total_epochs):
         print(('#' * 10), 'epoch ', str(epoch + 1), ('#' * 10))
 
-        callback.on_epoch_begin()
+        mc.on_epoch_begin()
 
         logs['epoch'] = epoch + 1
         logs['lr'] = optimizer.param_groups[0]['lr']
@@ -389,7 +389,7 @@ def training(device, net, feature_center, batch_size, train_loader, validate_loa
         else:
             scheduler.step()
 
-        callback.on_epoch_end(logs, net, feature_center=feature_center)
+        mc.on_epoch_end(logs, net, feature_center=feature_center)
 
         #@@wandb.log(logs)
         pbar.close()
@@ -399,4 +399,4 @@ def training(device, net, feature_center, batch_size, train_loader, validate_loa
         torch.cuda.empty_cache()
 
     #@@wandb.finish()
-    return callback.get_savepath_with_best_score()  # @@
+    return mc.get_savepath_with_best_score()  # @@
