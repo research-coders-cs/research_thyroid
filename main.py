@@ -4,58 +4,12 @@ from torch.utils.data import DataLoader
 import digitake
 from src.wsdan import WSDAN
 from src.transform import ThyroidDataset, get_transform##, get_transform_center_crop, transform_fn
+from src.utils import mk_artifact_dir, get_device, show_data_loader
 
 import os
 import logging
 logging.basicConfig(level=logging.INFO)
 
-
-ARTIFACTS_OUTPUT = './output'
-
-def mk_artifact_dir(dirname):
-    path = f'{ARTIFACTS_OUTPUT}/{dirname}'
-    if not os.path.exists(path):
-        os.makedirs(path, exist_ok=True)
-    return path
-
-def get_device():
-    USE_GPU = False#True
-    digitake.model.set_reproducible(2565)
-
-    if USE_GPU:
-        # GPU settings
-        assert torch.cuda.is_available(), "Don't forget to turn on gpu runtime!"
-        os.environ['CUDA_VISIBLE_DEVICES'] = '0'
-        device = torch.device("cuda")
-        torch.backends.cudnn.benchmark = True
-    else:
-        device = "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
-
-    return device
-
-def show_data_loader(data_loader, plt_show=False):
-    x = enumerate(data_loader)
-
-    try:
-        i, v = next(x)
-
-        shape = v[0].shape
-        batch_size = shape[0]
-        channel = shape[1]
-        w = shape[2]
-        h = shape[3]
-
-        print(shape)
-        print(f"X contains {batch_size} images with {channel}-channels of size {w}x{h}")
-        print(f"y is a {type(v[1]).__name__} of", v[1].tolist())
-        print()
-        for k in v[2]:
-            print(f"{k}=", v[2][k])
-
-    except StopIteration:
-        print('StopIteration')
-
-    return channel, batch_size, w, h
 
 def demo_thyroid_test(ckpt):
     # "Prediction" flow of 'WSDAN_Pytorch_Revised_v1_01_a.ipynb' - https://colab.research.google.com/drive/1LN4KjBwtq6hUG42LtSLCmIVPasehKeKq
@@ -132,7 +86,6 @@ def demo_thyroid_test(ckpt):
     #
 
     print('@@ demo_thyroid_test(): vv')
-
 
 def demo_thyroid_train():
     # "Traning/Validation" flow of 'WSDAN_Pytorch_Revised_v1_01_a.ipynb'
@@ -281,7 +234,6 @@ def demo_thyroid_train():
     print('@@ done; savepath_with_best_score:', savepath_with_best_score)
 
     return savepath_with_best_score
-
 
 def demo_doppler_comp():
     print('\n\n\n\n@@ demo_doppler_comp(): ^^')
