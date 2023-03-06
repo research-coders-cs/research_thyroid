@@ -1,39 +1,13 @@
-import os
-import gc
-import math
-import time
-import random
-import requests
-import itertools
-
-import logging
-logging.basicConfig(level=logging.INFO)
-
-# import wandb
-from datetime import datetime
-
 import torch
-# from torch import nn
-# from torch.nn import functional
-# from torch.utils.tensorboard import SummaryWriter
-
 from torch.utils.data import DataLoader
 
-import torchvision
-from torchvision import transforms
-
-# from torchsummary import summary
 import digitake
-
-
-import matplotlib.pyplot as plt
-# import cv2
-
-# !!!! clearn up !!!! TODO
-import numpy as np
-
 from src.wsdan import WSDAN
 from src.transform import ThyroidDataset, get_transform##, get_transform_center_crop, transform_fn
+
+import os
+import logging
+logging.basicConfig(level=logging.INFO)
 
 
 ARTIFACTS_OUTPUT = './output'
@@ -313,6 +287,7 @@ def demo_doppler_comp():
     print('\n\n\n\n@@ demo_doppler_comp(): ^^')
 
     from src.doppler import doppler_comp, get_iou, plot_comp, get_sample_paths
+    import matplotlib.pyplot as plt
     savepath = mk_artifact_dir('demo_doppler_comp')
 
     for path_doppler, path_markers, path_markers_label in get_sample_paths():
