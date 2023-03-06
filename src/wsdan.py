@@ -44,9 +44,9 @@ class BAP(nn.Module):
         feature_matrix = functional.normalize(feature_matrix, dim=-1)
         return feature_matrix
 
-"""### 3.1.2 Create BasicConv2d Layer and also perform a batch normalization operation."""
 
-# BasicConv2d
+"""Create BasicConv2d Layer and also perform a batch normalization operation."""
+
 class BasicConv2d(nn.Module):
 
     def __init__(self, in_channels, out_channels, **kwargs):

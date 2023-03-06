@@ -351,6 +351,8 @@ def training(device, net, feature_center, batch_size, train_loader, validate_loa
              optimizer, scheduler, run_name, logs, start_epoch, total_epochs,
              savepath='.'):
 
+    # TODO - include the 'Run/XX_d' tensorboard in output !!!!
+
     callback_monitor = 'val/{}'.format(raw_metric.name)
     callback = ModelCheckpoint(
         savepath=os.path.join(savepath, run_name),

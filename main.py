@@ -29,6 +29,7 @@ import digitake
 import matplotlib.pyplot as plt
 # import cv2
 
+# !!!! clearn up !!!! TODO
 import numpy as np
 
 from src.wsdan import WSDAN
@@ -212,7 +213,7 @@ def demo_thyroid_train():
 
     start_epoch = 0
     #total_epochs = 5
-    total_epochs = 10  # @@ !!!!
+    total_epochs = 10  # @@
 
     run_name = f"{pretrain}_{target_resize}_{batch_size}_{lr_}_n{number}"
     print('@@ run_name:', run_name)

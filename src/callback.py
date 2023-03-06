@@ -63,6 +63,7 @@ class ModelCheckpoint(Callback):
                 torch.save({
                     'logs': logs,
                     'state_dict': state_dict,
+                    # @@ vv----- TODO saving policy flag
                     # 'feature_center': feature_center}, self.savepath)
                     'feature_center': feature_center}, savepath_with_best_score)
             else:
