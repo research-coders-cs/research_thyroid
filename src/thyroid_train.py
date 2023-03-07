@@ -357,7 +357,8 @@ def training(device, net, feature_center, batch_size, train_loader, validate_loa
     mc = ModelCheckpoint(
         savepath=os.path.join(savepath, run_name),
         monitor=mc_monitor,
-        mode='max')
+        mode='max',
+        savemode_debug=True)
 
     if mc_monitor in logs:
         mc.set_best_score(logs[mc_monitor])
@@ -399,4 +400,4 @@ def training(device, net, feature_center, batch_size, train_loader, validate_loa
         torch.cuda.empty_cache()
 
     #@@wandb.finish()
-    return mc.get_savepath_with_best_score()  # @@
+    return mc.get_savepath_last()  # @@

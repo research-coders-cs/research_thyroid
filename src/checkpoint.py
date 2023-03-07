@@ -14,10 +14,11 @@ class Callback(object):
 
 
 class ModelCheckpoint(Callback):
-    def __init__(self, savepath, monitor='val_topk_accuracy', mode='max'):
+    def __init__(self, savepath, monitor='val_topk_accuracy', mode='max', savemode_debug=False):
         self.savepath = savepath
         self.monitor = monitor
         self.mode = mode
+        self.savemode_debug = savemode_debug
         self.reset()
         super(ModelCheckpoint, self).__init__()
 
@@ -40,13 +41,12 @@ class ModelCheckpoint(Callback):
         current_score = logs[self.monitor]
         if isinstance(current_score, np.ndarray):
             current_score = current_score[0]
-
-        savepath_with_best_score = self.get_savepath_with_best_score()
+        savepath = self.get_savepath_last()
 
         if (self.mode == 'max' and current_score > self.best_score) or \
             (self.mode == 'min' and current_score < self.best_score):
             self.best_score = current_score
-            savepath_with_best_score = self.get_savepath_with_best_score()
+            savepath = self.get_savepath_last()
 
             if isinstance(net, torch.nn.DataParallel):
                 state_dict = net.module.state_dict()
@@ -63,17 +63,14 @@ class ModelCheckpoint(Callback):
                 torch.save({
                     'logs': logs,
                     'state_dict': state_dict,
-                    # @@ vv----- TODO saving policy flag
-                    # 'feature_center': feature_center}, self.savepath)
-                    'feature_center': feature_center}, savepath_with_best_score)
+                    'feature_center': feature_center}, savepath)
             else:
                 torch.save({
                     'logs': logs,
-                    # 'state_dict': state_dict}, self.savepath)
-                    'state_dict': state_dict}, savepath_with_best_score)
-            print('@@ (UPDATED) savepath_with_best_score:', savepath_with_best_score)
+                    'state_dict': state_dict}, savepath)
+            print('@@ (UPDATED) savepath:', savepath)
         else:
-            print('@@ (unchanged) savepath_with_best_score:', savepath_with_best_score)
+            print('@@ (unchanged) savepath:', savepath)
 
-    def get_savepath_with_best_score(self):
-        return self.savepath + ("_%.3f" % self.best_score)
+    def get_savepath_last(self):
+        return self.savepath + ("_%.3f" % self.best_score if self.savemode_debug else '')
