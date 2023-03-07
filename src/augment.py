@@ -2,7 +2,7 @@ import torch
 from torch.nn import functional
 
 import numpy as np
-# import cv2
+import cv2
 import random
 
 
@@ -17,7 +17,6 @@ def img_gpu_to_cpu(img):
 def batch_augment(images, attention_map, mode='crop', theta=0.5, padding_ratio=0.1):
     batches, _, imgH, imgW = images.size()
 
-    ################################## *******
     if mode == 'crop':
         crop_images = []
         for batch_index in range(batches):
@@ -62,7 +61,7 @@ def batch_augment(images, attention_map, mode='crop', theta=0.5, padding_ratio=0
         drop_images = images * drop_masks.float()
 
         # cv2_imshow
-        # print("drop_images : ", drop_images.shape)
+        print("drop_images : ", drop_images.shape)
         # cv2_imshow(img_gpu_to_cpu(drop_images[0]))
         return drop_images
 

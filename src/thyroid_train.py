@@ -106,12 +106,10 @@ def train(device, logs, data_loader, net, feature_center, optimizer, pbar):  # @
     net.train()
 
     example_ct = 0
-    for i, (X, y, p) in enumerate(data_loader):
+    for idx, (X, y, p) in enumerate(data_loader):
         optimizer.zero_grad()
 
-        # print("i :", i)
-        print("X ", X[0].shape)
-
+        print(f"(idx={idx}) X[0].shape:", X[0].shape)
 
         # obtain data for training
         X = X.to(device)
@@ -127,12 +125,14 @@ def train(device, logs, data_loader, net, feature_center, optimizer, pbar):  # @
         feature_center_batch = functional.normalize(feature_center[y], dim=-1)
         feature_center[y] += 5e-2 * (feature_matrix.detach() - feature_center_batch)
 
-
         ##################################
         # Attention Cropping
         ##################################
         with torch.no_grad():
-            crop_images = batch_augment(X, attention_map[:, :1, :, :], mode='crop', theta=(0.7, 0.95), padding_ratio=0.1)
+            crop_images = batch_augment(
+                X, attention_map[:, :1, :, :],
+                mode='crop', theta=(0.7, 0.95), padding_ratio=0.1)
+            #exit(99)  # @@ !!!!!!!!
 
         # crop images forward
         y_pred_crop, _, _ = net(crop_images)
@@ -141,8 +141,9 @@ def train(device, logs, data_loader, net, feature_center, optimizer, pbar):  # @
         # Attention Dropping
         ##################################
         with torch.no_grad():
-            drop_images = batch_augment(X, attention_map[:, 1:, :, :], mode='drop', theta=(0.2, 0.5))
-
+            drop_images = batch_augment(
+                X, attention_map[:, 1:, :, :],
+                mode='drop', theta=(0.2, 0.5))
 
         # drop images forward
         y_pred_drop, _, _ = net(drop_images)
@@ -169,10 +170,10 @@ def train(device, logs, data_loader, net, feature_center, optimizer, pbar):  # @
             epoch_loss, epoch_raw_acc[0],
             epoch_crop_acc[0], epoch_drop_acc[0])
 
-        writer.add_scalar("Loss/train", epoch_loss, i)
-        writer.add_scalar('Acc(Raw)/train', epoch_raw_acc[0], i)
-        writer.add_scalar('Acc(Crop)/train', epoch_crop_acc[0], i)
-        writer.add_scalar('Acc(Drop)/train', epoch_drop_acc[0], i)
+        writer.add_scalar("Loss/train", epoch_loss, idx)
+        writer.add_scalar('Acc(Raw)/train', epoch_raw_acc[0], idx)
+        writer.add_scalar('Acc(Crop)/train', epoch_crop_acc[0], idx)
+        writer.add_scalar('Acc(Drop)/train', epoch_drop_acc[0], idx)
 
         example_ct += len(X)
         metrics = {
@@ -364,8 +365,6 @@ def training(device, net, feature_center, batch_size, train_loader, validate_loa
         mc.set_best_score(logs[mc_monitor])
     else:
         mc.reset()
-
-    #
 
     for epoch in range(start_epoch, start_epoch + total_epochs):
         print(('#' * 10), 'epoch ', str(epoch + 1), ('#' * 10))
