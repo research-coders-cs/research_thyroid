@@ -7,6 +7,8 @@ from .metric import AverageMeter, TopKAccuracyMetric
 from .augment import batch_augment
 from .checkpoint import ModelCheckpoint
 from .doppler import detect_doppler, get_iou#, plot_comp, get_sample_paths
+from .utils import show_data_loader
+
 
 import numpy as np
 import logging
@@ -35,7 +37,7 @@ class SaveFeatures():  # @@ not used at the moment
     def remove(self): self.hook.remove()
 
 
-def train(device, logs, data_loader, net, feature_center, optimizer, pbar):  # @@
+def train(device, logs, train_loader, doppler_train_loader, net, feature_center, optimizer, pbar):
 
     # metrics initialization
     loss_container.reset()
@@ -47,11 +49,15 @@ def train(device, logs, data_loader, net, feature_center, optimizer, pbar):  # @
     start_time = time.time()
     net.train()
 
+    if doppler_train_loader is not None:
+        show_data_loader(doppler_train_loader)  # @@ !!!!
+
     example_ct = 0
-    for idx, (X, y, p) in enumerate(data_loader):
+    for idx, (X, y, p) in enumerate(train_loader):
         optimizer.zero_grad()
 
         print(f"(idx={idx}) X[0].shape:", X[0].shape)
+        print('@@ !!!! p:', p)
 
         # obtain data for training
         X = X.to(device)
@@ -74,7 +80,7 @@ def train(device, logs, data_loader, net, feature_center, optimizer, pbar):  # @
             crop_images = batch_augment(
                 X, attention_map[:, :1, :, :],
                 mode='crop', theta=(0.7, 0.95), padding_ratio=0.1)
-            exit(99)  # @@ !!!!!!!!
+            ##exit(99)  # @@ !!!!!!!!
 
         # crop images forward
         y_pred_crop, _, _ = net(crop_images)
@@ -145,7 +151,7 @@ def train(device, logs, data_loader, net, feature_center, optimizer, pbar):  # @
     logging.info('Train: {}, Time {:3.2f}'.format(batch_info, end_time - start_time))
 
 
-def validate(device, logs, data_loader, net, pbar):  # @@
+def validate(device, logs, validate_loader, net, pbar):
 
     # metrics initialization
     val_loss_container.reset()
@@ -155,7 +161,7 @@ def validate(device, logs, data_loader, net, pbar):  # @@
     start_time = time.time()
     net.eval()
     with torch.no_grad():
-      for i, (X, y, p) in enumerate(data_loader):
+      for i, (X, y, p) in enumerate(validate_loader):
           # obtain data
           X = X.to(device)
           y = y.to(device)
@@ -290,7 +296,7 @@ drop_metric = TopKAccuracyMetric()
 top_misclassified = {}
 writer = SummaryWriter()
 
-def training(device, net, feature_center, batch_size, train_loader, validate_loader,
+def training(device, net, feature_center, batch_size, train_loader, doppler_train_loader, validate_loader,
              optimizer, scheduler, run_name, logs, start_epoch, total_epochs,
              savepath='.'):
 
@@ -321,7 +327,7 @@ def training(device, net, feature_center, batch_size, train_loader, validate_loa
         pbar = tqdm(total=len(train_loader), unit=' batches')
         pbar.set_description('Epoch {}/{}'.format(epoch + 1, total_epochs))
 
-        train(device, logs, train_loader, net, feature_center, optimizer, pbar)
+        train(device, logs, train_loader, doppler_train_loader, net, feature_center, optimizer, pbar)
 
         validate(device, logs, validate_loader, net, pbar)
 

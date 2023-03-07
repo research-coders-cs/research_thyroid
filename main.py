@@ -109,7 +109,7 @@ def demo_thyroid_train(with_doppler=True):
             'malignant': ['Markers_Train/Malignant'],
             'benign': ['Markers_Train/Benign'],
         }, root='Siriraj_sample_doppler_comp')
-        print(train_ds_path)
+        #print(train_ds_path)
         print(len(train_ds_path['malignant']), len(train_ds_path['benign']))  # @@ 2 7
 
         doppler_train_ds_path = digitake.preprocess.build_dataset({
@@ -186,6 +186,21 @@ def demo_thyroid_train(with_doppler=True):
 
     #
 
+    doppler_train_loader = None if doppler_train_ds_path is None else DataLoader(
+        ThyroidDataset(
+            phase='train',
+            dataset=doppler_train_ds_path,
+            transform=get_transform(target_resize, phase='basic'),
+            with_alpha_channel=False
+        ),
+        batch_size=batch_size,
+        shuffle=True,
+        num_workers=workers,
+        pin_memory=True
+    )
+
+    #
+
     validate_dataset = ThyroidDataset(
         phase='val',
         dataset=val_ds_path,
@@ -248,7 +263,7 @@ def demo_thyroid_train(with_doppler=True):
         .format(total_epochs, batch_size, len(train_dataset), len(validate_dataset)))
 
     ckpt = training(
-        device, net, feature_center, batch_size, train_loader, validate_loader,
+        device, net, feature_center, batch_size, train_loader, doppler_train_loader, validate_loader,
         optimizer, scheduler, run_name, logs, start_epoch, total_epochs,
         savepath=mk_artifact_dir('demo_thyroid_train'))
     print('@@ done; ckpt:', ckpt)
