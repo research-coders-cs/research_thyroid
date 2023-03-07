@@ -6,6 +6,7 @@ from torch.utils.tensorboard import SummaryWriter
 from .metric import AverageMeter, TopKAccuracyMetric
 from .augment import batch_augment
 from .checkpoint import ModelCheckpoint
+from .doppler import detect_doppler, get_iou#, plot_comp, get_sample_paths
 
 import numpy as np
 import logging
@@ -26,71 +27,12 @@ def softmax(x):
   e_x = np.exp(x - np.max(x))
   return e_x / e_x.sum()
 
-# @@ not used at the moment
-# class SaveFeatures():
-#     features=None
-#     def __init__(self, m): self.hook = m.register_forward_hook(self.hook_fn)
-#     def hook_fn(self, module, input, output): self.features = ((output.cpu()).data).numpy()
-#     def remove(self): self.hook.remove()
-#
-# def detect_dropler(img_file):
-#     img = cv2.imread(img_file)
-#     if len(img.shape) < 3:
-#         #print('gray_scale')
-#         img = cv2.cvtColor(img,cv2.COLOR_GRAY2RGB)
-#
-#     green_image = np.zeros((img.shape[0], img.shape[1]), np.uint8)
-#     green_image[:,:] = img[:,:,1]
-#     _, threshold = cv2.threshold(green_image, 200, 255, cv2.THRESH_BINARY)
-#     contours, _ = cv2.findContours(threshold, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-#     cv2.imwrite('check.jpg', threshold)
-#
-#     cntrRect = None
-#     maxarea = 0
-#     for cnt in contours:
-#         hull = cv2.convexHull(cnt,returnPoints = True)
-#         #print(cnt)
-#         #print(hull)
-#         approx = cv2.approxPolyDP(hull, 0.01*cv2.arcLength(cnt, True), True)
-#         #cv2.drawContours(img, [approx], 0, (0), 5)
-#         if len(approx) == 4:
-#             xy = approx.ravel()
-#             area = cv2.contourArea(cnt)
-#             if maxarea < area:
-#                 use = True
-#                 for i in range(4):
-#                     lx1 = xy[i*2]
-#                     ly1 = xy[i*2+1]
-#                     if i == 3:
-#                         lx2 = xy[0]
-#                         ly2 = xy[1]
-#                     else:
-#                         lx2 = xy[(i+1)*2]
-#                         ly2 = xy[(i+1)*2+1]
-#                     angle = np.absolute(np.arctan2(ly2-ly1, lx2-lx1)) * 180 / np.pi
-#                     if angle > 45 and angle < 135:
-#                         angle = angle - 90
-#                     if angle >= 135:
-#                         angle = angle - 180
-#                     if angle > 3:
-#                         use = False
-#                         break
-#
-#                 if use:
-#                     maxarea = area
-#                     cntrRect = approx
-#
-#     if cntrRect is not None:
-#         xy = cntrRect.ravel()
-#         x = [xy[0], xy[2], xy[4], xy[6]]
-#         y = [xy[1], xy[3], xy[5], xy[7]]
-#         min_x = float(min(x))
-#         max_x = float(max(x))
-#         min_y = float(min(y))
-#         max_y = float(max(y))
-#         x = [min_x, min_y, max_x, max_y]
-#         return x
-#     return None
+
+class SaveFeatures():  # @@ not used at the moment
+    features=None
+    def __init__(self, m): self.hook = m.register_forward_hook(self.hook_fn)
+    def hook_fn(self, module, input, output): self.features = ((output.cpu()).data).numpy()
+    def remove(self): self.hook.remove()
 
 
 def train(device, logs, data_loader, net, feature_center, optimizer, pbar):  # @@
