@@ -88,7 +88,7 @@ def demo_thyroid_test(ckpt):
 
     print('@@ demo_thyroid_test(): vv')
 
-def demo_thyroid_train():
+def demo_thyroid_train(with_doppler=True):
     # "Traning/Validation" flow of 'WSDAN_Pytorch_Revised_v1_01_a.ipynb'
 
     print('\n\n\n\n@@ demo_thyroid_train(): ^^')
@@ -99,12 +99,37 @@ def demo_thyroid_train():
 
     #
 
-    train_ds_path = digitake.preprocess.build_dataset({
-      'malignant': ['Train/Malignant'],
-      'benign': ['Train/Benign'],
-    }, root='Dataset_train_test_val')
-    #print(train_ds_path)
-    print(len(train_ds_path['malignant']), len(train_ds_path['benign']))  # @@ 20 21
+    print('@@ with_doppler:', with_doppler)
+
+    train_ds_path = None
+    doppler_train_ds_path = None
+    if with_doppler:
+        train_ds_path = digitake.preprocess.build_dataset({
+            # @@ TODO update with "Markers_Train_Remove_Markers" instead !!!!
+            'malignant': ['Markers_Train/Malignant'],
+            'benign': ['Markers_Train/Benign'],
+        }, root='Siriraj_sample_doppler_comp')
+        print(train_ds_path)
+        print(len(train_ds_path['malignant']), len(train_ds_path['benign']))  # @@ 2 7
+
+        doppler_train_ds_path = digitake.preprocess.build_dataset({
+            'malignant': ['Doppler_Train_Crop/Malignant'],
+            'benign': ['Doppler_Train_Crop/Benign'],
+        }, root='Siriraj_sample_doppler_comp')
+
+        print("@@ doppler_train_ds_path['malignant']", doppler_train_ds_path['malignant'])
+        print("@@ doppler_train_ds_path['benign']", doppler_train_ds_path['benign'])
+    else:
+        train_ds_path = digitake.preprocess.build_dataset({
+            'malignant': ['Train/Malignant'],
+            'benign': ['Train/Benign'],
+        }, root='Dataset_train_test_val')
+        #print(train_ds_path)
+        print(len(train_ds_path['malignant']), len(train_ds_path['benign']))  # @@ 20 21
+
+    ##exit()  # @@ !!!!
+
+    #
 
     val_ds_path = digitake.preprocess.build_dataset({
       'malignant': ['Val/Malignant'],
@@ -112,13 +137,6 @@ def demo_thyroid_train():
     }, root='Dataset_train_test_val')
     #print(val_ds_path)
     print(len(val_ds_path['malignant']), len(val_ds_path['benign']))  # @@ 10 10
-
-    # @@ to be used later
-    dropper_train_ds_path = digitake.preprocess.build_dataset({
-      'malignant': ['Doppler_Train_Crop/Malignant'],
-      'benign': ['Doppler_Train_Crop/Benign'],
-    }, root='Siriraj_sample_doppler_comp')
-    print("@@ dropper_train_ds_path['malignant']", dropper_train_ds_path['malignant'])
 
     #
 
@@ -276,6 +294,7 @@ if __name__ == '__main__':
         #ckpt = "WSDAN_densenet_224_16_lr-1e5_n1-remove_220828-0837_85.714.ckpt"
         #ckpt = "WSDAN_doppler_densenet_224_16_lr-1e5_n5_220905-1309_78.571.ckpt"
         #ckpt = './output/demo_thyroid_train/densenet_250_8_lr-1e5_n4_60.000'
-        ckpt = demo_thyroid_train()
+        #ckpt = demo_thyroid_train(with_doppler=False)
+        ckpt = demo_thyroid_train(with_doppler=True)
 
         demo_thyroid_test(ckpt)  # TODO - generate 'confusion_matrix_test-*.png', 'test-*.png'
