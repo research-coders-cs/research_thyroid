@@ -19,8 +19,8 @@ def batch_augment(images, attention_map, mode='crop', theta=0.5, padding_ratio=0
 
     if mode == 'crop':
         crop_images = []
-        for batch_index in range(batches):
-            atten_map = attention_map[batch_index:batch_index + 1]
+        for idx in range(batches):
+            atten_map = attention_map[idx:idx + 1]
             if isinstance(theta, tuple):
                 theta_c = random.uniform(*theta) * atten_map.max()
             else:
@@ -36,16 +36,22 @@ def batch_augment(images, attention_map, mode='crop', theta=0.5, padding_ratio=0
             print('crop: ', (height_min, width_min), ((height_min + height_max), (width_min + width_max)))
             img = img_gpu_to_cpu(images[0])
             img = np.array(img).astype(np.uint8).copy()
-            if 1:  # @@
+            if 0:  # @@ !!!!
+                if idx == 0:
+                    cv2.imwrite(f'crop_img.jpg', img)
+
                 img_ = cv2.rectangle(img,
                     (height_min, width_min),
                     ((height_min + height_max), (width_min + width_max)),
                     (0, 0, 255), 1)
+                cv2.imwrite(f'crop_img0_idx_{idx}.jpg', img_)
+
                 img_ = img_[height_min:height_max, width_min:width_max, :].copy()
+                cv2.imwrite(f'crop_img1_idx_{idx}.jpg', img_)
                 #@@cv2_imshow(img_)
 
             crop_images.append(functional.interpolate(
-                images[batch_index:batch_index + 1, :, height_min:height_max, width_min:width_max],
+                images[idx:idx + 1, :, height_min:height_max, width_min:width_max],
                 size=(imgH, imgW)))
 
         crop_images = torch.cat(crop_images, dim=0)
@@ -53,8 +59,8 @@ def batch_augment(images, attention_map, mode='crop', theta=0.5, padding_ratio=0
 
     elif mode == 'drop':
         drop_masks = []
-        for batch_index in range(batches):
-            atten_map = attention_map[batch_index:batch_index + 1]
+        for idx in range(batches):
+            atten_map = attention_map[idx:idx + 1]
             if isinstance(theta, tuple):
                 theta_d = random.uniform(*theta) * atten_map.max()
             else:
