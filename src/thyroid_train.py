@@ -132,7 +132,7 @@ def train(device, logs, data_loader, net, feature_center, optimizer, pbar):  # @
             crop_images = batch_augment(
                 X, attention_map[:, :1, :, :],
                 mode='crop', theta=(0.7, 0.95), padding_ratio=0.1)
-            #exit(99)  # @@ !!!!!!!!
+            exit(99)  # @@ !!!!!!!!
 
         # crop images forward
         y_pred_crop, _, _ = net(crop_images)
