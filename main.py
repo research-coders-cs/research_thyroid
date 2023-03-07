@@ -67,8 +67,9 @@ def demo_thyroid_test(ckpt):
     net = WSDAN(num_classes=num_classes, M=num_attention_maps, net=pretrain, pretrained=True)
     net.to(device)
 
-    results = test(device, net, batch_size, test_loader_no, ckpt,
-                   savepath=mk_artifact_dir('demo_thyroid_test'))
+    results = test(
+        device, net, batch_size, test_loader_no, ckpt,
+        savepath=mk_artifact_dir('demo_thyroid_test'))
     # print('@@ results:', results)
 
     #
@@ -228,12 +229,13 @@ def demo_thyroid_train():
     logging.info('Start training: Total epochs: {}, Batch size: {}, Training size: {}, Validation size: {}'
         .format(total_epochs, batch_size, len(train_dataset), len(validate_dataset)))
 
-    savepath_with_best_score = training(device, net, feature_center, batch_size, train_loader, validate_loader,
-             optimizer, scheduler, run_name, logs, start_epoch, total_epochs,
-             savepath=mk_artifact_dir('demo_thyroid_train'))
-    print('@@ done; savepath_with_best_score:', savepath_with_best_score)
+    ckpt = training(
+        device, net, feature_center, batch_size, train_loader, validate_loader,
+        optimizer, scheduler, run_name, logs, start_epoch, total_epochs,
+        savepath=mk_artifact_dir('demo_thyroid_train'))
+    print('@@ done; ckpt:', ckpt)
 
-    return savepath_with_best_score
+    return ckpt
 
 def demo_doppler_comp():
     print('\n\n\n\n@@ demo_doppler_comp(): ^^')
