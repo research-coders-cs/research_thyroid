@@ -181,8 +181,9 @@ def demo_thyroid_train(with_doppler=True):
         pin_memory=True
     )
 
-    channel, _, _, _ = show_data_loader(train_loader)
-    print('@@ channel:', channel)
+    print('@@ show_data_loader(train_loader) -------- ^^')
+    _channel, _, _, _ = show_data_loader(train_loader)
+    print('@@ show_data_loader(train_loader) -------- vv')
 
     #
 
@@ -198,6 +199,10 @@ def demo_thyroid_train(with_doppler=True):
         num_workers=workers,
         pin_memory=True
     )
+
+    print('@@ show_data_loader(doppler_train_loader) -------- ^^')
+    show_data_loader(doppler_train_loader)
+    print('@@ show_data_loader(doppler_train_loader) -------- vv')
 
     #
 

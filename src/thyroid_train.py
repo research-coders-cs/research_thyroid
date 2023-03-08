@@ -49,15 +49,14 @@ def train(device, logs, train_loader, doppler_train_loader, net, feature_center,
     start_time = time.time()
     net.train()
 
-    if doppler_train_loader is not None:
-        show_data_loader(doppler_train_loader)  # @@ !!!!
+    # if doppler_train_loader is not None:
+    #     show_data_loader(doppler_train_loader)  # @@ !!!!
 
     example_ct = 0
     for idx, (X, y, p) in enumerate(train_loader):
         optimizer.zero_grad()
 
         print(f"(idx={idx}) X[0].shape:", X[0].shape)
-        print('@@ !!!! p:', p)
 
         # obtain data for training
         X = X.to(device)
@@ -80,7 +79,7 @@ def train(device, logs, train_loader, doppler_train_loader, net, feature_center,
             crop_images = batch_augment(
                 X, attention_map[:, :1, :, :],
                 mode='crop', theta=(0.7, 0.95), padding_ratio=0.1)
-            ##exit(99)  # @@ !!!!!!!!
+            exit(99)  # @@ !!!!!!!!
 
         # crop images forward
         y_pred_crop, _, _ = net(crop_images)
