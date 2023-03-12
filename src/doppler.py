@@ -4,8 +4,7 @@ import numpy as np
 import pandas as pd
 
 
-def detect_doppler(img_file):
-    img = cv2.imread(img_file)
+def detect_doppler(img):
     if len(img.shape) < 3:
         #print('gray_scale')
         img = cv2.cvtColor(img,cv2.COLOR_GRAY2RGB)
@@ -104,19 +103,21 @@ def get_iou(truth, pred):
 
 
 def doppler_comp(path_doppler, path_markers, path_markers_label):
-    src_doppler = cv2.imread(path_doppler)
-    width = int(src_doppler.shape[1])
-    height = int(src_doppler.shape[0])
+    img_doppler = cv2.imread(path_doppler)
+    width = int(img_doppler.shape[1])
+    height = int(img_doppler.shape[0])
 
-    temp = detect_doppler(path_doppler)
+    temp = detect_doppler(img_doppler)
 
     x1_doppler_calc = int(temp[0])
     y1_doppler_calc = int(temp[1])
     x2_doppler_calc = int(temp[2])
     y2_doppler_calc = int(temp[3])
 
-    bbox_doppler = np.array([x1_doppler_calc, y1_doppler_calc, x2_doppler_calc, y2_doppler_calc], dtype=np.float32)
-    border_img_doppler = cv2.rectangle(src_doppler, (x1_doppler_calc, y1_doppler_calc), (x2_doppler_calc, y2_doppler_calc), (255, 255, 0), 2)
+    bbox_doppler = np.array([
+        x1_doppler_calc, y1_doppler_calc, x2_doppler_calc, y2_doppler_calc],
+        dtype=np.float32)
+    border_img_doppler = cv2.rectangle(img_doppler, (x1_doppler_calc, y1_doppler_calc), (x2_doppler_calc, y2_doppler_calc), (255, 255, 0), 2)
 
     #
 
@@ -145,9 +146,9 @@ def doppler_comp(path_doppler, path_markers, path_markers_label):
 
     #
 
-    src_markers = cv2.imread(path_markers)
+    img_markers = cv2.imread(path_markers)
 
-    unborder_img_markers = cv2.resize(src_markers, (width, height))
+    unborder_img_markers = cv2.resize(img_markers, (width, height))
     unborder_img_markers = cv2.rectangle(
         unborder_img_markers,
         (int(width * x1_doppler_calc), int(height * y1_doppler_calc)),

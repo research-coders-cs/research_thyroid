@@ -1,6 +1,8 @@
 import torch
 from torch.nn import functional
 
+from .doppler import detect_doppler, get_iou, to_doppler
+
 import numpy as np
 import cv2
 import os
@@ -15,7 +17,9 @@ def img_gpu_to_cpu(img):
     img_full = NormalizeData(img_full) * 255
     return img_full
 
-def batch_augment(images, attention_map, savepath, mode='crop', theta=0.5, padding_ratio=0.1):
+def batch_augment(images, paths, attention_map, savepath,
+                  mode='crop', theta=0.5, padding_ratio=0.1):
+    print('@@ images.size():', images.size())
     batches, _, imgH, imgW = images.size()
 
     if mode == 'crop':
@@ -35,19 +39,46 @@ def batch_augment(images, attention_map, savepath, mode='crop', theta=0.5, paddi
             width_max = min(int(nonzero_indices[:, 1].max().item() + padding_ratio * imgW), imgW)
 
             print('crop: ', (height_min, width_min), ((height_min + height_max), (width_min + width_max)))
+            bbox_crop = np.array([
+                width_min,
+                height_min,
+                width_min + width_max,
+                height_min + height_max], dtype=np.float32)
 
             if 1:  # @@
-                img = img_gpu_to_cpu(images[idx])
-                img = np.array(img).astype(np.uint8).copy()
+                # get doppler bbox (scaled)
+                raw = cv2.imread(to_doppler[paths[idx]])
+                bbox_raw = detect_doppler(raw)
+                bbox = np.array([
+                    bbox_raw[0] * imgW / raw.shape[1],
+                    bbox_raw[1] * imgH / raw.shape[0],
+                    bbox_raw[2] * imgW / raw.shape[1],
+                    bbox_raw[3] * imgH / raw.shape[0]], dtype=np.float32)
 
-                img_ = cv2.rectangle(img,
-                    (width_min, height_min),
-                    ((width_min + width_max), (height_min + height_max)),
-                    (0, 0, 255), 1)
-                cv2.imwrite(os.path.join(savepath, f'debug_crop_idx_{idx}_as_bbox.jpg'), img_)
+                iou = get_iou(bbox, bbox_crop)
+                print('@@ iou:', iou)
 
-                img_ = img_[height_min:height_max, width_min:width_max, :].copy()
-                cv2.imwrite(os.path.join(savepath, f'debug_crop_idx_{idx}.jpg'), img_)
+                if 1:  # debug dump
+                    train_img_copy = np.array(
+                        img_gpu_to_cpu(images[idx])).astype(np.uint8).copy()
+
+                    # superpose doppler bbox
+                    cv2.rectangle(train_img_copy,
+                        (int(bbox[0]), int(bbox[1])),
+                        (int(bbox[2]), int(bbox[3])),
+                        (255, 255, 0), 1)
+
+                    # superpose crop bbox
+                    img_ = cv2.rectangle(train_img_copy,
+                        (width_min, height_min),
+                        ((width_min + width_max), (height_min + height_max)),
+                        (0, 0, 255), 1)
+                    cv2.imwrite(os.path.join(
+                        savepath, f'debug_crop_idx_{idx}_with_doppler.jpg'), img_)
+
+                    # crop patch image
+                    # img_ = img_[height_min:height_max, width_min:width_max, :].copy()
+                    # cv2.imwrite(os.path.join(savepath, f'debug_crop_idx_{idx}.jpg'), img_)
 
             crop_images.append(functional.interpolate(
                 images[idx:idx + 1, :, height_min:height_max, width_min:width_max],

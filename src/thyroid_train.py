@@ -6,7 +6,7 @@ from torch.utils.tensorboard import SummaryWriter
 from .metric import AverageMeter, TopKAccuracyMetric
 from .augment import batch_augment, img_gpu_to_cpu
 from .checkpoint import ModelCheckpoint
-from .doppler import detect_doppler, get_iou, to_doppler
+##from .doppler import detect_doppler, get_iou, to_doppler
 from .utils import show_data_loader
 
 import cv2
@@ -55,31 +55,7 @@ def train(device, logs, train_loader, doppler_train_loader, net, feature_center,
         optimizer.zero_grad()
 
         print(f"(batch idx={idx}) X[0].shape:", X[0].shape)
-        if 0:  # @@ !!!!
-            for img_idx, train_img_path in enumerate(p['path']):
-                doppler_img_path = to_doppler[train_img_path]
-                print(f'@@ {train_img_path} ->\n  {doppler_img_path}')
-
-                train_img = img_gpu_to_cpu(X[img_idx])
-                train_img = np.array(train_img).astype(np.uint8).copy()
-                #cv2.imwrite(f'train_img_{img_idx}.jpg', train_img)
-
-                img = cv2.imread(doppler_img_path)
-                width = int(img.shape[1])
-                height = int(img.shape[0])
-                print('@@ (doppler) width, height:', width, height)
-
-                temp = detect_doppler(doppler_img_path)
-                #                             vvvvvvvvvvvvvvvvvvvvv
-                x1_doppler_calc = int(temp[0] * 250. / img.shape[1])
-                y1_doppler_calc = int(temp[1] * 250. / img.shape[0])
-                x2_doppler_calc = int(temp[2] * 250. / img.shape[1])
-                y2_doppler_calc = int(temp[3] * 250. / img.shape[0])
-                bbox_doppler = np.array([x1_doppler_calc, y1_doppler_calc, x2_doppler_calc, y2_doppler_calc], dtype=np.float32)
-                #@@border_img_doppler = cv2.rectangle(src_doppler, (x1_doppler_calc, y1_doppler_calc), (x2_doppler_calc, y2_doppler_calc), (255, 255, 0), 2)
-                train_img_doppler = cv2.rectangle(train_img, (x1_doppler_calc, y1_doppler_calc), (x2_doppler_calc, y2_doppler_calc), (255, 255, 0), 2)
-                cv2.imwrite(f'train_img_{img_idx}_with_bbox_doppler.jpg', train_img_doppler)  # @@
-
+        paths = p['path']  # @@
 
         # obtain data for training
         X = X.to(device)
@@ -100,7 +76,7 @@ def train(device, logs, train_loader, doppler_train_loader, net, feature_center,
         ##################################
         with torch.no_grad():
             crop_images = batch_augment(
-                X, attention_map[:, :1, :, :], savepath,
+                X, paths, attention_map[:, :1, :, :], savepath,
                 mode='crop', theta=(0.7, 0.95), padding_ratio=0.1)
 
         if 1:  # @@
@@ -116,7 +92,7 @@ def train(device, logs, train_loader, doppler_train_loader, net, feature_center,
         ##################################
         with torch.no_grad():
             drop_images = batch_augment(
-                X, attention_map[:, 1:, :, :], savepath,
+                X, paths, attention_map[:, 1:, :, :], savepath,
                 mode='drop', theta=(0.2, 0.5))
 
         if 1:  # @@
@@ -208,7 +184,7 @@ def validate(device, logs, validate_loader, net, pbar, savepath):
           # Object Localization and Refinement
           ##################################
           crop_images = batch_augment(
-              X, attention_map, savepath,
+              X, paths, attention_map, savepath,
               mode='crop', theta=(0.7, 0.95), padding_ratio=0.05)
           y_pred_crop, _, _ = net(crop_images)
 
