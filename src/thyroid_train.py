@@ -4,12 +4,12 @@ from torch.nn import functional
 from torch.utils.tensorboard import SummaryWriter
 
 from .metric import AverageMeter, TopKAccuracyMetric
-from .augment import batch_augment
+from .augment import batch_augment, img_gpu_to_cpu
 from .checkpoint import ModelCheckpoint
 from .doppler import detect_doppler, get_iou#, plot_comp, get_sample_paths
 from .utils import show_data_loader
 
-
+import cv2
 import numpy as np
 import logging
 import os
@@ -49,14 +49,56 @@ def train(device, logs, train_loader, doppler_train_loader, net, feature_center,
     start_time = time.time()
     net.train()
 
-    # if doppler_train_loader is not None:
-    #     show_data_loader(doppler_train_loader)  # @@ !!!!
+    # @@ !!!!
+    to_doppler = {
+        'Siriraj_sample_doppler_comp/Markers_Train/Benign/benign_nodule1_0001-0100_c0011_2_p0022.png':
+        'Siriraj_sample_doppler_comp/Doppler_Train_Crop/Benign/benign_nodule1_0001-0100_c0011_1_p0022.png',
+        'Siriraj_sample_doppler_comp/Markers_Train/Benign/benign_nodule1_0001-0100_c0076_2_p0152.png':
+        'Siriraj_sample_doppler_comp/Doppler_Train_Crop/Benign/benign_nodule1_0001-0100_c0076_1_p0152.png',
+        'Siriraj_sample_doppler_comp/Markers_Train/Benign/benign_nodule1_0001-0100_c0022_2_p0044.png':
+        'Siriraj_sample_doppler_comp/Doppler_Train_Crop/Benign/benign_nodule1_0001-0100_c0022_1_p0044.png',
+        'Siriraj_sample_doppler_comp/Markers_Train/Benign/benign_nodule3_0001-0030_c0024_1_p0071.png':
+        'Siriraj_sample_doppler_comp/Doppler_Train_Crop/Benign/benign_nodule3_0001-0030_c0024_2_p0071.png',
+        'Siriraj_sample_doppler_comp/Markers_Train/Benign/benign_siriraj_0001-0160_c0128_1_p0088.png':
+        'Siriraj_sample_doppler_comp/Doppler_Train_Crop/Benign/benign_siriraj_0001-0160_c0128_2_p0089.png',
+        'Siriraj_sample_doppler_comp/Markers_Train/Benign/benign_nodule1_0001-0100_c0008_2_p0016.png':
+        'Siriraj_sample_doppler_comp/Doppler_Train_Crop/Benign/benign_nodule1_0001-0100_c0008_1_p0016.png',
+        'Siriraj_sample_doppler_comp/Markers_Train/Malignant/malignant_siriraj_0001-0124_c0110_2_p0256.png':
+        'Siriraj_sample_doppler_comp/Doppler_Train_Crop/Malignant/malignant_siriraj_0001-0124_c0110_3_p0257.png',
+        'Siriraj_sample_doppler_comp/Markers_Train/Malignant/malignant_nodule3_0001-0030_c0004_1_p0011.png':
+        'Siriraj_sample_doppler_comp/Doppler_Train_Crop/Malignant/malignant_nodule3_0001-0030_c0004_3_p0011.png',
+    }
 
     example_ct = 0
     for idx, (X, y, p) in enumerate(train_loader):
         optimizer.zero_grad()
 
-        print(f"(idx={idx}) X[0].shape:", X[0].shape)
+        print(f"(batch idx={idx}) X[0].shape:", X[0].shape)
+        if 0:  # @@ !!!!
+            for img_idx, train_img_path in enumerate(p['path']):
+                doppler_img_path = to_doppler[train_img_path]
+                print(f'@@ {train_img_path} ->\n  {doppler_img_path}')
+
+                train_img = img_gpu_to_cpu(X[img_idx])
+                train_img = np.array(train_img).astype(np.uint8).copy()
+                #cv2.imwrite(f'train_img_{img_idx}.jpg', train_img)
+
+                img = cv2.imread(doppler_img_path)
+                width = int(img.shape[1])
+                height = int(img.shape[0])
+                print('@@ (doppler) width, height:', width, height)
+
+                temp = detect_doppler(doppler_img_path)
+                #                             vvvvvvvvvvvvvvvvvvvvv
+                x1_doppler_calc = int(temp[0] * 250. / img.shape[1])
+                y1_doppler_calc = int(temp[1] * 250. / img.shape[0])
+                x2_doppler_calc = int(temp[2] * 250. / img.shape[1])
+                y2_doppler_calc = int(temp[3] * 250. / img.shape[0])
+                bbox_doppler = np.array([x1_doppler_calc, y1_doppler_calc, x2_doppler_calc, y2_doppler_calc], dtype=np.float32)
+                #@@border_img_doppler = cv2.rectangle(src_doppler, (x1_doppler_calc, y1_doppler_calc), (x2_doppler_calc, y2_doppler_calc), (255, 255, 0), 2)
+                train_img_doppler = cv2.rectangle(train_img, (x1_doppler_calc, y1_doppler_calc), (x2_doppler_calc, y2_doppler_calc), (255, 255, 0), 2)
+                cv2.imwrite(f'train_img_{img_idx}_with_bbox_doppler.jpg', train_img_doppler)  # @@
+
 
         # obtain data for training
         X = X.to(device)
@@ -79,7 +121,10 @@ def train(device, logs, train_loader, doppler_train_loader, net, feature_center,
             crop_images = batch_augment(
                 X, attention_map[:, :1, :, :],
                 mode='crop', theta=(0.7, 0.95), padding_ratio=0.1)
-            exit(99)  # @@ !!!!!!!!
+
+        if 1:  # @@
+            for idx in range(crop_images.shape[0]):
+                cv2.imwrite(f'final_crop_image_{idx}.jpg', img_gpu_to_cpu(crop_images[idx]))
 
         # crop images forward
         y_pred_crop, _, _ = net(crop_images)
@@ -91,6 +136,12 @@ def train(device, logs, train_loader, doppler_train_loader, net, feature_center,
             drop_images = batch_augment(
                 X, attention_map[:, 1:, :, :],
                 mode='drop', theta=(0.2, 0.5))
+
+        if 1:  # @@
+            for idx in range(drop_images.shape[0]):
+                cv2.imwrite(f'final_drop_image_{idx}.jpg', img_gpu_to_cpu(drop_images[idx]))
+
+        exit(99)  # @@ !!!!!!!!
 
         # drop images forward
         y_pred_drop, _, _ = net(drop_images)

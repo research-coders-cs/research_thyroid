@@ -34,27 +34,26 @@ def batch_augment(images, attention_map, mode='crop', theta=0.5, padding_ratio=0
             width_max = min(int(nonzero_indices[:, 1].max().item() + padding_ratio * imgW), imgW)
 
             print('crop: ', (height_min, width_min), ((height_min + height_max), (width_min + width_max)))
-            img = img_gpu_to_cpu(images[0])
-            img = np.array(img).astype(np.uint8).copy()
-            if 0:  # @@ !!!!
-                if idx == 0:
-                    cv2.imwrite(f'crop_img.jpg', img)
+
+            if 1:  # @@
+                img = img_gpu_to_cpu(images[idx])
+                img = np.array(img).astype(np.uint8).copy()
 
                 img_ = cv2.rectangle(img,
-                    (height_min, width_min),
-                    ((height_min + height_max), (width_min + width_max)),
+                    (width_min, height_min),
+                    ((width_min + width_max), (height_min + height_max)),
                     (0, 0, 255), 1)
-                cv2.imwrite(f'crop_img0_idx_{idx}.jpg', img_)
+                cv2.imwrite(f'debug_img_idx_{idx}_with_crop.jpg', img_)
 
                 img_ = img_[height_min:height_max, width_min:width_max, :].copy()
-                cv2.imwrite(f'crop_img1_idx_{idx}.jpg', img_)
-                #@@cv2_imshow(img_)
+                cv2.imwrite(f'debug_img_idx_{idx}_crop.jpg', img_)
 
             crop_images.append(functional.interpolate(
                 images[idx:idx + 1, :, height_min:height_max, width_min:width_max],
                 size=(imgH, imgW)))
 
         crop_images = torch.cat(crop_images, dim=0)
+        print("@@ crop_images.shape:", crop_images.shape)
         return crop_images
 
     elif mode == 'drop':
@@ -65,11 +64,12 @@ def batch_augment(images, attention_map, mode='crop', theta=0.5, padding_ratio=0
                 theta_d = random.uniform(*theta) * atten_map.max()
             else:
                 theta_d = theta * atten_map.max()
-            drop_masks.append(functional.interpolate(atten_map, size=(imgH, imgW)) < theta_d)
+            drop_masks.append(functional.interpolate(
+                atten_map, size=(imgH, imgW)) < theta_d)
+
         drop_masks = torch.cat(drop_masks, dim=0)
         drop_images = images * drop_masks.float()
 
-        # cv2_imshow
         print("drop_images : ", drop_images.shape)
         # cv2_imshow(img_gpu_to_cpu(drop_images[0]))
         return drop_images
