@@ -3,6 +3,7 @@ from torch.nn import functional
 
 import numpy as np
 import cv2
+import os
 import random
 
 
@@ -14,7 +15,7 @@ def img_gpu_to_cpu(img):
     img_full = NormalizeData(img_full) * 255
     return img_full
 
-def batch_augment(images, attention_map, mode='crop', theta=0.5, padding_ratio=0.1):
+def batch_augment(images, attention_map, savepath, mode='crop', theta=0.5, padding_ratio=0.1):
     batches, _, imgH, imgW = images.size()
 
     if mode == 'crop':
@@ -43,10 +44,10 @@ def batch_augment(images, attention_map, mode='crop', theta=0.5, padding_ratio=0
                     (width_min, height_min),
                     ((width_min + width_max), (height_min + height_max)),
                     (0, 0, 255), 1)
-                cv2.imwrite(f'debug_img_idx_{idx}_with_crop.jpg', img_)
+                cv2.imwrite(os.path.join(savepath, f'debug_crop_idx_{idx}_as_bbox.jpg'), img_)
 
                 img_ = img_[height_min:height_max, width_min:width_max, :].copy()
-                cv2.imwrite(f'debug_img_idx_{idx}_crop.jpg', img_)
+                cv2.imwrite(os.path.join(savepath, f'debug_crop_idx_{idx}.jpg'), img_)
 
             crop_images.append(functional.interpolate(
                 images[idx:idx + 1, :, height_min:height_max, width_min:width_max],
