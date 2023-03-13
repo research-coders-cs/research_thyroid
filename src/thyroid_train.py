@@ -51,11 +51,15 @@ def train(device, logs, train_loader, doppler_train_loader, net, feature_center,
 
 
     example_ct = 0
-    for idx, (X, y, p) in enumerate(train_loader):
+    for batch_idx, (X, y, p) in enumerate(train_loader):
         optimizer.zero_grad()
 
-        print(f"(batch idx={idx}) X[0].shape:", X[0].shape)
+        print(f"(batch_idx={batch_idx}) X[0].shape:", X[0].shape)
         paths = p['path']  # @@
+
+        savepath_batch = os.path.join(savepath, f'batch_{batch_idx}')
+        if not os.path.exists(savepath_batch):
+            os.makedirs(savepath_batch, exist_ok=True)
 
         # obtain data for training
         X = X.to(device)
@@ -76,12 +80,12 @@ def train(device, logs, train_loader, doppler_train_loader, net, feature_center,
         ##################################
         with torch.no_grad():
             crop_images = batch_augment(
-                X, paths, attention_map[:, :1, :, :], savepath,
+                X, paths, attention_map[:, :1, :, :], savepath_batch,
                 mode='crop', theta=(0.7, 0.95), padding_ratio=0.1)
 
         if 1:  # @@
             for idx in range(crop_images.shape[0]):
-                fname = os.path.join(savepath, f'final_crop_image_{idx}.jpg')
+                fname = os.path.join(savepath_batch, f'final_crop_idx_{idx}.jpg')
                 cv2.imwrite(fname, img_gpu_to_cpu(crop_images[idx]))
 
         # crop images forward
@@ -92,12 +96,12 @@ def train(device, logs, train_loader, doppler_train_loader, net, feature_center,
         ##################################
         with torch.no_grad():
             drop_images = batch_augment(
-                X, paths, attention_map[:, 1:, :, :], savepath,
+                X, paths, attention_map[:, 1:, :, :], savepath_batch,
                 mode='drop', theta=(0.2, 0.5))
 
         if 1:  # @@
             for idx in range(drop_images.shape[0]):
-                fname = os.path.join(savepath, f'final_drop_image_{idx}.jpg')
+                fname = os.path.join(savepath_batch, f'final_drop_idx_{idx}.jpg')
                 cv2.imwrite(fname, img_gpu_to_cpu(drop_images[idx]))
 
         exit(99)  # @@ !!!!!!!!
@@ -127,10 +131,10 @@ def train(device, logs, train_loader, doppler_train_loader, net, feature_center,
             epoch_loss, epoch_raw_acc[0],
             epoch_crop_acc[0], epoch_drop_acc[0])
 
-        writer.add_scalar("Loss/train", epoch_loss, idx)
-        writer.add_scalar('Acc(Raw)/train', epoch_raw_acc[0], idx)
-        writer.add_scalar('Acc(Crop)/train', epoch_crop_acc[0], idx)
-        writer.add_scalar('Acc(Drop)/train', epoch_drop_acc[0], idx)
+        writer.add_scalar("Loss/train", epoch_loss, batch_idx)
+        writer.add_scalar('Acc(Raw)/train', epoch_raw_acc[0], batch_idx)
+        writer.add_scalar('Acc(Crop)/train', epoch_crop_acc[0], batch_idx)
+        writer.add_scalar('Acc(Drop)/train', epoch_drop_acc[0], batch_idx)
 
         example_ct += len(X)
         metrics = {
@@ -171,6 +175,12 @@ def validate(device, logs, validate_loader, net, pbar, savepath):
     net.eval()
     with torch.no_grad():
       for i, (X, y, p) in enumerate(validate_loader):
+          paths = p['path']  # @@
+
+          savepath_batch = os.path.join(savepath, f'batch_{i}')
+          if not os.path.exists(savepath_batch):
+              os.makedirs(savepath_batch, exist_ok=True)
+
           # obtain data
           X = X.to(device)
           y = y.to(device)
@@ -184,7 +194,7 @@ def validate(device, logs, validate_loader, net, pbar, savepath):
           # Object Localization and Refinement
           ##################################
           crop_images = batch_augment(
-              X, paths, attention_map, savepath,
+              X, paths, attention_map, savepath_batch,
               mode='crop', theta=(0.7, 0.95), padding_ratio=0.05)
           y_pred_crop, _, _ = net(crop_images)
 
@@ -338,9 +348,14 @@ def training(device, net, feature_center, batch_size, train_loader, doppler_trai
         pbar = tqdm(total=len(train_loader), unit=' batches')
         pbar.set_description('Epoch {}/{}'.format(epoch + 1, total_epochs))
 
-        train(device, logs, train_loader, doppler_train_loader, net, feature_center, optimizer, pbar, savepath)
+        savepath_epoch = os.path.join(savepath, f'epoch_{epoch + 1}')
+        if not os.path.exists(savepath_epoch):
+            os.makedirs(savepath_epoch, exist_ok=True)
 
-        validate(device, logs, validate_loader, net, pbar, savepath)
+        train(device, logs, train_loader, doppler_train_loader, net, feature_center, optimizer,
+              pbar, savepath_epoch)
+
+        validate(device, logs, validate_loader, net, pbar, savepath_epoch)
 
         # Checkpoints
         if isinstance(scheduler, torch.optim.lr_scheduler.ReduceLROnPlateau):
