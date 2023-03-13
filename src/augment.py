@@ -38,14 +38,19 @@ def batch_augment(images, paths, attention_map, savepath,
             width_min = max(int(nonzero_indices[:, 1].min().item() - padding_ratio * imgW), 0)
             width_max = min(int(nonzero_indices[:, 1].max().item() + padding_ratio * imgW), imgW)
 
-            print('crop: ', (height_min, width_min), ((height_min + height_max), (width_min + width_max)))
+            print(f'[idx={idx}] crop: ', (height_min, width_min), ((height_min + height_max), (width_min + width_max)))
             bbox_crop = np.array([
                 width_min,
                 height_min,
                 width_min + width_max,
                 height_min + height_max], dtype=np.float32)
 
-            if 1:  # @@
+            try:
+                path_doppler = to_doppler[paths[idx]]
+            except KeyError:
+                path_doppler = None
+
+            if path_doppler is not None:  # @@
                 # get doppler bbox (scaled)
                 raw = cv2.imread(to_doppler[paths[idx]])
                 bbox_raw = detect_doppler(raw)
@@ -55,8 +60,8 @@ def batch_augment(images, paths, attention_map, savepath,
                     bbox_raw[2] * imgW / raw.shape[1],
                     bbox_raw[3] * imgH / raw.shape[0]], dtype=np.float32)
 
-                iou = get_iou(bbox, bbox_crop)
-                print('@@ iou:', iou)
+                iou, intersection_of_mark = get_iou(bbox, bbox_crop)
+                print(f'@@ [doppler vs crop] iou, intersection_of_mark: {iou}, {intersection_of_mark}')
 
                 if 1:  # debug dump
                     train_img_copy = np.array(
