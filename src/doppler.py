@@ -75,12 +75,12 @@ def get_iou(truth, pred):
     i_width = np.maximum(ix2 - ix1 + 1, np.array(0.))
 
     area_of_intersection = i_height * i_width
-    print("area_of_intersection : ", area_of_intersection)
+    # print("area_of_intersection : ", area_of_intersection)
 
     w_mark =  (pred[2] - pred[0])
     h_mark = (pred[3] - pred[1])
     area_mark = w_mark * h_mark
-    print("area_mark : ", area_mark)
+    # print("area_mark : ", area_mark)
 
     # Ground Truth dimensions.
     gt_height = truth[3] - truth[1] + 1
@@ -91,13 +91,15 @@ def get_iou(truth, pred):
     pd_width = pred[2] - pred[0] + 1
 
     area_of_union = gt_height * gt_width + pd_height * pd_width - area_of_intersection
-    print("area_of_union : ", area_of_union)
+    # print("area_of_union : ", area_of_union)
 
     _iou = area_of_intersection / area_of_union
     iou = np.round(_iou * 100, 2)
 
     _intersection_of_mark = area_of_intersection / area_mark
     intersection_of_mark = np.round(_intersection_of_mark * 100, 2)
+
+    print('@@ get_iou(): area_{of_intersection,mark,of_union}: %0.1f, %0.1f, %0.1f' % (area_of_intersection, area_mark, area_of_union))
 
     return iou, intersection_of_mark
 
