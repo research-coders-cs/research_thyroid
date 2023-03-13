@@ -50,6 +50,8 @@ def test(device, net, batch_size, data_loader, ckpt, savepath=None):
         pbar.set_description('Test data')
 
         for i, (X, y, p) in enumerate(data_loader):
+            paths = p['path']  # @@
+
             # obtain data for testing
             X = X.to(device)
             y = y.to(device)
@@ -70,7 +72,9 @@ def test(device, net, batch_size, data_loader, ckpt, savepath=None):
             ##################################
             # Attention Cropping
             ##################################
-            crop_image = batch_augment(X, attention_maps, mode='crop', theta=0.85, padding_ratio=0.05)
+            crop_image = batch_augment(
+                X, paths, attention_maps, savepath,
+                mode='crop', theta=0.85, padding_ratio=0.05)
 
             # crop images forward
             y_pred_crop, _, _ = net(crop_image)
@@ -106,13 +110,13 @@ def test(device, net, batch_size, data_loader, ckpt, savepath=None):
             raw_attention_image = raw_image * attention_maps
 
             if savepath is not None:
-                for batch_idx in range(X.size(0)):
-                    rimg = ToPILImage(raw_image[batch_idx])
-                    raimg = ToPILImage(raw_attention_image[batch_idx])
-                    haimg = ToPILImage(heat_attention_image[batch_idx])
-                    rimg.save(os.path.join(savepath, '%03d_raw.png' % (i * batch_size + batch_idx)))
-                    raimg.save(os.path.join(savepath, '%03d_raw_atten.png' % (i * batch_size + batch_idx)))
-                    haimg.save(os.path.join(savepath, '%03d_heat_atten.png' % (i * batch_size + batch_idx)))
+                for idx in range(X.size(0)):
+                    rimg = ToPILImage(raw_image[idx])
+                    raimg = ToPILImage(raw_attention_image[idx])
+                    haimg = ToPILImage(heat_attention_image[idx])
+                    rimg.save(os.path.join(savepath, '%03d_raw.png' % (i * batch_size + idx)))
+                    raimg.save(os.path.join(savepath, '%03d_raw_atten.png' % (i * batch_size + idx)))
+                    haimg.save(os.path.join(savepath, '%03d_heat_atten.png' % (i * batch_size + idx)))
 
             results = (X, crop_image, y_pred, y, p, heat_attention_image, y_pred_crop)
 
