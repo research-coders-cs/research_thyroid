@@ -104,7 +104,7 @@ def train(device, logs, train_loader, doppler_train_loader, net, feature_center,
                 fname = os.path.join(savepath_batch, f'final_drop_idx_{idx}.jpg')
                 cv2.imwrite(fname, img_gpu_to_cpu(drop_images[idx]))
 
-        exit(99)  # @@ !!!!!!!!
+        ##exit(99)  # @@ !!!!!!!!
 
         # drop images forward
         y_pred_drop, _, _ = net(drop_images)
