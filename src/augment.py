@@ -40,49 +40,48 @@ def batch_augment(images, paths, attention_map, savepath,
 
             print(f'[idx={idx}] crop: ', (height_min, width_min), ((height_min + height_max), (width_min + width_max)))
 
-            # ======== TODO refactor ^^
-            bbox_crop = np.array([
-                width_min,
-                height_min,
-                width_min + width_max,
-                height_min + height_max], dtype=np.float32)
+            if 0:  # ======== TODO refactor ^^, cleanup `doppler_train_loader` stuff
+                bbox_crop = np.array([
+                    width_min,
+                    height_min,
+                    width_min + width_max,
+                    height_min + height_max], dtype=np.float32)
 
-            path_doppler = to_doppler[paths[idx]] if paths[idx] in to_doppler else None
-            if path_doppler is not None:  # @@
-                # get doppler bbox (scaled)
-                raw = cv2.imread(path_doppler)
-                bbox_raw = detect_doppler(raw)
-                bbox = np.array([
-                    bbox_raw[0] * imgW / raw.shape[1],
-                    bbox_raw[1] * imgH / raw.shape[0],
-                    bbox_raw[2] * imgW / raw.shape[1],
-                    bbox_raw[3] * imgH / raw.shape[0]], dtype=np.float32)
+                path_doppler = to_doppler[paths[idx]] if paths[idx] in to_doppler else None
+                if path_doppler is not None:  # @@
+                    # get doppler bbox (scaled)
+                    raw = cv2.imread(path_doppler)
+                    bbox_raw = detect_doppler(raw)
+                    bbox = np.array([
+                        bbox_raw[0] * imgW / raw.shape[1],
+                        bbox_raw[1] * imgH / raw.shape[0],
+                        bbox_raw[2] * imgW / raw.shape[1],
+                        bbox_raw[3] * imgH / raw.shape[0]], dtype=np.float32)
 
-                iou = get_iou(bbox, bbox_crop)
-                print('@@ [doppler vs crop] iou: %0.4f' % iou)
+                    iou = get_iou(bbox, bbox_crop)
+                    print('@@ [doppler vs crop] iou: %0.4f' % iou)
 
-                if 1:  # debug dump
-                    train_img_copy = np.array(
-                        img_gpu_to_cpu(images[idx])).astype(np.uint8).copy()
+                    if 1:  # debug dump
+                        train_img_copy = np.array(
+                            img_gpu_to_cpu(images[idx])).astype(np.uint8).copy()
 
-                    # superpose doppler bbox
-                    cv2.rectangle(train_img_copy,
-                        (int(bbox[0]), int(bbox[1])),
-                        (int(bbox[2]), int(bbox[3])),
-                        (255, 255, 0), 1)
+                        # superpose doppler bbox
+                        cv2.rectangle(train_img_copy,
+                            (int(bbox[0]), int(bbox[1])),
+                            (int(bbox[2]), int(bbox[3])),
+                            (255, 255, 0), 1)
 
-                    # superpose crop bbox
-                    img_ = cv2.rectangle(train_img_copy,
-                        (width_min, height_min),
-                        ((width_min + width_max), (height_min + height_max)),
-                        (0, 0, 255), 1)
-                    cv2.imwrite(os.path.join(
-                        savepath, f'debug_crop_doppler_{idx}_iou_%0.4f.jpg' % iou), img_)
+                        # superpose crop bbox
+                        img_ = cv2.rectangle(train_img_copy,
+                            (width_min, height_min),
+                            ((width_min + width_max), (height_min + height_max)),
+                            (0, 0, 255), 1)
+                        cv2.imwrite(os.path.join(
+                            savepath, f'debug_crop_doppler_{idx}_iou_%0.4f.jpg' % iou), img_)
 
-                    # crop patch image
-                    # img_ = img_[height_min:height_max, width_min:width_max, :].copy()
-                    # cv2.imwrite(os.path.join(savepath, f'debug_crop_idx_{idx}.jpg'), img_)
-
+                        # crop patch image
+                        # img_ = img_[height_min:height_max, width_min:width_max, :].copy()
+                        # cv2.imwrite(os.path.join(savepath, f'debug_crop_idx_{idx}.jpg'), img_)
             # ======== TODO refactor vv
 
             crop_images.append(functional.interpolate(
