@@ -6,7 +6,6 @@ from torch.utils.tensorboard import SummaryWriter
 from .metric import AverageMeter, TopKAccuracyMetric
 from .augment import batch_augment, img_gpu_to_cpu
 from .checkpoint import ModelCheckpoint
-##from .doppler import detect_doppler, get_iou, to_doppler
 from .utils import show_data_loader
 
 import cv2
@@ -37,7 +36,7 @@ class SaveFeatures():  # @@ not used at the moment
     def remove(self): self.hook.remove()
 
 
-def train(device, logs, train_loader, doppler_train_loader, net, feature_center, optimizer, pbar, savepath):
+def train(device, logs, train_loader, net, feature_center, optimizer, pbar, savepath):
 
     # metrics initialization
     loss_container.reset()
@@ -104,7 +103,7 @@ def train(device, logs, train_loader, doppler_train_loader, net, feature_center,
                 fname = os.path.join(savepath_batch, f'final_drop_idx_{idx}.jpg')
                 cv2.imwrite(fname, img_gpu_to_cpu(drop_images[idx]))
 
-        ##exit(99)  # @@ !!!!!!!!
+        # exit(99)  # @@ !!!!!!!! up to epoch 10, otherwise
 
         # drop images forward
         y_pred_drop, _, _ = net(drop_images)
@@ -317,7 +316,7 @@ drop_metric = TopKAccuracyMetric()
 top_misclassified = {}
 writer = SummaryWriter()
 
-def training(device, net, feature_center, batch_size, train_loader, doppler_train_loader, validate_loader,
+def training(device, net, feature_center, batch_size, train_loader, validate_loader,
              optimizer, scheduler, run_name, logs, start_epoch, total_epochs,
              savepath='.'):
 
@@ -352,10 +351,11 @@ def training(device, net, feature_center, batch_size, train_loader, doppler_trai
         if not os.path.exists(savepath_epoch):
             os.makedirs(savepath_epoch, exist_ok=True)
 
-        train(device, logs, train_loader, doppler_train_loader, net, feature_center, optimizer,
-              pbar, savepath_epoch)
+        train(device, logs, train_loader, net, feature_center, optimizer,
+            pbar, savepath_epoch)
 
-        validate(device, logs, validate_loader, net, pbar, savepath_epoch)
+        validate(device, logs, validate_loader, net,
+            pbar, savepath_epoch)
 
         # Checkpoints
         if isinstance(scheduler, torch.optim.lr_scheduler.ReduceLROnPlateau):

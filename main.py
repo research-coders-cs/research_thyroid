@@ -88,10 +88,10 @@ def demo_thyroid_test(ckpt):
 
     print('@@ demo_thyroid_test(): vv')
 
-def demo_thyroid_train(with_doppler=True):
+def _demo_thyroid_train(with_doppler, savepath):
     # "Traning/Validation" flow of 'WSDAN_Pytorch_Revised_v1_01_a.ipynb'
 
-    print('\n\n\n\n@@ demo_thyroid_train(): ^^')
+    print('\n\n\n\n@@ _demo_thyroid_train(): ^^')
     from src.thyroid_train import training
 
     device = get_device()
@@ -100,9 +100,9 @@ def demo_thyroid_train(with_doppler=True):
     #
 
     print('@@ with_doppler:', with_doppler)
+    print('@@ savepath:', savepath)
 
     train_ds_path = None
-    doppler_train_ds_path = None
     if with_doppler:
         train_ds_path = digitake.preprocess.build_dataset({
             # @@ TODO update with "Markers_Train_Remove_Markers" instead !!!!
@@ -111,14 +111,6 @@ def demo_thyroid_train(with_doppler=True):
         }, root='Siriraj_sample_doppler_comp')
         #print(train_ds_path)
         print(len(train_ds_path['malignant']), len(train_ds_path['benign']))  # @@ 2 7
-
-        doppler_train_ds_path = digitake.preprocess.build_dataset({
-            'malignant': ['Doppler_Train_Crop/Malignant'],
-            'benign': ['Doppler_Train_Crop/Benign'],
-        }, root='Siriraj_sample_doppler_comp')
-
-        print("@@ doppler_train_ds_path['malignant']", doppler_train_ds_path['malignant'])
-        print("@@ doppler_train_ds_path['benign']", doppler_train_ds_path['benign'])
     else:
         train_ds_path = digitake.preprocess.build_dataset({
             'malignant': ['Train/Malignant'],
@@ -126,8 +118,6 @@ def demo_thyroid_train(with_doppler=True):
         }, root='Dataset_train_test_val')
         #print(train_ds_path)
         print(len(train_ds_path['malignant']), len(train_ds_path['benign']))  # @@ 20 21
-
-    ##exit()  # @@ !!!!
 
     #
 
@@ -184,25 +174,6 @@ def demo_thyroid_train(with_doppler=True):
     print('@@ show_data_loader(train_loader) -------- ^^')
     _channel, _, _, _ = show_data_loader(train_loader)
     print('@@ show_data_loader(train_loader) -------- vv')
-
-    #
-
-    doppler_train_loader = None if doppler_train_ds_path is None else DataLoader(
-        ThyroidDataset(
-            phase='train',
-            dataset=doppler_train_ds_path,
-            transform=get_transform(target_resize, phase='basic'),
-            with_alpha_channel=False
-        ),
-        batch_size=batch_size,
-        shuffle=True,
-        num_workers=workers,
-        pin_memory=True
-    )
-
-    print('@@ show_data_loader(doppler_train_loader) -------- ^^')
-    show_data_loader(doppler_train_loader)
-    print('@@ show_data_loader(doppler_train_loader) -------- vv')
 
     #
 
@@ -268,12 +239,18 @@ def demo_thyroid_train(with_doppler=True):
         .format(total_epochs, batch_size, len(train_dataset), len(validate_dataset)))
 
     ckpt = training(
-        device, net, feature_center, batch_size, train_loader, doppler_train_loader, validate_loader,
+        device, net, feature_center, batch_size, train_loader, validate_loader,
         optimizer, scheduler, run_name, logs, start_epoch, total_epochs,
-        savepath=mk_artifact_dir('demo_thyroid_train'))
+        savepath=savepath)
     print('@@ done; ckpt:', ckpt)
 
     return ckpt
+
+def demo_thyroid_train():
+    return _demo_thyroid_train(False, mk_artifact_dir('demo_thyroid_train'))
+
+def demo_thyroid_train_with_doppler():
+    return _demo_thyroid_train(True, mk_artifact_dir('demo_thyroid_train_with_doppler'))
 
 def demo_doppler_comp():
     print('\n\n\n\n@@ demo_doppler_comp(): ^^')
@@ -314,7 +291,9 @@ if __name__ == '__main__':
         #ckpt = "WSDAN_densenet_224_16_lr-1e5_n1-remove_220828-0837_85.714.ckpt"
         #ckpt = "WSDAN_doppler_densenet_224_16_lr-1e5_n5_220905-1309_78.571.ckpt"
         #ckpt = './output/demo_thyroid_train/densenet_250_8_lr-1e5_n4_60.000'
-        #ckpt = demo_thyroid_train(with_doppler=False)
-        ckpt = demo_thyroid_train(with_doppler=True)
+        ckpt = demo_thyroid_train()  # TODO - generate 'confusion_matrix_test-*.png', 'test-*.png'
+        demo_thyroid_test(ckpt)
 
-        demo_thyroid_test(ckpt)  # TODO - generate 'confusion_matrix_test-*.png', 'test-*.png'
+    if 1:
+        ckpt = demo_thyroid_train_with_doppler()
+        demo_thyroid_test(ckpt)
