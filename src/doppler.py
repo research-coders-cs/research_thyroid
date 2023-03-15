@@ -99,7 +99,7 @@ def get_iou(truth, pred):
     _intersection_of_mark = area_of_intersection / area_mark
     intersection_of_mark = np.round(_intersection_of_mark * 100, 2)
 
-    print('@@ get_iou(): area_{of_intersection,mark,of_union}, intersection_of_mark: %0.1f, %0.1f, %0.1f %f' % (
+    print('@@ get_iou(): area_{of_intersection,mark,of_union}, intersection_of_mark: %0.1f, %0.1f, %0.1f %0.1f' % (
         area_of_intersection, area_mark, area_of_union, intersection_of_mark))
 
     #@@return iou, intersection_of_mark
