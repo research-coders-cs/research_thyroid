@@ -40,7 +40,7 @@ def batch_augment(images, paths, attention_map, savepath,
 
             print(f'[idx={idx}] crop: ', (height_min, width_min), ((height_min + height_max), (width_min + width_max)))
 
-            if 0:  # ======== TODO refactor ^^, cleanup `doppler_train_loader` stuff
+            if 1:  # ======== TODO refactor ^^, cleanup `doppler_train_loader` stuff
                 bbox_crop = np.array([
                     width_min,
                     height_min,
@@ -59,7 +59,8 @@ def batch_augment(images, paths, attention_map, savepath,
                         bbox_raw[3] * imgH / raw.shape[0]], dtype=np.float32)
 
                     iou = get_iou(bbox, bbox_crop)
-                    print('@@ [doppler vs crop] iou: %0.4f' % iou)
+                    debug_fname_jpg = f'debug_crop_doppler_{idx}_iou_%0.4f.jpg' % iou
+                    print('@@ debug_fname_jpg:', debug_fname_jpg)
 
                     if 1:  # debug dump
                         train_img_copy = np.array(
@@ -77,9 +78,9 @@ def batch_augment(images, paths, attention_map, savepath,
                             ((width_min + width_max), (height_min + height_max)),
                             (0, 0, 255), 1)
                         cv2.imwrite(os.path.join(
-                            savepath, f'debug_crop_doppler_{idx}_iou_%0.4f.jpg' % iou), img_)
+                            savepath, debug_fname_jpg), img_)
 
-                        # crop patch image
+                        # crop patch image, ok
                         # img_ = img_[height_min:height_max, width_min:width_max, :].copy()
                         # cv2.imwrite(os.path.join(savepath, f'debug_crop_idx_{idx}.jpg'), img_)
             # ======== TODO refactor vv
