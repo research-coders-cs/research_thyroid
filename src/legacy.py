@@ -12,10 +12,12 @@ def print_scores(results):  # @@
     pred = results[2]
     true = results[3]
     for (i, (y_hat,y)) in enumerate(zip(pred,true)):
-        print("Case {}--{} Predict:{}---True:{}".format(
+        _pred = 'Malignant' if torch.argmax(y_hat) == 1 else "Benign"
+        _true = 'Malignant' if y == 1 else 'Benign'
+        print("Case {}--{} {} Predict:{}---True:{}".format(
             i + 1, softmax(y_hat.cpu().numpy()),
-            'Malignant' if torch.argmax(y_hat) == 1 else "Benign",
-            'Malignant' if y == 1 else 'Benign'))
+            '✅' if _pred == _true else '❌',
+            _pred, _true))
 
 def print_auc(results, test_size, enable_plot=False):  # @@
     # Compute ROC curve and ROC area for each class
