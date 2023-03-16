@@ -156,11 +156,18 @@ def _demo_thyroid_train(with_doppler, savepath):
 
     #
 
+    from src.doppler import to_doppler  # !!!!
+
     train_dataset = ThyroidDataset(
         phase='train',
         dataset=train_ds_path,
         transform=get_transform(target_resize, phase='basic'),
+    #==== @@ orig
         with_alpha_channel=False  # if False, it will load image as RGB(3-channel)
+    #==== @@ WIP w.r.t. 'digitake/src/digitake/preprocess/thyroid.py'
+        # mask_dict=to_doppler if with_doppler else None,  # !!!!
+        # with_alpha_channel=with_doppler  # !!!! TODO debug with `True`
+    #====
     )
 
     train_loader = DataLoader(
@@ -291,9 +298,13 @@ if __name__ == '__main__':
         #ckpt = "WSDAN_densenet_224_16_lr-1e5_n1-remove_220828-0837_85.714.ckpt"
         #ckpt = "WSDAN_doppler_densenet_224_16_lr-1e5_n5_220905-1309_78.571.ckpt"
         #ckpt = './output/demo_thyroid_train/densenet_250_8_lr-1e5_n4_60.000'
+        ckpt = 'densenet_224_8_lr-1e5_n4_95.968.ckpt'
+        demo_thyroid_test(ckpt)
+
+    if 0:
         ckpt = demo_thyroid_train()  # TODO - generate 'confusion_matrix_test-*.png', 'test-*.png'
         demo_thyroid_test(ckpt)
 
-    if 1:
+    if 0:
         ckpt = demo_thyroid_train_with_doppler()
         demo_thyroid_test(ckpt)
