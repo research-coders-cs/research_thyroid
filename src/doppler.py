@@ -97,13 +97,13 @@ def get_iou(truth, pred):
     #@@ iou = np.round(_iou * 100, 2)
 
     _intersection_of_mark = area_of_intersection / area_mark
-    intersection_of_mark = np.round(_intersection_of_mark * 100, 2)
+    #@@ intersection_of_mark = np.round(_intersection_of_mark * 100, 2)
 
-    print('@@ get_iou(): area_{of_intersection,mark,of_union}, intersection_of_mark: %0.1f, %0.1f, %0.1f %0.1f' % (
-        area_of_intersection, area_mark, area_of_union, intersection_of_mark))
+    print('@@ get_iou(): area_{of_intersection,mark,of_union}, intersection_of_mark: %0.1f, %0.1f, %0.1f' % (
+        area_of_intersection, area_mark, area_of_union))
 
     #@@return iou, intersection_of_mark
-    return _iou
+    return _iou, _intersection_of_mark
 
 
 def doppler_comp(path_doppler, path_markers, path_markers_label):

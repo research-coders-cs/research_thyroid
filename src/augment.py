@@ -40,7 +40,8 @@ def batch_augment(images, paths, attention_map, savepath,
 
             print(f'[idx={idx}] crop: ', (height_min, width_min), ((height_min + height_max), (width_min + width_max)))
 
-            if 1:  # ======== TODO refactor ^^, cleanup `doppler_train_loader` stuff
+            THRESH_ISEC_IN_CROP = 0.25
+            if 1:  # ======== TODO refactor ^^ into preprocessing part i.e. `ThyroidDataset()`
                 bbox_crop = np.array([
                     width_min,
                     height_min,
@@ -58,8 +59,11 @@ def batch_augment(images, paths, attention_map, savepath,
                         bbox_raw[2] * imgW / raw.shape[1],
                         bbox_raw[3] * imgH / raw.shape[0]], dtype=np.float32)
 
-                    iou = get_iou(bbox, bbox_crop)
-                    debug_fname_jpg = f'debug_crop_doppler_{idx}_iou_%0.4f.jpg' % iou
+                    iou, isec_in_crop = get_iou(bbox, bbox_crop)
+                    print('@@ THRESH_ISEC_IN_CROP:', THRESH_ISEC_IN_CROP)
+                    qualify = 1 if iou > 0 and isec_in_crop > THRESH_ISEC_IN_CROP else 0
+                    debug_fname_jpg = f'debug_crop_doppler_{idx}_iou_%0.4f_isecincrop_%0.3f_qualify_%d.jpg' % (
+                        iou, isec_in_crop, qualify)
                     print('@@ debug_fname_jpg:', debug_fname_jpg)
 
                     if 1:  # debug dump
