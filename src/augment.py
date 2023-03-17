@@ -61,7 +61,7 @@ def batch_augment(images, paths, attention_map, savepath,
 
                     iou, isec_in_crop = get_iou(bbox, bbox_crop)
                     print('@@ THRESH_ISEC_IN_CROP:', THRESH_ISEC_IN_CROP)
-                    qualify = 1 if iou > 0 and isec_in_crop > THRESH_ISEC_IN_CROP else 0
+                    qualify = 1 if iou > 1e-4 and isec_in_crop > THRESH_ISEC_IN_CROP else 0
                     debug_fname_jpg = f'debug_crop_doppler_{idx}_iou_%0.4f_isecincrop_%0.3f_qualify_%d.jpg' % (
                         iou, isec_in_crop, qualify)
                     print('@@ debug_fname_jpg:', debug_fname_jpg)
