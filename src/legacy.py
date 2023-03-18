@@ -21,7 +21,7 @@ def print_scores(results):  # @@
             i + 1, softmax(y_hat.cpu().numpy()),
             '✅' if _pred == _true else '❌', _pred, _true))
 
-    print(f'(# of ✅) / (# of Cases) = {_score} / {len(pred)} = %0.3f' % (_score / len(pred)))
+    print(f'@@ Accuracy: (# of ✅) / (# of Cases) = {_score} / {len(pred)} = %0.3f' % (_score / len(pred)))
 
 def print_auc(results, test_size, enable_plot=False):  # @@
     # Compute ROC curve and ROC area for each class

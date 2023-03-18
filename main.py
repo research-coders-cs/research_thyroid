@@ -36,7 +36,8 @@ def demo_thyroid_test(ckpt):
     # pretrain = 'resnet'
     pretrain = 'densenet'
 
-    target_resize = 250
+    # target_resize = 250
+    target_resize = 224  # @@ !!!!
     batch_size = 8 #@param ["8", "16", "4", "1"] {type:"raw"}
 
     num_classes = 2
@@ -302,8 +303,8 @@ if __name__ == '__main__':
         demo_thyroid_test(ckpt)
 
     if 0:
-        ckpt = demo_thyroid_train()  # TODO - generate 'confusion_matrix_test-*.png', 'test-*.png'
-        demo_thyroid_test(ckpt)
+        ckpt = demo_thyroid_train()
+        demo_thyroid_test(ckpt)  # TODO - generate 'confusion_matrix_test-*.png', 'test-*.png'
 
     if 0:
         ckpt = demo_thyroid_train_with_doppler()
