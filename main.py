@@ -14,9 +14,12 @@ logging.basicConfig(level=logging.INFO)
 WSDAN_NUM_CLASSES = 2
 WSDAN_NUM_ATTENTION_MAPS = 32
 
-def demo_thyroid_test(ckpt):
+def demo_thyroid_test(ckpt, pretrain='densenet', target_resize=250, batch_size=8):
     print('\n\n\n\n@@ demo_thyroid_test(): ^^')
     from src.thyroid_test import test  # "Prediction"
+
+    print("@@ target_resize:", target_resize)
+    print("@@ batch_size:", batch_size)
 
     device = get_device()
     print("@@ device:", device)
@@ -34,25 +37,16 @@ def demo_thyroid_test(ckpt):
 
     #
 
-    # pretrain = 'resnet'
-    pretrain = 'densenet'
-
-    # target_resize = 250
-    target_resize = 224  # @@ !!!!
-    batch_size = 8 #@param ["8", "16", "4", "1"] {type:"raw"}
-
-    #@@workers = 2
-    workers = 0  # @@
-    print('@@ workers:', workers)
-
-    #
-
     # No Markers
     test_dataset_no = ThyroidDataset(
         phase='test',
         dataset=test_ds_path_no,
         transform=get_transform(target_resize, phase='basic'),
         with_alpha_channel=False)
+
+    #@@workers = 2
+    workers = 0  # @@
+    print('@@ workers:', workers)
 
     test_loader_no = DataLoader(
         test_dataset_no,
@@ -291,11 +285,16 @@ if __name__ == '__main__':
         demo_doppler_comp()  # TODO - renaming
 
     if 1:
+        # warning - seemingly unlearned models ...
         #ckpt = "WSDAN_densenet_224_16_lr-1e5_n1-remove_220828-0837_85.714.ckpt"
         #ckpt = "WSDAN_doppler_densenet_224_16_lr-1e5_n5_220905-1309_78.571.ckpt"
+        #demo_thyroid_test(ckpt, 'densenet', 224, 16)
+
         #ckpt = './output/demo_thyroid_train/densenet_250_8_lr-1e5_n4_60.000'
+        #demo_thyroid_test(ckpt)
+
         ckpt = 'densenet_224_8_lr-1e5_n4_95.968.ckpt'
-        demo_thyroid_test(ckpt)
+        demo_thyroid_test(ckpt, 'densenet', 224, 8)
 
     if 0:
         ckpt = demo_thyroid_train()
