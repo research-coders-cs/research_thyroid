@@ -36,6 +36,6 @@ test: Dataset_train_test_val \
 	densenet_224_8_lr-1e5_n4_95.968.ckpt \
 	Siriraj_sample_doppler_comp
 	rm -rf log.txt output && mkdir output
-	time pipenv run python3 main.py | tee log.txt
+	time pipenv run python3 main.py 2>&1 | tee log.txt
 	zip -r output.zip output > /dev/null
 
