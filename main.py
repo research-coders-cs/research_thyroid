@@ -11,9 +11,10 @@ import logging
 logging.basicConfig(level=logging.INFO)
 
 
-def demo_thyroid_test(ckpt):
-    # "Prediction" flow of 'WSDAN_Pytorch_Revised_v1_01_a.ipynb' - https://colab.research.google.com/drive/1LN4KjBwtq6hUG42LtSLCmIVPasehKeKq
+WSDAN_NUM_CLASSES = 2
+WSDAN_NUM_ATTENTION_MAPS = 32
 
+def demo_thyroid_test(ckpt):
     print('\n\n\n\n@@ demo_thyroid_test(): ^^')
     from src.thyroid_test import test  # "Prediction"
 
@@ -40,9 +41,6 @@ def demo_thyroid_test(ckpt):
     target_resize = 224  # @@ !!!!
     batch_size = 8 #@param ["8", "16", "4", "1"] {type:"raw"}
 
-    num_classes = 2
-    num_attention_maps = 32
-
     #@@workers = 2
     workers = 0  # @@
     print('@@ workers:', workers)
@@ -65,7 +63,7 @@ def demo_thyroid_test(ckpt):
 
     #
 
-    net = WSDAN(num_classes=num_classes, M=num_attention_maps, net=pretrain, pretrained=True)
+    net = WSDAN(num_classes=WSDAN_NUM_CLASSES, M=WSDAN_NUM_ATTENTION_MAPS, net=pretrain, pretrained=True)
     net.to(device)
 
     results = test(
@@ -87,7 +85,7 @@ def demo_thyroid_test(ckpt):
 
     #
 
-    print('@@ demo_thyroid_test(): vv')
+    print('@@ demo_thyroid_test(): $$')
 
 def _demo_thyroid_train(with_doppler, savepath):
     # "Traning/Validation" flow of 'WSDAN_Pytorch_Revised_v1_01_a.ipynb'
@@ -139,9 +137,6 @@ def _demo_thyroid_train(with_doppler, savepath):
 
     number = 4 #@param ["1", "2", "3", "4", "5"] {type:"raw", allow-input: true}
 
-    num_classes = 2
-    num_attention_maps = 32
-
     workers = 2
     print('@@ workers:', workers)
 
@@ -181,7 +176,7 @@ def _demo_thyroid_train(with_doppler, savepath):
 
     print('@@ show_data_loader(train_loader) -------- ^^')
     _channel, _, _, _ = show_data_loader(train_loader)
-    print('@@ show_data_loader(train_loader) -------- vv')
+    print('@@ show_data_loader(train_loader) -------- $$')
 
     #
 
@@ -202,9 +197,9 @@ def _demo_thyroid_train(with_doppler, savepath):
 
     #
 
-    net = WSDAN(num_classes=num_classes, M=num_attention_maps, net=pretrain, pretrained=True)
+    net = WSDAN(num_classes=WSDAN_NUM_CLASSES, M=WSDAN_NUM_ATTENTION_MAPS, net=pretrain, pretrained=True)
     net.to(device)
-    feature_center = torch.zeros(num_classes, num_attention_maps * net.num_features).to(device)
+    feature_center = torch.zeros(WSDAN_NUM_CLASSES, WSDAN_NUM_ATTENTION_MAPS * net.num_features).to(device)
 
     #
 
@@ -286,7 +281,7 @@ def demo_doppler_comp():
         plt.savefig(fname, bbox_inches='tight')
         print('@@ saved -', fname)
 
-    print('@@ demo_doppler_comp(): vv')
+    print('@@ demo_doppler_comp(): $$')
 
 
 if __name__ == '__main__':
