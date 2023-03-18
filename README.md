@@ -1,22 +1,39 @@
-# Thyroid research
+# research_thyroid
 
-WIP: unify existing codebases
+PyTorch based [WSDAN](https://arxiv.org/abs/1901.09891v2) for thyroid image analysis that can be optionally facilitated by Doppler images.
 
-## Testing in terminal (ubuntu-22.04)
+## Credits
+
+Source code in this repository is based on code derived from
+
+- https://github.com/GuYuc/WS-DAN.PyTorch
+- https://github.com/wvinzh/WS_DAN_PyTorch
+- https://github.com/digitake/research_thyroid
+- [WSDAN_Pytorch_Revised_v1_01_a.ipynb](https://colab.research.google.com/drive/1LN4KjBwtq6hUG42LtSLCmIVPasehKeKq)
+- [Compare.ipynb](https://colab.research.google.com/drive/1kxMFgo1LyVqPYqhS6_UJKUsVvA2-l9wk)
+
+## Testing in terminal (`ubuntu-22.04` LTS)
 
 ### Prerequisites
+
 ```
 $ sudo apt install nvidia-cuda-toolkit
 $ sudo apt install nvidia-cudnn && sudo /usr/sbin/update-nvidia-cudnn -u
 $ pip install pipenv
 ```
 
-### Workflows
+### Setting up the repository
+
 ```
 $ git clone https://github.com/research-coders-cs/research_thyroid
 $ cd research_thyroid
-$ pipenv install  # set up the pre-configured python3 environment
-$ make test       # run 'main.py'
+$ pipenv install  # set up the pre-configured python3 virtualenv
+```
+
+### Running the tests
+
+```
+$ make test  # run 'main.py'
 
 ...
 
