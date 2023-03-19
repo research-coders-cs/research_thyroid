@@ -12,12 +12,14 @@ logging.basicConfig(level=logging.INFO)
 
 
 WSDAN_NUM_CLASSES = 2
-WSDAN_NUM_ATTENTION_MAPS = 32
 
-def demo_thyroid_test(ckpt, pretrain='densenet', target_resize=250, batch_size=8):
-    print('\n\n\n\n@@ demo_thyroid_test(): ^^')
+def demo_thyroid_test(ckpt,
+        pretrain='densenet121', target_resize=250, batch_size=8, num_attention_maps=32):
+
+    print('\n\n@@ demo_thyroid_test(): ^^')
     from src.thyroid_test import test  # "Prediction"
 
+    print("@@ pretrain:", pretrain)
     print("@@ target_resize:", target_resize)
     print("@@ batch_size:", batch_size)
 
@@ -26,21 +28,20 @@ def demo_thyroid_test(ckpt, pretrain='densenet', target_resize=250, batch_size=8
 
     #
 
-    test_ds_path_no = digitake.preprocess.build_dataset({
+    test_ds_path = digitake.preprocess.build_dataset({
       'malignant': ['Test/Malignant'],
       'benign': ['Test/Benign'],
-    }, root='Dataset_train_test_val')
+    }, root='Dataset_train_test_val')  # No Markers
 
-    print('@@ test_ds_path_no:', test_ds_path_no)
-    print("@@ len(test_ds_path_no['malignant']):", len(test_ds_path_no['malignant']))
-    print("@@ len(test_ds_path_no['benign']):", len(test_ds_path_no['benign']))
+    print('@@ test_ds_path:', test_ds_path)
+    print("@@ len(test_ds_path['malignant']):", len(test_ds_path['malignant']))
+    print("@@ len(test_ds_path['benign']):", len(test_ds_path['benign']))
 
     #
 
-    # No Markers
-    test_dataset_no = ThyroidDataset(
+    test_dataset = ThyroidDataset(
         phase='test',
-        dataset=test_ds_path_no,
+        dataset=test_ds_path,
         transform=get_transform(target_resize, phase='basic'),
         with_alpha_channel=False)
 
@@ -49,15 +50,15 @@ def demo_thyroid_test(ckpt, pretrain='densenet', target_resize=250, batch_size=8
     print('@@ workers:', workers)
 
     test_loader_no = DataLoader(
-        test_dataset_no,
-        batch_size=batch_size * 4,
+        test_dataset,
+        batch_size=len(test_dataset),  # @@
         shuffle=False,
         num_workers=workers,
         pin_memory=True)
 
     #
 
-    net = WSDAN(num_classes=WSDAN_NUM_CLASSES, M=WSDAN_NUM_ATTENTION_MAPS, net=pretrain, pretrained=True)
+    net = WSDAN(num_classes=WSDAN_NUM_CLASSES, M=num_attention_maps, net=pretrain, pretrained=True)
     net.to(device)
 
     results = test(
@@ -75,7 +76,7 @@ def demo_thyroid_test(ckpt, pretrain='densenet', target_resize=250, batch_size=8
 
         _enable_plot = 0  # @@
         print(f'\n\n@@ ======== print_auc(results, enable_plot={_enable_plot})')
-        print_auc(results, len(test_dataset_no), enable_plot=_enable_plot)
+        # print_auc(results, len(test_dataset), enable_plot=_enable_plot)
 
     #
 
@@ -191,9 +192,10 @@ def _demo_thyroid_train(with_doppler, savepath):
 
     #
 
-    net = WSDAN(num_classes=WSDAN_NUM_CLASSES, M=WSDAN_NUM_ATTENTION_MAPS, net=pretrain, pretrained=True)
+    num_attention_maps = 32  # @@ cf. 16 in 'main_legacy.py'
+    net = WSDAN(num_classes=WSDAN_NUM_CLASSES, M=num_attention_maps, net=pretrain, pretrained=True)
     net.to(device)
-    feature_center = torch.zeros(WSDAN_NUM_CLASSES, WSDAN_NUM_ATTENTION_MAPS * net.num_features).to(device)
+    feature_center = torch.zeros(WSDAN_NUM_CLASSES, num_attention_maps * net.num_features).to(device)
 
     #
 
@@ -285,16 +287,25 @@ if __name__ == '__main__':
         demo_doppler_comp()  # TODO - renaming
 
     if 1:
-        # warning - seemingly unlearned models ...
-        #ckpt = "WSDAN_densenet_224_16_lr-1e5_n1-remove_220828-0837_85.714.ckpt"
-        #ckpt = "WSDAN_doppler_densenet_224_16_lr-1e5_n5_220905-1309_78.571.ckpt"
-        #demo_thyroid_test(ckpt, 'densenet', 224, 16)
+        # seemingly unlearned ...
+        # ckpt = "WSDAN_densenet_224_16_lr-1e5_n1-remove_220828-0837_85.714.ckpt"
+        # ckpt = "WSDAN_doppler_densenet_224_16_lr-1e5_n5_220905-1309_78.571.ckpt"
+        # demo_thyroid_test(ckpt, 'densenet121', 224, 16)
 
         #ckpt = './output/demo_thyroid_train/densenet_250_8_lr-1e5_n4_60.000'
         #demo_thyroid_test(ckpt)
 
-        ckpt = 'densenet_224_8_lr-1e5_n4_95.968.ckpt'
-        demo_thyroid_test(ckpt, 'densenet', 224, 8)
+        ckpt = 'densenet_224_8_lr-1e5_n4_95.968.ckpt'  # 0.9xx, LGTM
+        demo_thyroid_test(ckpt, 'densenet121', 224, 8)
+
+        # ???? sth wrong with
+        #  - ?? INFO:root:WSDAN: Some params were not loaded: INFO:root:features.conv0.weight, features.norm0.weight, features.norm0.bias, features.norm0.running_mean, features.norm0.running_var, ...
+        # ckpt = 'densenet121_batch4_epoch100.ckpt'  # num_attentions: 32 per 'densenet121_batch4_epoch100.log'
+        # demo_thyroid_test(ckpt, 'densenet121', 320, 4)  # nonesense results
+
+        # ????
+        # ckpt = 'resnet34_batch4_epoch100.ckpt'  # num_attentions: 32
+        # demo_thyroid_test(ckpt, 'resnet34', 400, 4)  # 0.650
 
     if 0:
         ckpt = demo_thyroid_train()
