@@ -14,12 +14,12 @@ logging.basicConfig(level=logging.INFO)
 WSDAN_NUM_CLASSES = 2
 
 def demo_thyroid_test(ckpt,
-        net='densenet121', target_resize=250, batch_size=8, num_attention_maps=32):
+        model='densenet121', target_resize=250, batch_size=8, num_attention_maps=32):
 
     print('\n\n@@ demo_thyroid_test(): ^^')
     from src.thyroid_test import test  # "Prediction"
 
-    print("@@ net:", net)
+    print("@@ model:", model)
     print("@@ target_resize:", target_resize)
     print("@@ batch_size:", batch_size)
 
@@ -58,7 +58,7 @@ def demo_thyroid_test(ckpt,
 
     #
 
-    wsdan = WSDAN(num_classes=WSDAN_NUM_CLASSES, M=num_attention_maps, net=net, pretrained=True)
+    wsdan = WSDAN(num_classes=WSDAN_NUM_CLASSES, M=num_attention_maps, model=model, pretrained=True)
     wsdan.to(device)
 
     results = test(
@@ -124,8 +124,8 @@ def _demo_thyroid_train(with_doppler, savepath):
 
     #
 
-    # net = 'resnet50'
-    net = 'densenet121'
+    # model = 'resnet50'
+    model = 'densenet121'
 
     target_resize = 250
     batch_size = 8 #@param ["8", "16", "4", "1"] {type:"raw"}
@@ -142,7 +142,7 @@ def _demo_thyroid_train(with_doppler, savepath):
     #total_epochs = 5
     total_epochs = 10  # @@
 
-    run_name = f"{net}_{target_resize}_{batch_size}_{lr_}_n{number}"
+    run_name = f"{model}_{target_resize}_{batch_size}_{lr_}_n{number}"
     print('@@ run_name:', run_name)
 
     #
@@ -193,7 +193,7 @@ def _demo_thyroid_train(with_doppler, savepath):
     #
 
     num_attention_maps = 32  # @@ cf. 16 in 'main_legacy.py'
-    wsdan = WSDAN(num_classes=WSDAN_NUM_CLASSES, M=num_attention_maps, net=net, pretrained=True)
+    wsdan = WSDAN(num_classes=WSDAN_NUM_CLASSES, M=num_attention_maps, model=model, pretrained=True)
     wsdan.to(device)
     feature_center = torch.zeros(WSDAN_NUM_CLASSES, num_attention_maps * wsdan.num_features).to(device)
 
@@ -225,7 +225,7 @@ def _demo_thyroid_train(with_doppler, savepath):
             # Track hyperparameters and run metadata
             config={
             "learning_rate": learning_rate,
-            "architecture": f"WS-DAN-{net}",
+            "architecture": f"WS-DAN-{model}",
             "optimizer": opt_type,
             "dataset": "Thyroid",
             "train-data-augment": f"{channel}-channel",
@@ -286,7 +286,7 @@ if __name__ == '__main__':
     if 0:  # adaptation of 'compare.{ipynb,py}' exported from https://colab.research.google.com/drive/1kxMFgo1LyVqPYqhS6_UJKUsVvA2-l9wk
         demo_doppler_comp()  # TODO - renaming
 
-    if 0:
+    if 1:
         # seemingly unlearned ...
         # ckpt = "WSDAN_densenet_224_16_lr-1e5_n1-remove_220828-0837_85.714.ckpt"
         # ckpt = "WSDAN_doppler_densenet_224_16_lr-1e5_n5_220905-1309_78.571.ckpt"
@@ -307,7 +307,7 @@ if __name__ == '__main__':
         # ckpt = 'resnet34_batch4_epoch100.ckpt'  # num_attentions: 32
         # demo_thyroid_test(ckpt, 'resnet34', 400, 4)  # 0.650
 
-    if 1:
+    if 0:
         ckpt = demo_thyroid_train()
         demo_thyroid_test(ckpt)  # TODO - generate 'confusion_matrix_test-*.png', 'test-*.png'
 

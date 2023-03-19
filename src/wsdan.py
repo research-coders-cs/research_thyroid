@@ -64,14 +64,14 @@ class BasicConv2d(nn.Module):
 
 # WS-DAN: Weakly Supervised Data Augmentation Network for FGVC
 class WSDAN(nn.Module):
-    def __init__(self, num_classes, M=32, net='inception', pretrained=False):
+    def __init__(self, num_classes, M=32, model='inception', pretrained=False):
         super(WSDAN, self).__init__()
         self.num_classes = num_classes
         self.M = M
-        self.net = net
+        self.model = model
 
         # Network Initialization
-        if 'densenet121' in net:
+        if 'densenet121' in model:
             pretrain = models.densenet121(
                 #weights=models.DenseNet121_Weights.IMAGENET1K_V1 if pretrained else None)
                 weights=models.DenseNet121_Weights.DEFAULT if pretrained else None)
@@ -79,21 +79,21 @@ class WSDAN(nn.Module):
             modules = list(list(pretrain.children())[0])[:-2]
             self.features = nn.Sequential(*modules)
             self.num_features = 512
-        elif 'inception' in net:
+        elif 'inception' in model:
             # @@ TODO - use `weights=` instead of deprecated `pretrained=`
             self.features = inception_v3(pretrained=pretrained).get_features_mixed_6e()
             self.num_features = 768
-        elif 'vgg' in net:
+        elif 'vgg' in model:
             # @@ TODO - use `weights=` instead of deprecated `pretrained=`
             pretrain = models.vgg16(pretrained=pretrained)
             modules = list(pretrain.children())[:-2]
             self.features = nn.Sequential(*modules)
             self.num_features = 512
-        elif 'resnet34' in net or 'resnet50' in net:
-            if 'resnet34' in net:
+        elif 'resnet34' in model or 'resnet50' in model:
+            if 'resnet34' in model:
                 pretrain = models.resnet34(
                     weights=models.ResNet34_Weights.DEFAULT if pretrained else None)
-            elif 'resnet50' in net:
+            elif 'resnet50' in model:
                 pretrain = models.resnet50(
                     weights=models.ResNet50_Weights.DEFAULT if pretrained else None)
 
@@ -101,7 +101,7 @@ class WSDAN(nn.Module):
             self.features = nn.Sequential(*modules)
             self.num_features = 512 * self.features[-1][-1].expansion
         else:
-            raise ValueError('Unsupported net: %s' % net)
+            raise ValueError('Unsupported model: %s' % model)
 
         # Attention Maps
         self.attentions = BasicConv2d(self.num_features, self.M, kernel_size=1)
@@ -112,15 +112,15 @@ class WSDAN(nn.Module):
         # Classification Layer
         self.fc = nn.Linear(self.M * self.num_features, self.num_classes, bias=False)
 
-        logging.info('WSDAN: using {} as feature extractor, num_classes: {}, num_attentions: {}'.format(net, self.num_classes, self.M))
+        logging.info('WSDAN: using {} as feature extractor, num_classes: {}, num_attentions: {}'.format(model, self.num_classes, self.M))
 
     def forward(self, x):
         batch_size = x.size(0)
 
         # Feature Maps, Attention Maps and Feature Matrix
         feature_maps = self.features(x)
-        # if self.net != 'inception_mixed_7c':
-        if self.net != 'inception_mixed_7c':
+        # if self.model != 'inception_mixed_7c':
+        if self.model != 'inception_mixed_7c':
             attention_maps = self.attentions(feature_maps)
         else:
             attention_maps = feature_maps[:, :self.M, ...]
