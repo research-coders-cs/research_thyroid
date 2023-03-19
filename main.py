@@ -5,6 +5,7 @@ import digitake
 from src.wsdan import WSDAN
 from src.transform import ThyroidDataset, get_transform##, get_transform_center_crop, transform_fn
 from src.utils import mk_artifact_dir, get_device, show_data_loader
+from src import thyroid_train, thyroid_test
 
 import os
 import logging
@@ -17,8 +18,6 @@ def demo_thyroid_test(ckpt,
         model='densenet121', target_resize=250, batch_size=8, num_attention_maps=32):
 
     print('\n\n@@ demo_thyroid_test(): ^^')
-    from src.thyroid_test import test  # "Prediction"
-
     print("@@ model:", model)
     print("@@ target_resize:", target_resize)
     print("@@ batch_size:", batch_size)
@@ -61,7 +60,7 @@ def demo_thyroid_test(ckpt,
     wsdan = WSDAN(num_classes=WSDAN_NUM_CLASSES, M=num_attention_maps, model=model, pretrained=True)
     wsdan.to(device)
 
-    results = test(
+    results = thyroid_test.test(
         device, wsdan, batch_size, test_loader_no, ckpt,
         savepath=mk_artifact_dir('demo_thyroid_test'))
     # print('@@ results:', results)
@@ -83,10 +82,7 @@ def demo_thyroid_test(ckpt,
     print('@@ demo_thyroid_test(): $$')
 
 def _demo_thyroid_train(with_doppler, savepath):
-    # "Traning/Validation" flow of 'WSDAN_Pytorch_Revised_v1_01_a.ipynb'
-
-    print('\n\n\n\n@@ _demo_thyroid_train(): ^^')
-    from src.thyroid_train import training
+    print('\n\n@@ _demo_thyroid_train(): ^^')
 
     device = get_device()
     print("@@ device:", device)
@@ -237,7 +233,7 @@ def _demo_thyroid_train(with_doppler, savepath):
     logging.info('Start training: Total epochs: {}, Batch size: {}, Training size: {}, Validation size: {}'
         .format(total_epochs, batch_size, len(train_dataset), len(validate_dataset)))
 
-    ckpt = training(
+    ckpt = thyroid_train.train(
         device, wsdan, feature_center, batch_size, train_loader, validate_loader,
         optimizer, scheduler, run_name, logs, start_epoch, total_epochs,
         savepath=savepath)
@@ -251,7 +247,7 @@ def demo_thyroid_train():
 def demo_thyroid_train_with_doppler():
     return _demo_thyroid_train(True, mk_artifact_dir('demo_thyroid_train_with_doppler'))
 
-def demo_doppler_comp():
+def demo_doppler_compare():
     print('\n\n\n\n@@ demo_doppler_comp(): ^^')
 
     from src.doppler import doppler_comp, get_iou, plot_comp, get_sample_paths
@@ -284,7 +280,7 @@ if __name__ == '__main__':
     print("@@ torch.__version__:", torch.__version__)
 
     if 0:  # adaptation of 'compare.{ipynb,py}' exported from https://colab.research.google.com/drive/1kxMFgo1LyVqPYqhS6_UJKUsVvA2-l9wk
-        demo_doppler_comp()  # TODO - renaming
+        demo_doppler_compare()
 
     if 1:
         # seemingly unlearned ...

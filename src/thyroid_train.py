@@ -6,7 +6,6 @@ from torch.utils.tensorboard import SummaryWriter
 from .metric import AverageMeter, TopKAccuracyMetric
 from .augment import batch_augment, img_gpu_to_cpu
 from .checkpoint import ModelCheckpoint
-from .utils import show_data_loader
 
 import cv2
 import numpy as np
@@ -36,7 +35,7 @@ class SaveFeatures():  # @@ not used at the moment
     def remove(self): self.hook.remove()
 
 
-def train(device, logs, train_loader, net, feature_center, optimizer, pbar, savepath):
+def _train(device, logs, train_loader, net, feature_center, optimizer, pbar, savepath):
 
     # metrics initialization
     loss_container.reset()
@@ -44,10 +43,8 @@ def train(device, logs, train_loader, net, feature_center, optimizer, pbar, save
     crop_metric.reset()
     drop_metric.reset()
 
-    # begin training
     start_time = time.time()
     net.train()
-
 
     example_ct = 0
     for batch_idx, (X, y, p) in enumerate(train_loader):
@@ -60,7 +57,6 @@ def train(device, logs, train_loader, net, feature_center, optimizer, pbar, save
         if not os.path.exists(savepath_batch):
             os.makedirs(savepath_batch, exist_ok=True)
 
-        # obtain data for training
         X = X.to(device)
         y = y.to(device)
 
@@ -103,7 +99,7 @@ def train(device, logs, train_loader, net, feature_center, optimizer, pbar, save
                 fname = os.path.join(savepath_batch, f'final_drop_idx_{idx}.jpg')
                 cv2.imwrite(fname, img_gpu_to_cpu(drop_images[idx]))
 
-        # exit(99)  # @@ !!!!!!!! up to epoch 10, otherwise
+        exit(99)  # @@ !!!!!!!! up to epoch 10, otherwise
 
         # drop images forward
         y_pred_drop, _, _ = net(drop_images)
@@ -163,7 +159,7 @@ def train(device, logs, train_loader, net, feature_center, optimizer, pbar, save
     logging.info('Train: {}, Time {:3.2f}'.format(batch_info, end_time - start_time))
 
 
-def validate(device, logs, validate_loader, net, pbar, savepath):
+def _validate(device, logs, validate_loader, net, pbar, savepath):
 
     # metrics initialization
     val_loss_container.reset()
@@ -316,7 +312,7 @@ drop_metric = TopKAccuracyMetric()
 top_misclassified = {}
 writer = SummaryWriter()
 
-def training(device, net, feature_center, batch_size, train_loader, validate_loader,
+def train(device, net, feature_center, batch_size, train_loader, validate_loader,
              optimizer, scheduler, run_name, logs, start_epoch, total_epochs,
              savepath='.'):
 
@@ -351,10 +347,10 @@ def training(device, net, feature_center, batch_size, train_loader, validate_loa
         if not os.path.exists(savepath_epoch):
             os.makedirs(savepath_epoch, exist_ok=True)
 
-        train(device, logs, train_loader, net, feature_center, optimizer,
+        _train(device, logs, train_loader, net, feature_center, optimizer,
             pbar, savepath_epoch)
 
-        validate(device, logs, validate_loader, net,
+        _validate(device, logs, validate_loader, net,
             pbar, savepath_epoch)
 
         # Checkpoints
