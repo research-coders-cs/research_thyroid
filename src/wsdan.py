@@ -1,7 +1,9 @@
 import torch
 from torch import nn
 from torch.nn import functional
+
 import torchvision
+from torchvision import models
 
 import numpy as np
 import logging
@@ -69,22 +71,33 @@ class WSDAN(nn.Module):
         self.net = net
 
         # Network Initialization
-        if 'densenet' in net:
-            pretrain = torchvision.models.densenet121(pretrained=pretrained)
+        if 'densenet121' in net:
+            pretrain = models.densenet121(
+                #weights=models.DenseNet121_Weights.IMAGENET1K_V1 if pretrained else None)
+                weights=models.DenseNet121_Weights.DEFAULT if pretrained else None)
+
             modules = list(list(pretrain.children())[0])[:-2]
             self.features = nn.Sequential(*modules)
             self.num_features = 512
         elif 'inception' in net:
+            # @@ TODO - use `weights=` instead of deprecated `pretrained=`
             self.features = inception_v3(pretrained=pretrained).get_features_mixed_6e()
             self.num_features = 768
         elif 'vgg' in net:
-            pretrain = torchvision.models.vgg16(pretrained=pretrained)
+            # @@ TODO - use `weights=` instead of deprecated `pretrained=`
+            pretrain = models.vgg16(pretrained=pretrained)
             modules = list(pretrain.children())[:-2]
             self.features = nn.Sequential(*modules)
             self.num_features = 512
-        elif 'resnet' in net:
-            pretrain = torchvision.models.resnet50(pretrained=pretrained)
-            modules = list(pretrain.children())[:-2]              # delete the last fc layer.
+        elif 'resnet34' in net or 'resnet50' in net:
+            if 'resnet34' in net:
+                pretrain = models.resnet34(
+                    weights=models.ResNet34_Weights.DEFAULT if pretrained else None)
+            elif 'resnet50' in net:
+                pretrain = models.resnet50(
+                    weights=models.ResNet50_Weights.DEFAULT if pretrained else None)
+
+            modules = list(pretrain.children())[:-2]  # delete the last fc layer.
             self.features = nn.Sequential(*modules)
             self.num_features = 512 * self.features[-1][-1].expansion
         else:
