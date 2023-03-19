@@ -57,11 +57,10 @@ def demo_thyroid_test(ckpt,
 
     #
 
-    wsdan = WSDAN(num_classes=WSDAN_NUM_CLASSES, M=num_attention_maps, model=model, pretrained=True)
-    wsdan.to(device)
+    net = WSDAN(num_classes=WSDAN_NUM_CLASSES, M=num_attention_maps, model=model, pretrained=True)
+    net.to(device)
 
-    results = thyroid_test.test(
-        device, wsdan, batch_size, test_loader_no, ckpt,
+    results = thyroid_test.test(device, net, batch_size, test_loader_no, ckpt,
         savepath=mk_artifact_dir('demo_thyroid_test'))
     # print('@@ results:', results)
 
@@ -80,6 +79,7 @@ def demo_thyroid_test(ckpt,
     #
 
     print('@@ demo_thyroid_test(): $$')
+
 
 def _demo_thyroid_train(with_doppler, savepath):
     print('\n\n@@ _demo_thyroid_train(): ^^')
@@ -189,9 +189,9 @@ def _demo_thyroid_train(with_doppler, savepath):
     #
 
     num_attention_maps = 32  # @@ cf. 16 in 'main_legacy.py'
-    wsdan = WSDAN(num_classes=WSDAN_NUM_CLASSES, M=num_attention_maps, model=model, pretrained=True)
-    wsdan.to(device)
-    feature_center = torch.zeros(WSDAN_NUM_CLASSES, num_attention_maps * wsdan.num_features).to(device)
+    net = WSDAN(num_classes=WSDAN_NUM_CLASSES, M=num_attention_maps, model=model, pretrained=True)
+    net.to(device)
+    feature_center = torch.zeros(WSDAN_NUM_CLASSES, num_attention_maps * net.num_features).to(device)
 
     #
 
@@ -208,7 +208,7 @@ def _demo_thyroid_train(with_doppler, savepath):
     learning_rate = logs['lr'] if 'lr' in logs else lr
 
     opt_type = 'SGD'
-    optimizer = torch.optim.SGD(wsdan.parameters(), lr=learning_rate, momentum=0.9, weight_decay=1e-5)
+    optimizer = torch.optim.SGD(net.parameters(), lr=learning_rate, momentum=0.9, weight_decay=1e-5)
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=2, gamma=0.99)
 
     if 0:  # @@
@@ -234,18 +234,20 @@ def _demo_thyroid_train(with_doppler, savepath):
         .format(total_epochs, batch_size, len(train_dataset), len(validate_dataset)))
 
     ckpt = thyroid_train.train(
-        device, wsdan, feature_center, batch_size, train_loader, validate_loader,
+        device, net, feature_center, batch_size, train_loader, validate_loader,
         optimizer, scheduler, run_name, logs, start_epoch, total_epochs,
         savepath=savepath)
     print('@@ done; ckpt:', ckpt)
 
     return ckpt
 
+
 def demo_thyroid_train():
     return _demo_thyroid_train(False, mk_artifact_dir('demo_thyroid_train'))
 
 def demo_thyroid_train_with_doppler():
     return _demo_thyroid_train(True, mk_artifact_dir('demo_thyroid_train_with_doppler'))
+
 
 def demo_doppler_compare():
     print('\n\n\n\n@@ demo_doppler_comp(): ^^')

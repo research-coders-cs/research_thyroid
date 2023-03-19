@@ -99,7 +99,7 @@ def _train(device, logs, train_loader, net, feature_center, optimizer, pbar, sav
                 fname = os.path.join(savepath_batch, f'final_drop_idx_{idx}.jpg')
                 cv2.imwrite(fname, img_gpu_to_cpu(drop_images[idx]))
 
-        exit(99)  # @@ !!!!!!!! up to epoch 10, otherwise
+        # exit(99)  # @@ !!!!!!!! up to epoch 10, otherwise
 
         # drop images forward
         y_pred_drop, _, _ = net(drop_images)
