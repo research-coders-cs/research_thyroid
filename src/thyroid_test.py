@@ -31,16 +31,18 @@ def test(device, net, batch_size, data_loader, ckpt, savepath=None):
     logging.info('Network loading from {}'.format(ckpt))
 
     ckpt_dict = torch.load(ckpt)
+
     print('@@ ckpt:', ckpt)
     for key, val in ckpt_dict.items():  # @@
         print('@@ ckpt_dict - key:', key)
         if key == 'logs': print('  ', val)
         if key == 'feature_center': print('  ', val)
+
     state_dict = ckpt_dict['state_dict']
     # for key, _ in state_dict.items(): print('@@ state_dict - key:', key)  # @@
 
     net.load_state_dict(state_dict)
-    #exit()  # @@ !!!!
+    #exit()  # @@ !!
 
     raw_accuracy = TopKAccuracyMetric()
     ref_accuracy = TopKAccuracyMetric()
