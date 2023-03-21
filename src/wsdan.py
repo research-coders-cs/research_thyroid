@@ -158,9 +158,13 @@ class WSDAN(nn.Module):
         if len(pretrained_dict) == len(state_dict):
             logging.info('%s: ✨ All params loaded' % type(self).__name__)
         else:
-            logging.info('%s: ⚠️ Some params were not loaded:' % type(self).__name__)
+            msg = '⚠️ Some params were not loaded'
+            logging.info(f'%s: {msg}:' % type(self).__name__)
+
             not_loaded_keys = [k for k in state_dict.keys() if k not in pretrained_dict.keys()]
             logging.info(('  %s, ' * (len(not_loaded_keys) - 1) + '%s') % tuple(not_loaded_keys))
+
+            if strict: raise ValueError(msg)
 
         model_dict.update(pretrained_dict)
         super(WSDAN, self).load_state_dict(model_dict)

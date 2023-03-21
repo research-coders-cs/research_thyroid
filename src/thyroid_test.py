@@ -28,20 +28,19 @@ def generate_heatmap(attention_maps, threshold=0.5):
 
 
 def test(device, net, batch_size, data_loader, ckpt, savepath=None):
-    debug_ckpt = 0  # @@
-
     logging.info('Network loading from {}'.format(ckpt))
-    checkpoint = torch.load(ckpt)
-    state_dict = checkpoint['state_dict']
-    if debug_ckpt:
-        for key, _ in checkpoint.items():
-            print('@@ checkpoint - key:', key)
-        for key, _ in state_dict.items():
-            print('@@ state_dict - key:', key)
+
+    ckpt_dict = torch.load(ckpt)
+    print('@@ ckpt:', ckpt)
+    for key, val in ckpt_dict.items():  # @@
+        print('@@ ckpt_dict - key:', key)
+        if key == 'logs': print('  ', val)
+        if key == 'feature_center': print('  ', val)
+    state_dict = ckpt_dict['state_dict']
+    # for key, _ in state_dict.items(): print('@@ state_dict - key:', key)  # @@
 
     net.load_state_dict(state_dict)
-    if debug_ckpt:
-        exit()
+    #exit()  # @@ !!!!
 
     raw_accuracy = TopKAccuracyMetric()
     ref_accuracy = TopKAccuracyMetric()

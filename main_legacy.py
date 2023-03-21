@@ -641,6 +641,7 @@ if __name__ == '__main__':
     #
 
     net_fname = "net_debug.pth"
+    #net_fname = "resnet34_batch4_epoch100.ckpt"  # NG
     if 1:
         print(f"\n\n@@ ======== Using a saved model: {net_fname}")
         net.load_state_dict(torch.load(net_fname))
