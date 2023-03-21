@@ -284,7 +284,7 @@ if __name__ == '__main__':
     if 0:  # adaptation of 'compare.{ipynb,py}' exported from https://colab.research.google.com/drive/1kxMFgo1LyVqPYqhS6_UJKUsVvA2-l9wk
         demo_doppler_compare()
 
-    if 1:
+    if 0:
         # seemingly unlearned ...
         # ckpt = "WSDAN_densenet_224_16_lr-1e5_n1-remove_220828-0837_85.714.ckpt"
         # ckpt = "WSDAN_doppler_densenet_224_16_lr-1e5_n5_220905-1309_78.571.ckpt"
@@ -305,7 +305,7 @@ if __name__ == '__main__':
         # ckpt = 'resnet34_batch4_epoch100.ckpt'  # num_attentions: 32
         # demo_thyroid_test(ckpt, 'resnet34', 400, 4)  # 0.650
 
-    if 0:
+    if 1:
         ckpt = demo_thyroid_train()
         demo_thyroid_test(ckpt)  # TODO - generate 'confusion_matrix_test-*.png', 'test-*.png'
 
