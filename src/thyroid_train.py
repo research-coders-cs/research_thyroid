@@ -35,7 +35,7 @@ class SaveFeatures():  # @@ not used at the moment
     def remove(self): self.hook.remove()
 
 
-def _train(device, logs, train_loader, net, feature_center, optimizer, pbar, savepath):
+def _train(device, logs, train_loader, net, feature_center, optimizer, pbar, with_doppler, savepath):
 
     # metrics initialization
     loss_container.reset()
@@ -75,7 +75,7 @@ def _train(device, logs, train_loader, net, feature_center, optimizer, pbar, sav
         ##################################
         with torch.no_grad():
             crop_images = batch_augment(
-                X, paths, attention_map[:, :1, :, :], savepath_batch,
+                X, paths, attention_map[:, :1, :, :], savepath_batch, use_doppler=with_doppler,
                 mode='crop', theta=(0.7, 0.95), padding_ratio=0.1)
 
         if 1:  # @@
@@ -99,7 +99,9 @@ def _train(device, logs, train_loader, net, feature_center, optimizer, pbar, sav
                 fname = os.path.join(savepath_batch, f'final_drop_idx_{idx}.jpg')
                 cv2.imwrite(fname, img_gpu_to_cpu(drop_images[idx]))
 
-        # exit(99)  # @@ !!!!!!!! up to epoch 10, otherwise
+        if with_doppler:
+            print('@@ !!!! doppler dev, exitting')
+            exit(99)  # @@ !!!!
 
         # drop images forward
         y_pred_drop, _, _ = net(drop_images)
@@ -314,7 +316,7 @@ writer = SummaryWriter()
 
 def train(device, net, feature_center, batch_size, train_loader, validate_loader,
              optimizer, scheduler, run_name, logs, start_epoch, total_epochs,
-             savepath='.'):
+             with_doppler=False, savepath='.'):
 
     # TODO - include the 'Run/XX_d' tensorboard in output !!!!
 
@@ -348,7 +350,7 @@ def train(device, net, feature_center, batch_size, train_loader, validate_loader
             os.makedirs(savepath_epoch, exist_ok=True)
 
         _train(device, logs, train_loader, net, feature_center, optimizer,
-            pbar, savepath_epoch)
+            pbar, with_doppler, savepath_epoch)
 
         _validate(device, logs, validate_loader, net,
             pbar, savepath_epoch)

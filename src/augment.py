@@ -17,7 +17,7 @@ def img_gpu_to_cpu(img):
     img_full = NormalizeData(img_full) * 255
     return img_full
 
-def batch_augment(images, paths, attention_map, savepath,
+def batch_augment(images, paths, attention_map, savepath, use_doppler=False,
                   mode='crop', theta=0.5, padding_ratio=0.1):
     print('@@ images.size():', images.size())
     batches, _, imgH, imgW = images.size()
@@ -41,7 +41,7 @@ def batch_augment(images, paths, attention_map, savepath,
             print(f'@@ [idx={idx}] crop: ({width_min}, {height_min}), ({width_max}, {height_max})')
 
             THRESH_ISEC_IN_CROP = 0.25
-            if 1:  # ======== TODO refactor ^^ into preprocessing part i.e. `ThyroidDataset()`
+            if use_doppler:  # ======== TODO refactor ^^ into preprocessing part i.e. `ThyroidDataset()`
                 bbox_crop = np.array([
                     width_min, height_min,
                     width_max, height_max], dtype=np.float32)

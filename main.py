@@ -236,7 +236,7 @@ def _demo_thyroid_train(with_doppler, savepath):
     ckpt = thyroid_train.train(
         device, net, feature_center, batch_size, train_loader, validate_loader,
         optimizer, scheduler, run_name, logs, start_epoch, total_epochs,
-        savepath=savepath)
+        with_doppler=with_doppler, savepath=savepath)
     print('@@ done; ckpt:', ckpt)
 
     return ckpt
@@ -305,10 +305,10 @@ if __name__ == '__main__':
         # ckpt = 'resnet34_batch4_epoch100.ckpt'  # num_attentions: 32
         # demo_thyroid_test(ckpt, 'resnet34', 400, 4)  # 0.650
 
-    if 1:
+    if 0:
         ckpt = demo_thyroid_train()
         demo_thyroid_test(ckpt)  # TODO - generate 'confusion_matrix_test-*.png', 'test-*.png'
 
-    if 0:
+    if 1:
         ckpt = demo_thyroid_train_with_doppler()
         demo_thyroid_test(ckpt)
