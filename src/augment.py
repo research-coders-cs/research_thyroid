@@ -1,12 +1,9 @@
 import torch
 from torch.nn import functional
 
-from .doppler import resolve_hw_slices
-
 import numpy as np
-import cv2
-import os
 import random
+from .doppler import resolve_hw_slices
 
 
 def NormalizeData(data):
@@ -79,7 +76,6 @@ def batch_augment(images, paths, attention_map, savepath, use_doppler=False,
         drop_images = images * drop_masks.float()
 
         print("drop_images : ", drop_images.shape)
-        # cv2_imshow(img_gpu_to_cpu(drop_images[0]))
         return drop_images
 
     else:
