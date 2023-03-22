@@ -1,8 +1,7 @@
 import torch
 from torch.nn import functional
 
-from .doppler import detect_doppler, get_iou, to_doppler
-from .doppler import bbox_draw, bbox_to_hw_slices
+from .doppler import resolve_hw_slices
 
 import numpy as np
 import cv2
@@ -39,52 +38,26 @@ def batch_augment(images, paths, attention_map, savepath, use_doppler=False,
             width_min = max(int(nonzero_indices[:, 1].min().item() - padding_ratio * imgW), 0)
             width_max = min(int(nonzero_indices[:, 1].max().item() + padding_ratio * imgW), imgW)
 
+            #-------- @@
             print(f'@@ [idx={idx}] crop: ({width_min}, {height_min}), ({width_max}, {height_max})')
 
-            THRESH_ISEC_IN_CROP = 0.25
-            if use_doppler:  # ======== TODO refactor ^^ into preprocessing part i.e. `ThyroidDataset()`
+            if use_doppler:
                 bbox_crop = np.array([
                     width_min, height_min,
                     width_max, height_max], dtype=np.float32)
+                train_img_copy = np.array(
+                    img_gpu_to_cpu(images[idx])).astype(np.uint8).copy()
+                train_img_path = paths[idx]
 
-                path_doppler = to_doppler[paths[idx]] if paths[idx] in to_doppler else None
-                if path_doppler is not None:  # @@
-                    # get doppler bbox (scaled)
-                    raw = cv2.imread(path_doppler)
-                    bbox_raw = detect_doppler(raw)
-                    bbox = np.array([
-                        bbox_raw[0] * imgW / raw.shape[1], bbox_raw[1] * imgH / raw.shape[0],
-                        bbox_raw[2] * imgW / raw.shape[1], bbox_raw[3] * imgH / raw.shape[0]],
-                        dtype=np.float32)
-
-                    iou, isec_in_crop = get_iou(bbox, bbox_crop)
-                    print('@@ THRESH_ISEC_IN_CROP:', THRESH_ISEC_IN_CROP)
-                    qualify = 1 if iou > 1e-4 and isec_in_crop > THRESH_ISEC_IN_CROP else 0
-                    debug_fname_jpg = f'debug_crop_doppler_{idx}_iou_%0.4f_isecincrop_%0.3f_qualify_%d.jpg' % (
-                        iou, isec_in_crop, qualify)
-                    print('@@ debug_fname_jpg:', debug_fname_jpg)
-
-                    if 1:  # debug dump
-                        train_img_copy = np.array(
-                            img_gpu_to_cpu(images[idx])).astype(np.uint8).copy()
-
-                        bbox_draw(train_img_copy, bbox, (255, 255, 0), 1)  # blue
-                        bbox_draw(train_img_copy, bbox_crop, (0, 0, 255), 1)  # red
-                        cv2.imwrite(os.path.join(savepath, debug_fname_jpg), train_img_copy)
-
-                        # crop patch image; OK
-                        sh_, sw_ = bbox_to_hw_slices(bbox_crop)
-                        img_ = train_img_copy.copy()[sh_, sw_, :]
-                        cv2.imwrite(os.path.join(savepath, f'debug_crop_idx_{idx}.jpg'), img_)
-
-                        # doppler patch image; OK
-                        sh_, sw_ = bbox_to_hw_slices(bbox)
-                        img_ = train_img_copy.copy()[sh_, sw_, :]
-                        cv2.imwrite(os.path.join(savepath, f'debug_doppler_idx_{idx}.jpg'), img_)
-            # ======== TODO refactor vv
+                sh, sw = resolve_hw_slices(
+                    bbox_crop, train_img_copy, train_img_path, idx, (imgH, imgW), savepath)
+            else:
+                sh, sw = slice(height_min, height_max), slice(width_min, width_max)
+            #-------- @@
 
             crop_images.append(functional.interpolate(
-                images[idx:idx + 1, :, height_min:height_max, width_min:width_max],
+                #images[idx:idx + 1, :, height_min:height_max, width_min:width_max],
+                images[idx:idx + 1, :, sh, sw],  # @@
                 size=(imgH, imgW)))
 
         crop_images = torch.cat(crop_images, dim=0)

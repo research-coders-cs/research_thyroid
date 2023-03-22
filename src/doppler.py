@@ -62,17 +62,6 @@ def detect_doppler(img):
         return x
     return None
 
-
-def bbox_to_hw_slices(bbox):
-    return (
-        slice(int(bbox[1]), int(bbox[3])),  # i.e. height_min:height_max
-        slice(int(bbox[0]), int(bbox[2])))  # i.e. width_min:width_max
-
-def bbox_draw(img, bbox, color=(255, 0, 0), thickness=1):
-    return cv2.rectangle(img,
-        (int(bbox[0]), int(bbox[1])),
-        (int(bbox[2]), int(bbox[3])), color, thickness)
-
 def get_iou(truth, pred):
     # coordinates of the area of intersection.
     ix1 = np.maximum(truth[0], pred[0])
@@ -115,6 +104,7 @@ def get_iou(truth, pred):
     #@@return iou, intersection_of_mark
     return _iou, _intersection_of_mark
 
+#
 
 def doppler_comp(path_doppler, path_markers, path_markers_label):
     img_doppler = cv2.imread(path_doppler)
@@ -251,3 +241,53 @@ to_doppler = {  # TODO add 'Markers_Train_Remove_Markers' support
     'Siriraj_sample_doppler_comp/Markers_Train/Malignant/malignant_nodule3_0001-0030_c0004_1_p0011.png':
     'Siriraj_sample_doppler_comp/Doppler_Train_Crop/Malignant/malignant_nodule3_0001-0030_c0004_3_p0011.png',
 }
+
+#
+
+def bbox_to_hw_slices(bbox):
+    return (
+        slice(int(bbox[1]), int(bbox[3])),  # i.e. height_min:height_max
+        slice(int(bbox[0]), int(bbox[2])))  # i.e. width_min:width_max
+
+def bbox_draw(img, bbox, color=(255, 0, 0), thickness=1):
+    return cv2.rectangle(img,
+        (int(bbox[0]), int(bbox[1])),
+        (int(bbox[2]), int(bbox[3])), color, thickness)
+
+# ======== TODO refactor ^^ into preprocessing part i.e. `ThyroidDataset()`
+def resolve_hw_slices(bbox_crop, train_img_copy, train_img_path, idx, size, savepath):
+    THRESH_ISEC_IN_CROP = 0.25
+
+    path_doppler = to_doppler[train_img_path] if train_img_path in to_doppler else None
+    if path_doppler is not None:  # @@
+        # get doppler bbox (scaled)
+        raw = cv2.imread(path_doppler)
+        bbox_raw = detect_doppler(raw)
+        bbox = np.array([
+            bbox_raw[0] * size[0] / raw.shape[1], bbox_raw[1] * size[1] / raw.shape[0],
+            bbox_raw[2] * size[0] / raw.shape[1], bbox_raw[3] * size[1] / raw.shape[0]],
+            dtype=np.float32)
+
+        iou, isec_in_crop = get_iou(bbox, bbox_crop)
+        print('@@ THRESH_ISEC_IN_CROP:', THRESH_ISEC_IN_CROP)
+        qualify = 1 if iou > 1e-4 and isec_in_crop > THRESH_ISEC_IN_CROP else 0
+        debug_fname_jpg = f'debug_crop_doppler_{idx}_iou_%0.4f_isecincrop_%0.3f_qualify_%d.jpg' % (
+            iou, isec_in_crop, qualify)
+        print('@@ debug_fname_jpg:', debug_fname_jpg)
+
+        if 1:  # debug dump
+            bbox_draw(train_img_copy, bbox, (255, 255, 0), 1)  # blue
+            bbox_draw(train_img_copy, bbox_crop, (0, 0, 255), 1)  # red
+            cv2.imwrite(os.path.join(savepath, debug_fname_jpg), train_img_copy)
+
+            # crop patch image; OK
+            sh_, sw_ = bbox_to_hw_slices(bbox_crop)
+            img_ = train_img_copy.copy()[sh_, sw_, :]
+            cv2.imwrite(os.path.join(savepath, f'debug_crop_idx_{idx}.jpg'), img_)
+
+            # doppler patch image; OK
+            sh_, sw_ = bbox_to_hw_slices(bbox)
+            img_ = train_img_copy.copy()[sh_, sw_, :]
+            cv2.imwrite(os.path.join(savepath, f'debug_doppler_idx_{idx}.jpg'), img_)
+
+    return bbox_to_hw_slices(bbox_crop if qualify else bbox)
