@@ -38,15 +38,13 @@ def batch_augment(images, paths, attention_map, savepath,
             width_min = max(int(nonzero_indices[:, 1].min().item() - padding_ratio * imgW), 0)
             width_max = min(int(nonzero_indices[:, 1].max().item() + padding_ratio * imgW), imgW)
 
-            print(f'[idx={idx}] crop: ', (height_min, width_min), ((height_min + height_max), (width_min + width_max)))
+            print(f'@@ [idx={idx}] crop: ({width_min}, {height_min}), ({width_max}, {height_max})')
 
             THRESH_ISEC_IN_CROP = 0.25
             if 1:  # ======== TODO refactor ^^ into preprocessing part i.e. `ThyroidDataset()`
                 bbox_crop = np.array([
-                    width_min,
-                    height_min,
-                    width_min + width_max,
-                    height_min + height_max], dtype=np.float32)
+                    width_min, height_min,
+                    width_max, height_max], dtype=np.float32)
 
                 path_doppler = to_doppler[paths[idx]] if paths[idx] in to_doppler else None
                 if path_doppler is not None:  # @@
@@ -54,10 +52,9 @@ def batch_augment(images, paths, attention_map, savepath,
                     raw = cv2.imread(path_doppler)
                     bbox_raw = detect_doppler(raw)
                     bbox = np.array([
-                        bbox_raw[0] * imgW / raw.shape[1],
-                        bbox_raw[1] * imgH / raw.shape[0],
-                        bbox_raw[2] * imgW / raw.shape[1],
-                        bbox_raw[3] * imgH / raw.shape[0]], dtype=np.float32)
+                        bbox_raw[0] * imgW / raw.shape[1], bbox_raw[1] * imgH / raw.shape[0],
+                        bbox_raw[2] * imgW / raw.shape[1], bbox_raw[3] * imgH / raw.shape[0]],
+                        dtype=np.float32)
 
                     iou, isec_in_crop = get_iou(bbox, bbox_crop)
                     print('@@ THRESH_ISEC_IN_CROP:', THRESH_ISEC_IN_CROP)
@@ -70,23 +67,25 @@ def batch_augment(images, paths, attention_map, savepath,
                         train_img_copy = np.array(
                             img_gpu_to_cpu(images[idx])).astype(np.uint8).copy()
 
-                        # superpose doppler bbox
+                        # superpose doppler bbox - blue
                         cv2.rectangle(train_img_copy,
                             (int(bbox[0]), int(bbox[1])),
-                            (int(bbox[2]), int(bbox[3])),
-                            (255, 255, 0), 1)
+                            (int(bbox[2]), int(bbox[3])), (255, 255, 0), 1)
 
-                        # superpose crop bbox
-                        img_ = cv2.rectangle(train_img_copy,
-                            (width_min, height_min),
-                            ((width_min + width_max), (height_min + height_max)),
-                            (0, 0, 255), 1)
-                        cv2.imwrite(os.path.join(
-                            savepath, debug_fname_jpg), img_)
+                        # superpose crop bbox - red
+                        cv2.rectangle(train_img_copy,
+                            (int(bbox_crop[0]), int(bbox_crop[1])),
+                            (int(bbox_crop[2]), int(bbox_crop[3])), (0, 0, 255), 1)
 
-                        # crop patch image, ok
-                        # img_ = img_[height_min:height_max, width_min:width_max, :].copy()
-                        # cv2.imwrite(os.path.join(savepath, f'debug_crop_idx_{idx}.jpg'), img_)
+                        cv2.imwrite(os.path.join(savepath, debug_fname_jpg), train_img_copy)
+
+                        # crop patch image; OK
+                        img_ = train_img_copy.copy()[height_min:height_max, width_min:width_max, :].copy()
+                        cv2.imwrite(os.path.join(savepath, f'debug_crop_idx_{idx}.jpg'), img_)
+                        #----
+                        # doppler patch image; OK
+                        img_ = train_img_copy.copy()[int(bbox[1]):int(bbox[3]), int(bbox[0]):int(bbox[2]), :].copy()
+                        cv2.imwrite(os.path.join(savepath, f'debug_doppler_idx_{idx}.jpg'), img_)
             # ======== TODO refactor vv
 
             crop_images.append(functional.interpolate(
