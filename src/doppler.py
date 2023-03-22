@@ -63,6 +63,16 @@ def detect_doppler(img):
     return None
 
 
+def bbox_to_hw_slices(bbox):
+    return (
+        slice(int(bbox[1]), int(bbox[3])),  # i.e. height_min:height_max
+        slice(int(bbox[0]), int(bbox[2])))  # i.e. width_min:width_max
+
+def bbox_draw(img, bbox, color=(255, 0, 0), thickness=1):
+    return cv2.rectangle(img,
+        (int(bbox[0]), int(bbox[1])),
+        (int(bbox[2]), int(bbox[3])), color, thickness)
+
 def get_iou(truth, pred):
     # coordinates of the area of intersection.
     ix1 = np.maximum(truth[0], pred[0])

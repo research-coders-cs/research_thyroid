@@ -2,6 +2,7 @@ import torch
 from torch.nn import functional
 
 from .doppler import detect_doppler, get_iou, to_doppler
+from .doppler import bbox_draw, bbox_to_hw_slices
 
 import numpy as np
 import cv2
@@ -67,24 +68,18 @@ def batch_augment(images, paths, attention_map, savepath, use_doppler=False,
                         train_img_copy = np.array(
                             img_gpu_to_cpu(images[idx])).astype(np.uint8).copy()
 
-                        # superpose doppler bbox - blue
-                        cv2.rectangle(train_img_copy,
-                            (int(bbox[0]), int(bbox[1])),
-                            (int(bbox[2]), int(bbox[3])), (255, 255, 0), 1)
-
-                        # superpose crop bbox - red
-                        cv2.rectangle(train_img_copy,
-                            (int(bbox_crop[0]), int(bbox_crop[1])),
-                            (int(bbox_crop[2]), int(bbox_crop[3])), (0, 0, 255), 1)
-
+                        bbox_draw(train_img_copy, bbox, (255, 255, 0), 1)  # blue
+                        bbox_draw(train_img_copy, bbox_crop, (0, 0, 255), 1)  # red
                         cv2.imwrite(os.path.join(savepath, debug_fname_jpg), train_img_copy)
 
                         # crop patch image; OK
-                        img_ = train_img_copy.copy()[height_min:height_max, width_min:width_max, :].copy()
+                        sh_, sw_ = bbox_to_hw_slices(bbox_crop)
+                        img_ = train_img_copy.copy()[sh_, sw_, :]
                         cv2.imwrite(os.path.join(savepath, f'debug_crop_idx_{idx}.jpg'), img_)
-                        #----
+
                         # doppler patch image; OK
-                        img_ = train_img_copy.copy()[int(bbox[1]):int(bbox[3]), int(bbox[0]):int(bbox[2]), :].copy()
+                        sh_, sw_ = bbox_to_hw_slices(bbox)
+                        img_ = train_img_copy.copy()[sh_, sw_, :]
                         cv2.imwrite(os.path.join(savepath, f'debug_doppler_idx_{idx}.jpg'), img_)
             # ======== TODO refactor vv
 
