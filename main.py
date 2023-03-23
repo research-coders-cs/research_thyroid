@@ -137,7 +137,8 @@ def _demo_thyroid_train(with_doppler, savepath):
     start_epoch = 0
     #total_epochs = 5
     # total_epochs = 10  # @@
-    total_epochs = 40  # @@
+    # total_epochs = 40  # @@
+    total_epochs = 100  # @@
 
     run_name = f"{model}_{target_resize}_{batch_size}_{lr_}_n{number}"
     print('@@ run_name:', run_name)
