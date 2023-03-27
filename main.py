@@ -92,22 +92,21 @@ def _demo_thyroid_train(with_doppler, savepath):
     print('@@ with_doppler:', with_doppler)
     print('@@ savepath:', savepath)
 
-    train_ds_path = None
-    if with_doppler:
+    if 1:
         train_ds_path = digitake.preprocess.build_dataset({
-            # @@ TODO update with "Markers_Train_Remove_Markers" instead !!!!
-            'malignant': ['Markers_Train/Malignant'],
-            'benign': ['Markers_Train/Benign'],
-        }, root='Siriraj_sample_doppler_comp')
-        #print(train_ds_path)
-        print(len(train_ds_path['malignant']), len(train_ds_path['benign']))  # @@ 2 7
-    else:
+            'benign': ['Markers_Train_Remove_Markers/Benign_Remove/matched'],  # 10
+            'malignant': ['Markers_Train_Remove_Markers/Malignant_Remove/matched'],  # 10
+        }, root='Siriraj_sample_doppler_20')
+    elif not with_doppler:
         train_ds_path = digitake.preprocess.build_dataset({
-            'malignant': ['Train/Malignant'],
-            'benign': ['Train/Benign'],
+            'benign': ['Train/Benign'],  # 21
+            'malignant': ['Train/Malignant'],  # 20
         }, root='Dataset_train_test_val')
-        #print(train_ds_path)
-        print(len(train_ds_path['malignant']), len(train_ds_path['benign']))  # @@ 20 21
+    else:
+        raise ValueError('Fail to set up `train_ds_path`')
+
+    print(train_ds_path)
+    print(len(train_ds_path['benign']), len(train_ds_path['malignant']))
 
     #
 
@@ -307,10 +306,10 @@ if __name__ == '__main__':
         # ckpt = 'resnet34_batch4_epoch100.ckpt'  # num_attentions: 32
         # demo_thyroid_test(ckpt, 'resnet34', 400, 4)  # 0.650
 
-    if 0:
+    if 1:
         ckpt = demo_thyroid_train()
         demo_thyroid_test(ckpt)  # TODO - generate 'confusion_matrix_test-*.png', 'test-*.png'
 
-    if 1:
+    if 0:
         ckpt = demo_thyroid_train_with_doppler()
         demo_thyroid_test(ckpt)
