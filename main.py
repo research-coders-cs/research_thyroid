@@ -111,16 +111,14 @@ def _demo_thyroid_train(with_doppler, savepath):
     #
 
     val_ds_path = digitake.preprocess.build_dataset({
-      'malignant': ['Val/Malignant'],
-      'benign': ['Val/Benign'],
+        'benign': ['Val/Benign'],  # 10
+        'malignant': ['Val/Malignant'],  # 10
     }, root='Dataset_train_test_val')
-    #print(val_ds_path)
-    print(len(val_ds_path['malignant']), len(val_ds_path['benign']))  # @@ 10 10
 
     #
 
-    # model = 'resnet50'
-    model = 'densenet121'
+    model = 'resnet50'
+    #model = 'densenet121'
 
     target_resize = 250
     batch_size = 8 #@param ["8", "16", "4", "1"] {type:"raw"}
