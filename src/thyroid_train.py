@@ -99,7 +99,7 @@ def _train(device, logs, train_loader, net, feature_center, optimizer, pbar, wit
                 fname = os.path.join(savepath_batch, f'final_drop_idx_{idx}.jpg')
                 cv2.imwrite(fname, img_gpu_to_cpu(drop_images[idx]))
 
-        # if with_doppler: exit(99)  # @@ !!!!
+        if with_doppler: exit(99)  # @@ !!!!
 
         # drop images forward
         y_pred_drop, _, _ = net(drop_images)
@@ -323,7 +323,7 @@ def train(device, net, feature_center, batch_size, train_loader, validate_loader
         savepath=os.path.join(savepath, run_name),
         monitor=mc_monitor,
         mode='max',
-        savemode_debug=True)
+        savemode_debug=False)
 
     if mc_monitor in logs:
         mc.set_best_score(logs[mc_monitor])

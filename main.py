@@ -132,10 +132,11 @@ def _demo_thyroid_train(with_doppler, savepath):
     lr_ = "lr-1e5" #@param ["lr-1e3", "lr-1e5"]
 
     start_epoch = 0
+
     #total_epochs = 5
     # total_epochs = 10  # @@
-    # total_epochs = 40  # @@
-    total_epochs = 64  # @@
+    total_epochs = 40  # @@
+    # total_epochs = 64  # @@
 
     run_name = f"{model}_{target_resize}_{batch_size}_{lr_}_n{number}"
     print('@@ run_name:', run_name)
@@ -290,7 +291,7 @@ if __name__ == '__main__':
         # demo_thyroid_test(ckpt, 'densenet121', 224, 16)
 
         # ckpt = 'ttt/51/output/demo_thyroid_train/densenet_250_8_lr-1e5_n4_75.000'  # 0.800
-        # demo_thyroid_test(ckpt)
+        # demo_thyroid_test(ckpt)  # TODO - generate 'confusion_matrix_test-*.png', 'test-*.png'
 
         ckpt = 'densenet_224_8_lr-1e5_n4_95.968.ckpt'  # 0.9xx, LGTM
         demo_thyroid_test(ckpt, 'densenet121', 224, 8)
@@ -306,7 +307,7 @@ if __name__ == '__main__':
 
     if 1:
         ckpt = demo_thyroid_train()
-        demo_thyroid_test(ckpt)  # TODO - generate 'confusion_matrix_test-*.png', 'test-*.png'
+        demo_thyroid_test(ckpt)
 
     if 0:
         ckpt = demo_thyroid_train_with_doppler()
