@@ -117,8 +117,8 @@ def _demo_thyroid_train(with_doppler, savepath):
 
     #
 
-    model = 'resnet50'
-    #model = 'densenet121'
+    #model = 'resnet50'
+    model = 'densenet121'
 
     target_resize = 250
     batch_size = 8 #@param ["8", "16", "4", "1"] {type:"raw"}
