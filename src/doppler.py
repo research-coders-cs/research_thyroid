@@ -262,7 +262,7 @@ to_doppler = {
     f'{dir_20_mtrm_malignant}/malignant_nodule3_0001-0030_c0014_2_p0041.png': f'{dir_20_dtc_malignant}/malignant_nodule3_0001-0030_c0014_4_p0041.png',
     f'{dir_20_mtrm_malignant}/malignant_nodule3_0001-0030_c0021_1_p0062.png': f'{dir_20_dtc_malignant}/malignant_nodule3_0001-0030_c0021_3_p0062.png',
     f'{dir_20_mtrm_malignant}/malignant_nodule3_0031-0060_c0033_1_p0008.png': f'{dir_20_dtc_malignant}/malignant_nodule3_0031-0060_c0033_3_p0008.png',
-    f'{dir_20_mtrm_malignant}/malignant_nodule3_0031-0060_c0039_2_p0026.png': f'{dir_20_dtc_malignant}/malignant_nodule3_0031-0060_c0039_3_p0026.png',
+    f'{dir_20_mtrm_malignant}/malignant_nodule3_0031-0060_c0057_1_p0080.png': f'{dir_20_dtc_malignant}/malignant_nodule3_0031-0060_c0057_2_p0080.png',
     f'{dir_20_mtrm_malignant}/malignant_nodule3_0031-0060_c0046_1_p0047.png': f'{dir_20_dtc_malignant}/malignant_nodule3_0031-0060_c0046_2_p0047.png',
     f'{dir_20_mtrm_malignant}/malignant_nodule3_0031-0060_c0047_1_p0050.png': f'{dir_20_dtc_malignant}/malignant_nodule3_0031-0060_c0047_3_p0050.png',
     f'{dir_20_mtrm_malignant}/malignant_nodule3_0031-0060_c0050_1_p0059.png': f'{dir_20_dtc_malignant}/malignant_nodule3_0031-0060_c0050_2_p0059.png',
