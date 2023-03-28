@@ -75,7 +75,7 @@ def _train(device, logs, train_loader, net, feature_center, optimizer, pbar, wit
         ##################################
         with torch.no_grad():
             crop_images = batch_augment(
-                X, paths, attention_map[:, :1, :, :], savepath_batch,#TEMP# use_doppler=with_doppler,
+                X, paths, attention_map[:, :1, :, :], savepath_batch, use_doppler=with_doppler,
                 mode='crop', theta=(0.7, 0.95), padding_ratio=0.1)
 
         if 1:  # @@
