@@ -292,6 +292,10 @@ def resolve_hw_slices(bbox_crop, train_img_copy, train_img_path, idx, size, save
         # get doppler bbox (scaled)
         raw = cv2.imread(path_doppler)
         bbox_raw = detect_doppler(raw)
+        if bbox_raw is None:
+            print('@@ detect_doppler() failed for:', path_doppler)
+            return bbox_to_hw_slices(bbox_crop)
+
         bbox = np.array([
             bbox_raw[0] * size[0] / raw.shape[1], bbox_raw[1] * size[1] / raw.shape[0],
             bbox_raw[2] * size[0] / raw.shape[1], bbox_raw[3] * size[1] / raw.shape[0]],
