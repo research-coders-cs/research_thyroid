@@ -190,7 +190,7 @@ def plot_comp(border_img_doppler, border_img_markers, path_doppler, path_markers
     return plt
 
 
-def get_sample_paths():
+def get_sample_paths():  # used by `demo_doppler_compare()`
     return (
         ('./Siriraj_sample_doppler_comp/Doppler_Train_Crop/Benign/benign_nodule1_0001-0100_c0011_1_p0022.png',
         './Siriraj_sample_doppler_comp/Markers_Train/Benign/benign_nodule1_0001-0100_c0011_2_p0022.png',
@@ -222,8 +222,15 @@ def get_sample_paths():
         './Siriraj_sample_doppler_comp/Markers_Train_Markers_Labels/Malignant/malignant_nodule3_0001-0030_c0004_1_p0011.txt'),
     )
 
+#
 
-to_doppler = {  # TODO add 'Markers_Train_Remove_Markers' support
+dir_20_mtrm_benign = 'Siriraj_sample_doppler_20/Markers_Train_Remove_Markers/Benign_Remove/matched'
+dir_20_mtrm_malignant = 'Siriraj_sample_doppler_20/Markers_Train_Remove_Markers/Malignant_Remove/matched'
+dir_20_dtc_benign = 'Siriraj_sample_doppler_20/Doppler_Train_Crop/Benign/matched'
+dir_20_dtc_malignant = 'Siriraj_sample_doppler_20/Doppler_Train_Crop/Malignant/matched'
+
+to_doppler = {
+    #-------- 'Siriraj_sample_doppler_comp'
     'Siriraj_sample_doppler_comp/Markers_Train/Benign/benign_nodule1_0001-0100_c0011_2_p0022.png':
     'Siriraj_sample_doppler_comp/Doppler_Train_Crop/Benign/benign_nodule1_0001-0100_c0011_1_p0022.png',
     'Siriraj_sample_doppler_comp/Markers_Train/Benign/benign_nodule1_0001-0100_c0076_2_p0152.png':
@@ -240,6 +247,28 @@ to_doppler = {  # TODO add 'Markers_Train_Remove_Markers' support
     'Siriraj_sample_doppler_comp/Doppler_Train_Crop/Malignant/malignant_siriraj_0001-0124_c0110_3_p0257.png',
     'Siriraj_sample_doppler_comp/Markers_Train/Malignant/malignant_nodule3_0001-0030_c0004_1_p0011.png':
     'Siriraj_sample_doppler_comp/Doppler_Train_Crop/Malignant/malignant_nodule3_0001-0030_c0004_3_p0011.png',
+    #-------- 'Siriraj_sample_doppler_20'
+    f'{dir_20_mtrm_benign}/benign_nodule1_0001-0100_c0034_2_p0068.png': f'{dir_20_dtc_benign}/benign_nodule1_0001-0100_c0034_1_p0068.png',
+    f'{dir_20_mtrm_benign}/benign_nodule1_0001-0100_c0061_2_p0122.png': f'{dir_20_dtc_benign}/benign_nodule1_0001-0100_c0061_1_p0122.png',
+    f'{dir_20_mtrm_benign}/benign_nodule1_0001-0100_c0066_2_p0132.png': f'{dir_20_dtc_benign}/benign_nodule1_0001-0100_c0066_1_p0132.png',
+    f'{dir_20_mtrm_benign}/benign_nodule1_0001-0100_c0090_2_p0180.png': f'{dir_20_dtc_benign}/benign_nodule1_0001-0100_c0090_1_p0180.png',
+    f'{dir_20_mtrm_benign}/benign_nodule3_0001-0030_c0001_1_p0002.png': f'{dir_20_dtc_benign}/benign_nodule3_0001-0030_c0001_2_p0002.png',
+    f'{dir_20_mtrm_benign}/benign_nodule3_0001-0030_c0002_1_p0005.png': f'{dir_20_dtc_benign}/benign_nodule3_0001-0030_c0002_2_p0005.png',
+    f'{dir_20_mtrm_benign}/benign_nodule3_0001-0030_c0008_2_p0023.png': f'{dir_20_dtc_benign}/benign_nodule3_0001-0030_c0008_3_p0023.png',
+    f'{dir_20_mtrm_benign}/benign_nodule3_0001-0030_c0013_1_p0038.png': f'{dir_20_dtc_benign}/benign_nodule3_0001-0030_c0013_3_p0038.png',
+    f'{dir_20_mtrm_benign}/benign_nodule3_0001-0030_c0024_1_p0071.png': f'{dir_20_dtc_benign}/benign_nodule3_0001-0030_c0024_2_p0071.png',
+    f'{dir_20_mtrm_benign}/benign_nodule3_0001-0030_c0025_1_p0074.png': f'{dir_20_dtc_benign}/benign_nodule3_0001-0030_c0025_2_p0074.png',
+    f'{dir_20_mtrm_malignant}/malignant_nodule3_0001-0030_c0012_1_p0035.png': f'{dir_20_dtc_malignant}/malignant_nodule3_0001-0030_c0012_2_p0035.png',
+    f'{dir_20_mtrm_malignant}/malignant_nodule3_0001-0030_c0014_2_p0041.png': f'{dir_20_dtc_malignant}/malignant_nodule3_0001-0030_c0014_4_p0041.png',
+    f'{dir_20_mtrm_malignant}/malignant_nodule3_0001-0030_c0021_1_p0062.png': f'{dir_20_dtc_malignant}/malignant_nodule3_0001-0030_c0021_3_p0062.png',
+    f'{dir_20_mtrm_malignant}/malignant_nodule3_0031-0060_c0033_1_p0008.png': f'{dir_20_dtc_malignant}/malignant_nodule3_0031-0060_c0033_3_p0008.png',
+    f'{dir_20_mtrm_malignant}/malignant_nodule3_0031-0060_c0039_2_p0026.png': f'{dir_20_dtc_malignant}/malignant_nodule3_0031-0060_c0039_3_p0026.png',
+    f'{dir_20_mtrm_malignant}/malignant_nodule3_0031-0060_c0046_1_p0047.png': f'{dir_20_dtc_malignant}/malignant_nodule3_0031-0060_c0046_2_p0047.png',
+    f'{dir_20_mtrm_malignant}/malignant_nodule3_0031-0060_c0047_1_p0050.png': f'{dir_20_dtc_malignant}/malignant_nodule3_0031-0060_c0047_3_p0050.png',
+    f'{dir_20_mtrm_malignant}/malignant_nodule3_0031-0060_c0050_1_p0059.png': f'{dir_20_dtc_malignant}/malignant_nodule3_0031-0060_c0050_2_p0059.png',
+    f'{dir_20_mtrm_malignant}/malignant_nodule3_0031-0060_c0051_1_p0062.png': f'{dir_20_dtc_malignant}/malignant_nodule3_0031-0060_c0051_3_p0062.png',
+    f'{dir_20_mtrm_malignant}/malignant_nodule3_0031-0060_c0053_1_p0068.png': f'{dir_20_dtc_malignant}/malignant_nodule3_0031-0060_c0053_2_p0068.png',
+    #--------
 }
 
 #
