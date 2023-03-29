@@ -117,8 +117,8 @@ def _demo_thyroid_train(with_doppler, savepath):
 
     #
 
-    model = 'resnet50'
-    #model = 'densenet121'
+    #model = 'resnet50'
+    model = 'densenet121'
 
     target_resize = 250
     batch_size = 8 #@param ["8", "16", "4", "1"] {type:"raw"}
@@ -306,12 +306,12 @@ if __name__ == '__main__':
         # ckpt = 'resnet34_batch4_epoch100.ckpt'  # num_attentions: 32
         # demo_thyroid_test(ckpt, 'resnet34', 400, 4)  # 0.650
 
-    if 1:
+    if 0:
         ckpt = demo_thyroid_train()
         #demo_thyroid_test(ckpt)
         demo_thyroid_test(ckpt, 'resnet50')
 
-    if 0:
+    if 1:
         ckpt = demo_thyroid_train_with_doppler()
-        #demo_thyroid_test(ckpt)
-        demo_thyroid_test(ckpt, 'resnet50')
+        demo_thyroid_test(ckpt)
+        #demo_thyroid_test(ckpt, 'resnet50')
