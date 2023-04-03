@@ -81,7 +81,7 @@ def demo_thyroid_test(ckpt,
     print('@@ demo_thyroid_test(): $$')
 
 
-def _demo_thyroid_train(with_doppler, savepath):
+def _demo_thyroid_train(with_doppler, model, savepath):
     print('\n\n@@ _demo_thyroid_train(): ^^')
 
     device = get_device()
@@ -90,6 +90,7 @@ def _demo_thyroid_train(with_doppler, savepath):
     #
 
     print('@@ with_doppler:', with_doppler)
+    print('@@ model:', model)
     print('@@ savepath:', savepath)
 
     if 1:
@@ -117,9 +118,6 @@ def _demo_thyroid_train(with_doppler, savepath):
 
     #
 
-    #model = 'resnet50'
-    model = 'densenet121'
-
     target_resize = 250
     batch_size = 8 #@param ["8", "16", "4", "1"] {type:"raw"}
 
@@ -131,13 +129,9 @@ def _demo_thyroid_train(with_doppler, savepath):
     lr = 0.001 #@param ["0.001", "0.00001"] {type:"raw"}
     lr_ = "lr-1e5" #@param ["lr-1e3", "lr-1e5"]
 
-    start_epoch = 0
-
-    #total_epochs = 3
-    # total_epochs = 10
+    total_epochs = 1
     #total_epochs = 16
-    total_epochs = 40
-    # total_epochs = 64
+    #total_epochs = 40
 
     run_name = f"{model}_{target_resize}_{batch_size}_{lr_}_n{number}"
     print('@@ run_name:', run_name)
@@ -212,6 +206,8 @@ def _demo_thyroid_train(with_doppler, savepath):
     optimizer = torch.optim.SGD(net.parameters(), lr=learning_rate, momentum=0.9, weight_decay=1e-5)
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=2, gamma=0.99)
 
+    START_EPOCH = 0
+
     if 0:  # @@
         wandb.init(
             # Set the project where this run will be logged
@@ -226,7 +222,7 @@ def _demo_thyroid_train(with_doppler, savepath):
             "optimizer": opt_type,
             "dataset": "Thyroid",
             "train-data-augment": f"{channel}-channel",
-            "epochs": f"{total_epochs - start_epoch}({start_epoch}->{total_epochs})" ,
+            "epochs": f"{total_epochs - START_EPOCH}({START_EPOCH}->{total_epochs})" ,
         })
 
     #
@@ -236,18 +232,18 @@ def _demo_thyroid_train(with_doppler, savepath):
 
     ckpt = thyroid_train.train(
         device, net, feature_center, batch_size, train_loader, validate_loader,
-        optimizer, scheduler, run_name, logs, start_epoch, total_epochs,
+        optimizer, scheduler, run_name, logs, START_EPOCH, total_epochs,
         with_doppler=with_doppler, savepath=savepath)
     print('@@ done; ckpt:', ckpt)
 
     return ckpt
 
 
-def demo_thyroid_train():
-    return _demo_thyroid_train(False, mk_artifact_dir('demo_thyroid_train'))
+def demo_thyroid_train(model='densenet121'):
+    return _demo_thyroid_train(False, model, mk_artifact_dir('demo_thyroid_train'))
 
-def demo_thyroid_train_with_doppler():
-    return _demo_thyroid_train(True, mk_artifact_dir('demo_thyroid_train_with_doppler'))
+def demo_thyroid_train_with_doppler(model='densenet121'):
+    return _demo_thyroid_train(True, model, mk_artifact_dir('demo_thyroid_train_with_doppler'))
 
 
 def demo_doppler_compare():
@@ -306,12 +302,9 @@ if __name__ == '__main__':
         # ckpt = 'resnet34_batch4_epoch100.ckpt'  # num_attentions: 32
         # demo_thyroid_test(ckpt, 'resnet34', 400, 4)  # 0.650
 
-    if 0:
-        ckpt = demo_thyroid_train()
-        #demo_thyroid_test(ckpt)
-        demo_thyroid_test(ckpt, 'resnet50')
-
     if 1:
-        ckpt = demo_thyroid_train_with_doppler()
-        demo_thyroid_test(ckpt)
-        #demo_thyroid_test(ckpt, 'resnet50')
+        #model = 'densenet121'
+        model = 'resnet34'
+
+        #demo_thyroid_test(demo_thyroid_train(model), model)
+        demo_thyroid_test(demo_thyroid_train_with_doppler(model), model)
