@@ -106,7 +106,7 @@ def _demo_thyroid_train(with_doppler, model, train_ds_path, validate_ds_path, sa
     print('@@ model:', model)
     print('@@ savepath:', savepath)
 
-    print('@@ train_ds_path:', train_ds_path)
+    #print('@@ train_ds_path:', train_ds_path)
     print(len(train_ds_path['benign']), len(train_ds_path['malignant']))
 
     print('@@ validate_ds_path:', validate_ds_path)
@@ -125,8 +125,7 @@ def _demo_thyroid_train(with_doppler, model, train_ds_path, validate_ds_path, sa
     lr = 0.001 #@param ["0.001", "0.00001"] {type:"raw"}
     lr_ = "lr-1e5" #@param ["lr-1e3", "lr-1e5"]
 
-    #total_epochs = 1#!!
-    #total_epochs = 16
+    #total_epochs = 1
     total_epochs = 40
 
     run_name = f"{model}_{target_resize}_{batch_size}_{lr_}_n{number}"
@@ -301,12 +300,12 @@ if __name__ == '__main__':
         train_ds_path = digitake.preprocess.build_dataset({
             'benign': ['Markers_Train_Remove_Markers/Benign_Remove/train'],
             'malignant': ['Markers_Train_Remove_Markers/Malignant_Remove/train'],
-        }, root='Siriraj_sample_doppler_100a')  # n-20 m-20
+        }, root='Siriraj_sample_doppler_100a')  # n-10 m-10
 
         validate_ds_path = digitake.preprocess.build_dataset({
             'benign': ['Markers_Train_Remove_Markers/Benign_Remove/validate'],
             'malignant': ['Markers_Train_Remove_Markers/Malignant_Remove/validate'],
-        }, root='Siriraj_sample_doppler_100a')  # 20 20
+        }, root='Siriraj_sample_doppler_100a')  # 10 10
 
         ckpt = demo_thyroid_train(model, train_ds_path, validate_ds_path)
         #ckpt = demo_thyroid_train_with_doppler(model, train_ds_path, validate_ds_path)
