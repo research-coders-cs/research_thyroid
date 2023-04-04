@@ -295,23 +295,26 @@ if __name__ == '__main__':
         model = 'resnet34'
 
         # !!!!
-        train_ds_path = digitake.preprocess.build_dataset({
-            'benign': ['Markers_Train_Remove_Markers/Benign_Remove/matched'],  # 10
-            'malignant': ['Markers_Train_Remove_Markers/Malignant_Remove/matched'],  # 10
-        }, root='Siriraj_sample_doppler_20')
+        # train_ds_path = digitake.preprocess.build_dataset({
+        #     'benign': ['Markers_Train_Remove_Markers/Benign_Remove/matched'],  # 10
+        #     'malignant': ['Markers_Train_Remove_Markers/Malignant_Remove/matched'],  # 10
+        # }, root='Siriraj_sample_doppler_20')
+        train_ds_path = TRAIN_DS_PATH_DEFAULT  # !!!!
 
         # !!!!
-        validate_ds_path = digitake.preprocess.build_dataset({
-            'benign': ['Markers_Train_Remove_Markers/Benign_Remove/matched'],  # 10
-            'malignant': ['Markers_Train_Remove_Markers/Malignant_Remove/matched'],  # 10
-        }, root='Siriraj_sample_doppler_20')
+        # validate_ds_path = digitake.preprocess.build_dataset({
+        #     'benign': ['Markers_Train_Remove_Markers/Benign_Remove/matched'],  # 10
+        #     'malignant': ['Markers_Train_Remove_Markers/Malignant_Remove/matched'],  # 10
+        # }, root='Siriraj_sample_doppler_20')
+        validate_ds_path = VALIDATE_DS_PATH_DEFAULT  # !!!!
 
         ckpt = demo_thyroid_train(model, train_ds_path, validate_ds_path)
         #ckpt = demo_thyroid_train_with_doppler(model, train_ds_path, validate_ds_path)
 
-        test_ds_path = digitake.preprocess.build_dataset({
-            'benign': ['Markers_Train_Remove_Markers/Benign_Remove/matched'],  # 10
-            'malignant': ['Markers_Train_Remove_Markers/Malignant_Remove/matched'],  # 10
-        }, root='Siriraj_sample_doppler_20')
+        # test_ds_path = digitake.preprocess.build_dataset({
+        #     'benign': ['Markers_Train_Remove_Markers/Benign_Remove/matched'],  # 10
+        #     'malignant': ['Markers_Train_Remove_Markers/Malignant_Remove/matched'],  # 10
+        # }, root='Siriraj_sample_doppler_20')
+        test_ds_path = TEST_DS_PATH_DEFAULT  # !!!!
 
         demo_thyroid_test(ckpt, model, test_ds_path)
