@@ -282,25 +282,11 @@ if __name__ == '__main__':
         demo_doppler_compare()
 
     if 0:
-        # seemingly unlearned ...
-        # ckpt = "WSDAN_densenet_224_16_lr-1e5_n1-remove_220828-0837_85.714.ckpt"
-        # ckpt = "WSDAN_doppler_densenet_224_16_lr-1e5_n5_220905-1309_78.571.ckpt"
-        # demo_thyroid_test(ckpt, 'densenet121', TEST_DS_PATH_DEFAULT, 224, 16)
-
         # ckpt = 'ttt/51/output/demo_thyroid_train/densenet_250_8_lr-1e5_n4_75.000'  # 0.800
         # demo_thyroid_test(ckpt)  # TODO - generate 'confusion_matrix_test-*.png', 'test-*.png'
 
         ckpt = 'densenet_224_8_lr-1e5_n4_95.968.ckpt'  # 0.9xx, LGTM
         demo_thyroid_test(ckpt, 'densenet121', TEST_DS_PATH_DEFAULT, 224, 8)
-
-        # ?? trained via different src ??
-        #---- ng
-        #  - ?? INFO:root:WSDAN: Some params were not loaded: INFO:root:features.conv0.weight, features.norm0.weight, features.norm0.bias, features.norm0.running_mean, features.norm0.running_var, ...
-        # ckpt = 'densenet121_batch4_epoch100.ckpt'  # num_attentions: 32 per 'densenet121_batch4_epoch100.log'
-        # demo_thyroid_test(ckpt, 'densenet121', TEST_DS_PATH_DEFAULT, 320, 4)  # nonesense results
-        #---- ng
-        # ckpt = 'resnet34_batch4_epoch100.ckpt'  # num_attentions: 32
-        # demo_thyroid_test(ckpt, 'resnet34', TEST_DS_PATH_DEFAULT, 400, 4)  # 0.650
 
     if 1:
         #model = 'densenet121'
