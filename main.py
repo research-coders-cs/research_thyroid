@@ -125,8 +125,8 @@ def _demo_thyroid_train(with_doppler, model, train_ds_path, validate_ds_path, sa
     lr = 0.001 #@param ["0.001", "0.00001"] {type:"raw"}
     lr_ = "lr-1e5" #@param ["lr-1e3", "lr-1e5"]
 
-    #total_epochs = 1
-    total_epochs = 40
+    total_epochs = 1
+    #total_epochs = 40
 
     run_name = f"{model}_{target_resize}_{batch_size}_{lr_}_n{number}"
     print('@@ run_name:', run_name)
@@ -155,9 +155,10 @@ def _demo_thyroid_train(with_doppler, model, train_ds_path, validate_ds_path, sa
         pin_memory=True
     )
 
-    print('@@ show_data_loader(train_loader) -------- ^^')
-    _channel, _, _, _ = show_data_loader(train_loader)
-    print('@@ show_data_loader(train_loader) -------- $$')
+    if 0:
+        print('@@ show_data_loader(train_loader) -------- ^^')
+        _channel, _, _, _ = show_data_loader(train_loader)  # only the first batch shown
+        print('@@ show_data_loader(train_loader) -------- $$')
 
     #
 
@@ -300,12 +301,12 @@ if __name__ == '__main__':
         train_ds_path = digitake.preprocess.build_dataset({
             'benign': ['Markers_Train_Remove_Markers/Benign_Remove/train'],
             'malignant': ['Markers_Train_Remove_Markers/Malignant_Remove/train'],
-        }, root='Siriraj_sample_doppler_100a')  # n-10 m-10
+        }, root='Dataset_doppler_100b')  # n-10 m-10
 
         validate_ds_path = digitake.preprocess.build_dataset({
             'benign': ['Markers_Train_Remove_Markers/Benign_Remove/validate'],
             'malignant': ['Markers_Train_Remove_Markers/Malignant_Remove/validate'],
-        }, root='Siriraj_sample_doppler_100a')  # 10 10
+        }, root='Dataset_doppler_100b')  # 10 10
 
         #ckpt = demo_thyroid_train(model, train_ds_path, validate_ds_path)
         ckpt = demo_thyroid_train_with_doppler(model, train_ds_path, validate_ds_path)
@@ -313,8 +314,8 @@ if __name__ == '__main__':
         #
 
         test_ds_path = digitake.preprocess.build_dataset({
-            'benign': ['Markers_Train_Remove_Markers/Benign_Remove/matched'],
-            'malignant': ['Markers_Train_Remove_Markers/Malignant_Remove/matched'],
-        }, root='Siriraj_sample_doppler_20')  # 10 10
+            'benign': ['Markers_Train_Remove_Markers/Benign_Remove/test'],
+            'malignant': ['Markers_Train_Remove_Markers/Malignant_Remove/test'],
+        }, root='Dataset_doppler_100b')  # 10 10
 
         demo_thyroid_test(ckpt, model, test_ds_path)
