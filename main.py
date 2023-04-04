@@ -296,18 +296,17 @@ if __name__ == '__main__':
         #model = 'densenet121'
         model = 'resnet34'
 
-        # !!!!
+        #
+
         train_ds_path = digitake.preprocess.build_dataset({
-            'benign': ['Markers_Train_Remove_Markers/Benign_Remove/matched'],
-            'malignant': ['Markers_Train_Remove_Markers/Malignant_Remove/matched'],
-        }, root='Siriraj_sample_doppler_100a')
+            'benign': ['Markers_Train_Remove_Markers/Benign_Remove/train'],
+            'malignant': ['Markers_Train_Remove_Markers/Malignant_Remove/train'],
+        }, root='Siriraj_sample_doppler_100a')  # n-20 m-20
 
-        # !!!!
         validate_ds_path = digitake.preprocess.build_dataset({
-            'benign': ['Markers_Train_Remove_Markers/Benign_Remove/matched'],
-            'malignant': ['Markers_Train_Remove_Markers/Malignant_Remove/matched'],
-        }, root='Siriraj_sample_doppler_100a')
-
+            'benign': ['Markers_Train_Remove_Markers/Benign_Remove/validate'],
+            'malignant': ['Markers_Train_Remove_Markers/Malignant_Remove/validate'],
+        }, root='Siriraj_sample_doppler_100a')  # 20 20
 
         ckpt = demo_thyroid_train(model, train_ds_path, validate_ds_path)
         #ckpt = demo_thyroid_train_with_doppler(model, train_ds_path, validate_ds_path)
