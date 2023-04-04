@@ -29,8 +29,10 @@ TEST_DS_PATH_DEFAULT = digitake.preprocess.build_dataset({
     'malignant': ['Test/Malignant'],
 }, root='Dataset_train_test_val')  # 10 10
 
+MODEL_DEFAULT = 'densenet121'
 
-def demo_thyroid_test(ckpt, model='densenet121', ds_path=TEST_DS_PATH_DEFAULT,
+
+def demo_thyroid_test(ckpt, model=MODEL_DEFAULT, ds_path=TEST_DS_PATH_DEFAULT,
         target_resize=250, batch_size=8, num_attention_maps=32):
 
     print('\n\n@@ demo_thyroid_test(): ^^')
@@ -234,14 +236,14 @@ def _demo_thyroid_train(with_doppler, model, train_ds_path, validate_ds_path, sa
 
 
 def demo_thyroid_train(
-        model='densenet121',
+        model=MODEL_DEFAULT,
         train_ds_path=TRAIN_DS_PATH_DEFAULT,
         validate_ds_path=VALIDATE_DS_PATH_DEFAULT):
     return _demo_thyroid_train(False, model, train_ds_path, validate_ds_path,
         mk_artifact_dir('demo_thyroid_train'))
 
 def demo_thyroid_train_with_doppler(
-        model='densenet121',
+        model=MODEL_DEFAULT,
         train_ds_path=TRAIN_DS_PATH_DEFAULT,
         validate_ds_path=VALIDATE_DS_PATH_DEFAULT):
     return _demo_thyroid_train(True, model, train_ds_path, validate_ds_path,
