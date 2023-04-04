@@ -14,15 +14,21 @@ logging.basicConfig(level=logging.INFO)
 
 WSDAN_NUM_CLASSES = 2
 
+TRAIN_DS_PATH_DEFAULT = digitake.preprocess.build_dataset({
+    'benign': ['Train/Benign'],  # 21
+    'malignant': ['Train/Malignant'],  # 20
+}, root='Dataset_train_test_val')
+
+VALIDATE_DS_PATH_DEFAULT = digitake.preprocess.build_dataset({
+    'benign': ['Val/Benign'],  # 10
+    'malignant': ['Val/Malignant'],  # 10
+}, root='Dataset_train_test_val')
+
 TEST_DS_PATH_DEFAULT = digitake.preprocess.build_dataset({
     'benign': ['Test/Benign'],  # 10
     'malignant': ['Test/Malignant'],  # 10
 }, root='Dataset_train_test_val')
 
-TRAIN_DS_PATH_DEFAULT = digitake.preprocess.build_dataset({
-    'benign': ['Train/Benign'],  # 21
-    'malignant': ['Train/Malignant'],  # 20
-}, root='Dataset_train_test_val')
 
 def demo_thyroid_test(ckpt, model='densenet121', ds_path=TEST_DS_PATH_DEFAULT,
         target_resize=250, batch_size=8, num_attention_maps=32):
@@ -86,7 +92,7 @@ def demo_thyroid_test(ckpt, model='densenet121', ds_path=TEST_DS_PATH_DEFAULT,
     print('@@ demo_thyroid_test(): $$')
 
 
-def _demo_thyroid_train(with_doppler, model, train_ds_path, savepath):
+def _demo_thyroid_train(with_doppler, model, train_ds_path, validate_ds_path, savepath):
     print('\n\n@@ _demo_thyroid_train(): ^^')
 
     device = get_device()
@@ -98,15 +104,11 @@ def _demo_thyroid_train(with_doppler, model, train_ds_path, savepath):
     print('@@ model:', model)
     print('@@ savepath:', savepath)
 
-    print(train_ds_path)
+    print('@@ train_ds_path:', train_ds_path)
     print(len(train_ds_path['benign']), len(train_ds_path['malignant']))
 
-    #
-
-    val_ds_path = digitake.preprocess.build_dataset({
-        'benign': ['Val/Benign'],  # 10
-        'malignant': ['Val/Malignant'],  # 10
-    }, root='Dataset_train_test_val')
+    print('@@ validate_ds_path:', validate_ds_path)
+    print(len(validate_ds_path['benign']), len(validate_ds_path['malignant']))
 
     #
 
@@ -160,7 +162,7 @@ def _demo_thyroid_train(with_doppler, model, train_ds_path, savepath):
 
     validate_dataset = ThyroidDataset(
         phase='val',
-        dataset=val_ds_path,
+        dataset=validate_ds_path,
         transform=get_transform(target_resize, phase='basic'),
         with_alpha_channel=False
       )
@@ -233,14 +235,16 @@ def _demo_thyroid_train(with_doppler, model, train_ds_path, savepath):
 
 def demo_thyroid_train(
         model='densenet121',
-        train_ds_path=TRAIN_DS_PATH_DEFAULT):
-    return _demo_thyroid_train(False, model, train_ds_path,
+        train_ds_path=TRAIN_DS_PATH_DEFAULT,
+        validate_ds_path=VALIDATE_DS_PATH_DEFAULT):
+    return _demo_thyroid_train(False, model, train_ds_path, validate_ds_path,
         mk_artifact_dir('demo_thyroid_train'))
 
 def demo_thyroid_train_with_doppler(
         model='densenet121',
-        train_ds_path=TRAIN_DS_PATH_DEFAULT):
-    return _demo_thyroid_train(True, model, train_ds_path,
+        train_ds_path=TRAIN_DS_PATH_DEFAULT,
+        validate_ds_path=VALIDATE_DS_PATH_DEFAULT):
+    return _demo_thyroid_train(True, model, train_ds_path, validate_ds_path,
         mk_artifact_dir('demo_thyroid_train_with_doppler'))
 
 
@@ -290,14 +294,20 @@ if __name__ == '__main__':
         #model = 'densenet121'
         model = 'resnet34'
 
+        # !!!!
         train_ds_path = digitake.preprocess.build_dataset({
             'benign': ['Markers_Train_Remove_Markers/Benign_Remove/matched'],  # 10
             'malignant': ['Markers_Train_Remove_Markers/Malignant_Remove/matched'],  # 10
         }, root='Siriraj_sample_doppler_20')
 
+        # !!!!
+        validate_ds_path = digitake.preprocess.build_dataset({
+            'benign': ['Markers_Train_Remove_Markers/Benign_Remove/matched'],  # 10
+            'malignant': ['Markers_Train_Remove_Markers/Malignant_Remove/matched'],  # 10
+        }, root='Siriraj_sample_doppler_20')
 
-        ckpt = demo_thyroid_train(model, train_ds_path)
-        #ckpt = demo_thyroid_train_with_doppler(model, train_ds_path)
+        ckpt = demo_thyroid_train(model, train_ds_path, validate_ds_path)
+        #ckpt = demo_thyroid_train_with_doppler(model, train_ds_path, validate_ds_path)
 
         test_ds_path = digitake.preprocess.build_dataset({
             'benign': ['Markers_Train_Remove_Markers/Benign_Remove/matched'],  # 10
