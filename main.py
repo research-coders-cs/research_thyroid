@@ -14,8 +14,13 @@ logging.basicConfig(level=logging.INFO)
 
 WSDAN_NUM_CLASSES = 2
 
-def demo_thyroid_test(ckpt,
-        model='densenet121', target_resize=250, batch_size=8, num_attention_maps=32):
+TEST_DS_PATH_DEFAULT = digitake.preprocess.build_dataset({
+    'malignant': ['Test/Malignant'],
+    'benign': ['Test/Benign'],
+}, root='Dataset_train_test_val')
+
+def demo_thyroid_test(ckpt, model='densenet121', ds_path=TEST_DS_PATH_DEFAULT,
+        target_resize=250, batch_size=8, num_attention_maps=32):
 
     print('\n\n@@ demo_thyroid_test(): ^^')
     print("@@ model:", model)
@@ -27,20 +32,15 @@ def demo_thyroid_test(ckpt,
 
     #
 
-    test_ds_path = digitake.preprocess.build_dataset({
-      'malignant': ['Test/Malignant'],
-      'benign': ['Test/Benign'],
-    }, root='Dataset_train_test_val')  # No Markers
-
-    print('@@ test_ds_path:', test_ds_path)
-    print("@@ len(test_ds_path['malignant']):", len(test_ds_path['malignant']))
-    print("@@ len(test_ds_path['benign']):", len(test_ds_path['benign']))
+    print('@@ ds_path:', ds_path)
+    print("@@ len(ds_path['malignant']):", len(ds_path['malignant']))
+    print("@@ len(ds_path['benign']):", len(ds_path['benign']))
 
     #
 
     test_dataset = ThyroidDataset(
         phase='test',
-        dataset=test_ds_path,
+        dataset=ds_path,
         transform=get_transform(target_resize, phase='basic'),
         with_alpha_channel=False)
 
@@ -129,7 +129,7 @@ def _demo_thyroid_train(with_doppler, model, savepath):
     lr = 0.001 #@param ["0.001", "0.00001"] {type:"raw"}
     lr_ = "lr-1e5" #@param ["lr-1e3", "lr-1e5"]
 
-    total_epochs = 1
+    total_epochs = 1#!!
     #total_epochs = 16
     #total_epochs = 40
 
@@ -285,26 +285,31 @@ if __name__ == '__main__':
         # seemingly unlearned ...
         # ckpt = "WSDAN_densenet_224_16_lr-1e5_n1-remove_220828-0837_85.714.ckpt"
         # ckpt = "WSDAN_doppler_densenet_224_16_lr-1e5_n5_220905-1309_78.571.ckpt"
-        # demo_thyroid_test(ckpt, 'densenet121', 224, 16)
+        # demo_thyroid_test(ckpt, 'densenet121', TEST_DS_PATH_DEFAULT, 224, 16)
 
         # ckpt = 'ttt/51/output/demo_thyroid_train/densenet_250_8_lr-1e5_n4_75.000'  # 0.800
         # demo_thyroid_test(ckpt)  # TODO - generate 'confusion_matrix_test-*.png', 'test-*.png'
 
         ckpt = 'densenet_224_8_lr-1e5_n4_95.968.ckpt'  # 0.9xx, LGTM
-        demo_thyroid_test(ckpt, 'densenet121', 224, 8)
+        demo_thyroid_test(ckpt, 'densenet121', TEST_DS_PATH_DEFAULT, 224, 8)
 
         # ?? trained via different src ??
         #---- ng
         #  - ?? INFO:root:WSDAN: Some params were not loaded: INFO:root:features.conv0.weight, features.norm0.weight, features.norm0.bias, features.norm0.running_mean, features.norm0.running_var, ...
         # ckpt = 'densenet121_batch4_epoch100.ckpt'  # num_attentions: 32 per 'densenet121_batch4_epoch100.log'
-        # demo_thyroid_test(ckpt, 'densenet121', 320, 4)  # nonesense results
+        # demo_thyroid_test(ckpt, 'densenet121', TEST_DS_PATH_DEFAULT, 320, 4)  # nonesense results
         #---- ng
         # ckpt = 'resnet34_batch4_epoch100.ckpt'  # num_attentions: 32
-        # demo_thyroid_test(ckpt, 'resnet34', 400, 4)  # 0.650
+        # demo_thyroid_test(ckpt, 'resnet34', TEST_DS_PATH_DEFAULT, 400, 4)  # 0.650
 
     if 1:
         #model = 'densenet121'
         model = 'resnet34'
 
-        #demo_thyroid_test(demo_thyroid_train(model), model)
-        demo_thyroid_test(demo_thyroid_train_with_doppler(model), model)
+        test_ds_path = digitake.preprocess.build_dataset({
+            'benign': ['Markers_Train_Remove_Markers/Benign_Remove/matched'],  # 10
+            'malignant': ['Markers_Train_Remove_Markers/Malignant_Remove/matched'],  # 10
+        }, root='Siriraj_sample_doppler_20')
+
+        demo_thyroid_test(demo_thyroid_train(model), model, test_ds_path)
+        #demo_thyroid_test(demo_thyroid_train_with_doppler(model), model, test_ds_path)
