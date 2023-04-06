@@ -125,8 +125,8 @@ def _demo_thyroid_train(with_doppler, model, train_ds_path, validate_ds_path, sa
     lr = 0.001 #@param ["0.001", "0.00001"] {type:"raw"}
     lr_ = "lr-1e5" #@param ["lr-1e3", "lr-1e5"]
 
-    total_epochs = 1
-    #total_epochs = 40
+    #total_epochs = 1
+    total_epochs = 40
 
     run_name = f"{model}_{target_resize}_{batch_size}_{lr_}_n{number}"
     print('@@ run_name:', run_name)
@@ -308,8 +308,8 @@ if __name__ == '__main__':
             'malignant': ['Markers_Train_Remove_Markers/Malignant_Remove/validate'],
         }, root='Dataset_doppler_100b')  # 10 10
 
-        #ckpt = demo_thyroid_train(model, train_ds_path, validate_ds_path)
-        ckpt = demo_thyroid_train_with_doppler(model, train_ds_path, validate_ds_path)
+        ckpt = demo_thyroid_train(model, train_ds_path, validate_ds_path)
+        #ckpt = demo_thyroid_train_with_doppler(model, train_ds_path, validate_ds_path)
 
         #
 

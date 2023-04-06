@@ -399,7 +399,7 @@ def resolve_hw_slices(bbox_crop, train_img_copy, train_img_path, idx, size, save
     THRESH_ISEC_IN_CROP = 0.25
 
     path_doppler = to_doppler[train_img_path] if train_img_path in to_doppler else None
-    print('@@ path_doppler:', path_doppler)
+    #print('@@ path_doppler:', path_doppler)
 
     if 1 and path_doppler is None:  # strict check
         raise ValueError(f'`path_doppler` not found for: {train_img_path}')
