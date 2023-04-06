@@ -50,17 +50,19 @@ def detect_doppler(img):
                     maxarea = area
                     cntrRect = approx
 
-    if cntrRect is not None:
-        xy = cntrRect.ravel()
-        x = [xy[0], xy[2], xy[4], xy[6]]
-        y = [xy[1], xy[3], xy[5], xy[7]]
-        min_x = float(min(x))
-        max_x = float(max(x))
-        min_y = float(min(y))
-        max_y = float(max(y))
-        x = [min_x, min_y, max_x, max_y]
-        return x
-    return None
+    if cntrRect is None:
+        return None
+
+    xy = cntrRect.ravel()
+    x = [xy[0], xy[2], xy[4], xy[6]]
+    y = [xy[1], xy[3], xy[5], xy[7]]
+    min_x = float(min(x))
+    max_x = float(max(x))
+    min_y = float(min(y))
+    max_y = float(max(y))
+
+    return [min_x, min_y, max_x, max_y]
+
 
 def get_iou(truth, pred):
     # coordinates of the area of intersection.
@@ -407,13 +409,17 @@ def resolve_hw_slices(bbox_crop, train_img_copy, train_img_path, idx, size, save
         raw = cv2.imread(path_doppler)
         bbox_raw = detect_doppler(raw)
         if bbox_raw is None:
-            print('@@ detect_doppler() failed for:', path_doppler)
+            print(f'@@ detect_doppler() failed for: {path_doppler}; using `bbox_crop` instead')
             return bbox_to_hw_slices(bbox_crop)
 
         bbox = np.array([
             bbox_raw[0] * size[0] / raw.shape[1], bbox_raw[1] * size[1] / raw.shape[0],
             bbox_raw[2] * size[0] / raw.shape[1], bbox_raw[3] * size[1] / raw.shape[0]],
             dtype=np.float32)
+
+        if bbox[2] - bbox[0] < 1. or bbox[3] - bbox[1] < 1.:
+            print('@@ `bbox` too squeezed due to scaling; using `bbox_crop` instead')
+            return bbox_to_hw_slices(bbox_crop)
 
         iou, isec_in_crop = get_iou(bbox, bbox_crop)
         print('@@ THRESH_ISEC_IN_CROP:', THRESH_ISEC_IN_CROP)
@@ -435,9 +441,6 @@ def resolve_hw_slices(bbox_crop, train_img_copy, train_img_path, idx, size, save
             # doppler patch image; OK
             sh_, sw_ = bbox_to_hw_slices(bbox)
             img_ = train_img_copy.copy()[sh_, sw_, :]
-            try:
-                cv2.imwrite(os.path.join(savepath, f'debug_doppler_idx_{idx}.jpg'), img_)
-            except Exception as e:
-                print('@@ e:', e)
+            cv2.imwrite(os.path.join(savepath, f'debug_doppler_idx_{idx}.jpg'), img_)
 
     return bbox_to_hw_slices(bbox_crop if qualify else bbox)
