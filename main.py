@@ -1,7 +1,7 @@
 import torch
 from torch.utils.data import DataLoader
 
-import digitake
+from digitake.preprocess import build_dataset
 from src.wsdan import WSDAN
 from src.transform import ThyroidDataset, get_transform##, get_transform_center_crop, transform_fn
 from src.utils import mk_artifact_dir, get_device, show_data_loader
@@ -14,17 +14,17 @@ logging.basicConfig(level=logging.INFO)
 
 WSDAN_NUM_CLASSES = 2
 
-TRAIN_DS_PATH_DEFAULT = digitake.preprocess.build_dataset({
+TRAIN_DS_PATH_DEFAULT = build_dataset({
     'benign': ['Train/Benign'],
     'malignant': ['Train/Malignant'],
 }, root='Dataset_train_test_val')  # 21 20
 
-VALIDATE_DS_PATH_DEFAULT = digitake.preprocess.build_dataset({
+VALIDATE_DS_PATH_DEFAULT = build_dataset({
     'benign': ['Val/Benign'],
     'malignant': ['Val/Malignant'],
 }, root='Dataset_train_test_val')  # 10 10
 
-TEST_DS_PATH_DEFAULT = digitake.preprocess.build_dataset({
+TEST_DS_PATH_DEFAULT = build_dataset({
     'benign': ['Test/Benign'],
     'malignant': ['Test/Malignant'],
 }, root='Dataset_train_test_val')  # 10 10
@@ -125,8 +125,8 @@ def _demo_thyroid_train(with_doppler, model, train_ds_path, validate_ds_path, sa
     lr = 0.001 #@param ["0.001", "0.00001"] {type:"raw"}
     lr_ = "lr-1e5" #@param ["lr-1e3", "lr-1e5"]
 
-    #total_epochs = 1
-    total_epochs = 40
+    total_epochs = 1
+    #total_epochs = 40
 
     run_name = f"{model}_{target_resize}_{batch_size}_{lr_}_n{number}"
     print('@@ run_name:', run_name)
@@ -298,12 +298,12 @@ if __name__ == '__main__':
 
         #
 
-        train_ds_path = digitake.preprocess.build_dataset({
+        train_ds_path = build_dataset({
             'benign': ['Markers_Train_Remove_Markers/Benign_Remove/train'],
             'malignant': ['Markers_Train_Remove_Markers/Malignant_Remove/train'],
         }, root='Dataset_doppler_100b')  # n-10 m-10
 
-        validate_ds_path = digitake.preprocess.build_dataset({
+        validate_ds_path = build_dataset({
             'benign': ['Markers_Train_Remove_Markers/Benign_Remove/validate'],
             'malignant': ['Markers_Train_Remove_Markers/Malignant_Remove/validate'],
         }, root='Dataset_doppler_100b')  # 10 10
@@ -313,7 +313,7 @@ if __name__ == '__main__':
 
         #
 
-        test_ds_path = digitake.preprocess.build_dataset({
+        test_ds_path = build_dataset({
             'benign': ['Markers_Train_Remove_Markers/Benign_Remove/test'],
             'malignant': ['Markers_Train_Remove_Markers/Malignant_Remove/test'],
         }, root='Dataset_doppler_100b')  # 10 10
