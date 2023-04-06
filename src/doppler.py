@@ -397,6 +397,7 @@ def resolve_hw_slices(bbox_crop, train_img_copy, train_img_path, idx, size, save
     THRESH_ISEC_IN_CROP = 0.25
 
     path_doppler = to_doppler[train_img_path] if train_img_path in to_doppler else None
+    print('@@ path_doppler:', path_doppler)
 
     if 1 and path_doppler is None:  # strict check
         raise ValueError(f'`path_doppler` not found for: {train_img_path}')
@@ -434,6 +435,9 @@ def resolve_hw_slices(bbox_crop, train_img_copy, train_img_path, idx, size, save
             # doppler patch image; OK
             sh_, sw_ = bbox_to_hw_slices(bbox)
             img_ = train_img_copy.copy()[sh_, sw_, :]
-            cv2.imwrite(os.path.join(savepath, f'debug_doppler_idx_{idx}.jpg'), img_)
+            try:
+                cv2.imwrite(os.path.join(savepath, f'debug_doppler_idx_{idx}.jpg'), img_)
+            except Exception as e:
+                print('@@ e:', e)
 
     return bbox_to_hw_slices(bbox_crop if qualify else bbox)
