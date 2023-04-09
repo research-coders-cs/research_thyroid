@@ -77,21 +77,19 @@ def demo_thyroid_test(ckpt, model=MODEL_DEFAULT, ds_path=TEST_DS_PATH_DEFAULT,
         savepath=mk_artifact_dir('demo_thyroid_test'))
     # print('@@ results:', results)
 
-    #
-
-    if 1:  #  legacy
-        from src.legacy import print_scores, print_auc
-
+    from src.legacy import print_scores, print_auc, print_poa
+    if 1:
         print('\n\n@@ ======== print_scores(results)')
         print_scores(results)
 
+    if 0:
         _enable_plot = 0  # @@
         print(f'\n\n@@ ======== print_auc(results, enable_plot={_enable_plot})')
-        # print_auc(results, len(test_dataset), enable_plot=_enable_plot)
+        print_auc(results, len(test_dataset), enable_plot=_enable_plot)
 
-    #
-
-    print('@@ demo_thyroid_test(): $$')
+    if 1:
+        print(f'\n\n@@ ======== print_poa(results)')
+        print_poa(results)
 
 
 def _demo_thyroid_train(with_doppler, model, train_ds_path, validate_ds_path, savepath):
@@ -285,14 +283,14 @@ if __name__ == '__main__':
     if 0:  # adaptation of 'compare.{ipynb,py}' exported from https://colab.research.google.com/drive/1kxMFgo1LyVqPYqhS6_UJKUsVvA2-l9wk
         demo_doppler_compare()
 
-    if 0:
+    if 1:
         # ckpt = 'ttt/51/output/demo_thyroid_train/densenet_250_8_lr-1e5_n4_75.000'  # 0.800
         # demo_thyroid_test(ckpt)  # TODO - generate 'confusion_matrix_test-*.png', 'test-*.png'
 
         ckpt = 'densenet_224_8_lr-1e5_n4_95.968.ckpt'  # 0.9xx, LGTM
         demo_thyroid_test(ckpt, 'densenet121', TEST_DS_PATH_DEFAULT, 224, 8)
 
-    if 1:
+    if 0:
         model = 'densenet121'
         #model = 'resnet34'
 

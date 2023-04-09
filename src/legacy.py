@@ -67,3 +67,10 @@ def print_auc(results, test_size, enable_plot=False):  # @@
         plt.ylabel('True Positive Rate')
         plt.legend(loc = 'lower right')
         plt.show()
+
+def print_poa(results):
+    pred = results[2]
+    true = results[3]
+    for (i, (y_hat, y)) in enumerate(zip(pred, true)):
+        perc = softmax(y_hat.cpu().numpy())[1] * 100  # Percentage of Abnormality
+        print(f'Case {i + 1} - Abnormality: %0.1f %%' % (perc))
