@@ -283,14 +283,14 @@ if __name__ == '__main__':
     if 0:  # adaptation of 'compare.{ipynb,py}' exported from https://colab.research.google.com/drive/1kxMFgo1LyVqPYqhS6_UJKUsVvA2-l9wk
         demo_doppler_compare()
 
-    if 1:
+    if 0:
         # ckpt = 'ttt/51/output/demo_thyroid_train/densenet_250_8_lr-1e5_n4_75.000'  # 0.800
         # demo_thyroid_test(ckpt)  # TODO - generate 'confusion_matrix_test-*.png', 'test-*.png'
 
         ckpt = 'densenet_224_8_lr-1e5_n4_95.968.ckpt'  # 0.9xx, LGTM
         demo_thyroid_test(ckpt, 'densenet121', TEST_DS_PATH_DEFAULT, 224, 8)
 
-    if 0:
+    if 1:
         model = 'densenet121'
         #model = 'resnet34'
 

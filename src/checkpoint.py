@@ -37,7 +37,7 @@ class ModelCheckpoint(Callback):
     def on_epoch_begin(self):
         pass
 
-    def on_epoch_end(self, logs, net, **kwargs):
+    def on_epoch_end(self, num_epoch, logs, net, **kwargs):
         current_score = logs[self.monitor]
         if isinstance(current_score, np.ndarray):
             current_score = current_score[0]
@@ -68,9 +68,9 @@ class ModelCheckpoint(Callback):
                 torch.save({
                     'logs': logs,
                     'state_dict': state_dict}, savepath)
-            print(f'@@ [UPDATED] best: {self.best_score} savepath: {savepath}')
+            print(f'@@ [ckpt:UPDATED] epoch: {num_epoch} best: {self.best_score} savepath: {savepath}')
         else:
-            print(f'@@ [unchanged] best (current): {self.best_score} ({current_score}) savepath: {savepath}')
+            print(f'@@ [ckpt:unchanged] epoch: {num_epoch} best (current): {self.best_score} ({current_score}) savepath: {savepath}')
 
     def get_savepath_last(self):
         return self.savepath + ("_%.3f" % self.best_score if self.savemode_debug else '')

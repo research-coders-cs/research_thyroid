@@ -331,19 +331,20 @@ def train(device, net, feature_center, batch_size, train_loader, validate_loader
         mc.reset()
 
     for epoch in range(start_epoch, start_epoch + total_epochs):
-        print(('#' * 10), 'epoch ', str(epoch + 1), ('#' * 10))
+        num_epoch = epoch + 1
+        print(('#' * 10), 'epoch ', str(num_epoch), ('#' * 10))
 
         mc.on_epoch_begin()
 
-        logs['epoch'] = epoch + 1
+        logs['epoch'] = num_epoch
         logs['lr'] = optimizer.param_groups[0]['lr']
 
-        logging.info('Epoch {:03d}, Learning Rate {:g}'.format(epoch + 1, optimizer.param_groups[0]['lr']))
+        logging.info('Epoch {:03d}, Learning Rate {:g}'.format(num_epoch, optimizer.param_groups[0]['lr']))
 
         pbar = tqdm(total=len(train_loader), unit=' batches')
-        pbar.set_description('Epoch {}/{}'.format(epoch + 1, total_epochs))
+        pbar.set_description('Epoch {}/{}'.format(num_epoch, total_epochs))
 
-        savepath_epoch = os.path.join(savepath, f'epoch_{epoch + 1}')
+        savepath_epoch = os.path.join(savepath, f'epoch_{num_epoch}')
         if not os.path.exists(savepath_epoch):
             os.makedirs(savepath_epoch, exist_ok=True)
 
@@ -359,7 +360,7 @@ def train(device, net, feature_center, batch_size, train_loader, validate_loader
         else:
             scheduler.step()
 
-        mc.on_epoch_end(logs, net, feature_center=feature_center)
+        mc.on_epoch_end(num_epoch, logs, net, feature_center=feature_center)
 
         #@@wandb.log(logs)
         pbar.close()
