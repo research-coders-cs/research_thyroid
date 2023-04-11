@@ -5,6 +5,7 @@ from digitake.preprocess import build_dataset
 from src.wsdan import WSDAN
 from src.transform import ThyroidDataset, get_transform##, get_transform_center_crop, transform_fn
 from src.utils import mk_artifact_dir, get_device, show_data_loader
+from src.stats import print_scores, print_auc, print_poa
 from src import thyroid_train, thyroid_test
 
 import os
@@ -77,7 +78,6 @@ def demo_thyroid_test(ckpt, model=MODEL_DEFAULT, ds_path=TEST_DS_PATH_DEFAULT,
         savepath=mk_artifact_dir('demo_thyroid_test'))
     # print('@@ results:', results)
 
-    from src.legacy import print_scores, print_auc, print_poa
     if 1:
         print('\n\n@@ ======== print_scores(results)')
         print_scores(results)
