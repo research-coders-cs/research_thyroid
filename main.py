@@ -292,8 +292,8 @@ if __name__ == '__main__':
         demo_thyroid_test(ckpt, 'densenet121', TEST_DS_PATH_DEFAULT, 224, 8)
 
     if 1:
-        #model = 'densenet121'
-        model = 'resnet34'
+        model = 'densenet121'
+        #model = 'resnet34'
 
         #
 
