@@ -35,7 +35,7 @@ class SaveFeatures():  # @@ not used at the moment
     def remove(self): self.hook.remove()
 
 
-def _train(device, logs, train_loader, net, feature_center, optimizer, pbar, with_doppler, savepath):
+def _train(device, logs, train_loader, net, feature_center, optimizer, pbar, with_doppler, savepath_epoch):
 
     # metrics initialization
     loss_container.reset()
@@ -53,9 +53,12 @@ def _train(device, logs, train_loader, net, feature_center, optimizer, pbar, wit
         print(f"(batch_idx={batch_idx}) X[0].shape:", X[0].shape)
         paths = p['path']  # @@
 
-        savepath_batch = os.path.join(savepath, f'batch_{batch_idx}')
-        if not os.path.exists(savepath_batch):
-            os.makedirs(savepath_batch, exist_ok=True)
+        if savepath_epoch:
+            savepath_batch = os.path.join(savepath_epoch, f'batch_{batch_idx}')
+            if not os.path.exists(savepath_batch):
+                os.makedirs(savepath_batch, exist_ok=True)
+        else:
+            savepath_batch = None
 
         X = X.to(device)
         y = y.to(device)
@@ -74,11 +77,11 @@ def _train(device, logs, train_loader, net, feature_center, optimizer, pbar, wit
         # Attention Cropping
         ##################################
         with torch.no_grad():
-            crop_images = batch_augment(
-                X, paths, attention_map[:, :1, :, :], savepath_batch, use_doppler=with_doppler,
+            crop_images = batch_augment(X, paths, attention_map[:, :1, :, :],
+                savepath=savepath_batch, use_doppler=with_doppler,
                 mode='crop', theta=(0.7, 0.95), padding_ratio=0.1)
 
-        if 1:  # @@
+        if savepath_batch:  # @@
             for idx in range(crop_images.shape[0]):
                 fname = os.path.join(savepath_batch, f'final_crop_idx_{idx}.jpg')
                 cv2.imwrite(fname, img_gpu_to_cpu(crop_images[idx]))
@@ -90,11 +93,11 @@ def _train(device, logs, train_loader, net, feature_center, optimizer, pbar, wit
         # Attention Dropping
         ##################################
         with torch.no_grad():
-            drop_images = batch_augment(
-                X, paths, attention_map[:, 1:, :, :], savepath_batch, use_doppler=False,
+            drop_images = batch_augment(X, paths, attention_map[:, 1:, :, :],
+                savepath=savepath_batch, use_doppler=False,
                 mode='drop', theta=(0.2, 0.5))
 
-        if 1:  # @@
+        if savepath_batch:  # @@
             for idx in range(drop_images.shape[0]):
                 fname = os.path.join(savepath_batch, f'final_drop_idx_{idx}.jpg')
                 cv2.imwrite(fname, img_gpu_to_cpu(drop_images[idx]))
@@ -159,7 +162,7 @@ def _train(device, logs, train_loader, net, feature_center, optimizer, pbar, wit
     logging.info('Train: {}, Time {:3.2f}'.format(batch_info, end_time - start_time))
 
 
-def _validate(device, logs, validate_loader, net, pbar, savepath):
+def _validate(device, logs, validate_loader, net, pbar, savepath_epoch):
 
     # metrics initialization
     val_loss_container.reset()
@@ -172,9 +175,12 @@ def _validate(device, logs, validate_loader, net, pbar, savepath):
       for i, (X, y, p) in enumerate(validate_loader):
           paths = p['path']  # @@
 
-          savepath_batch = os.path.join(savepath, f'batch_{i}')
-          if not os.path.exists(savepath_batch):
-              os.makedirs(savepath_batch, exist_ok=True)
+          if savepath_epoch:
+              savepath_batch = os.path.join(savepath_epoch, f'batch_{i}')
+              if not os.path.exists(savepath_batch):
+                  os.makedirs(savepath_batch, exist_ok=True)
+          else:
+              savepath_batch = None
 
           # obtain data
           X = X.to(device)
@@ -188,8 +194,8 @@ def _validate(device, logs, validate_loader, net, pbar, savepath):
           ##################################
           # Object Localization and Refinement
           ##################################
-          crop_images = batch_augment(
-              X, paths, attention_map, savepath_batch, use_doppler=False,
+          crop_images = batch_augment(X, paths, attention_map,
+              savepath=savepath_batch, use_doppler=False,
               mode='crop', theta=(0.7, 0.95), padding_ratio=0.05)
           y_pred_crop, _, _ = net(crop_images)
 
@@ -344,9 +350,12 @@ def train(device, net, feature_center, batch_size, train_loader, validate_loader
         pbar = tqdm(total=len(train_loader), unit=' batches')
         pbar.set_description('Epoch {}/{}'.format(num_epoch, total_epochs))
 
-        savepath_epoch = os.path.join(savepath, f'epoch_{num_epoch}')
-        if not os.path.exists(savepath_epoch):
-            os.makedirs(savepath_epoch, exist_ok=True)
+        if num_epoch < 3:  # debug
+            savepath_epoch = os.path.join(savepath, f'epoch_{num_epoch}')
+            if not os.path.exists(savepath_epoch):
+                os.makedirs(savepath_epoch, exist_ok=True)
+        else:
+            savepath_epoch = None
 
         _train(device, logs, train_loader, net, feature_center, optimizer,
             pbar, with_doppler, savepath_epoch)
