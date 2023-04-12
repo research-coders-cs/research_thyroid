@@ -307,8 +307,8 @@ if __name__ == '__main__':
             'malignant': ['Markers_Train_Remove_Markers/Malignant_Remove/validate'],
         }, root='Dataset_doppler_100c')  # 30% 30% (doppler matched)
 
-        ckpt = demo_thyroid_train(model, train_ds_path, validate_ds_path)
-        #ckpt = demo_thyroid_train_with_doppler(model, train_ds_path, validate_ds_path)
+        #ckpt = demo_thyroid_train(model, train_ds_path, validate_ds_path)
+        ckpt = demo_thyroid_train_with_doppler(model, train_ds_path, validate_ds_path)
 
         #
 
