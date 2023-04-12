@@ -68,9 +68,9 @@ class ModelCheckpoint(Callback):
                 torch.save({
                     'logs': logs,
                     'state_dict': state_dict}, savepath)
-            print(f'@@ [ckpt:UPDATED] epoch: {num_epoch} best: {self.best_score} savepath: {savepath}')
+            print(f'@@ [ckpt:UPDATED] epoch: {num_epoch} best: %.3f savepath: {savepath}' % self.best_score)
         else:
-            print(f'@@ [ckpt:unchanged] epoch: {num_epoch} best (current): {self.best_score} ({current_score}) savepath: {savepath}')
+            print(f'@@ [ckpt:unchanged] epoch: {num_epoch} best (current): %.3f (%.3f) savepath: {savepath}' % (self.best_score, current_score))
 
     def get_savepath_last(self):
         return self.savepath + ("_%.3f" % self.best_score if self.savemode_debug else '')
