@@ -124,6 +124,7 @@ def _demo_thyroid_train(with_doppler, model, train_ds_path, validate_ds_path, sa
     lr_ = "lr-1e5" #@param ["lr-1e3", "lr-1e5"]
 
     #total_epochs = 1
+    #total_epochs = 2
     total_epochs = 40
 
     run_name = f"{model}_{target_resize}_{batch_size}_{lr_}_n{number}"
@@ -291,20 +292,20 @@ if __name__ == '__main__':
         demo_thyroid_test(ckpt, 'densenet121', TEST_DS_PATH_DEFAULT, 224, 8)
 
     if 1:
-        model = 'densenet121'
-        #model = 'resnet34'
+        #model = 'densenet121'
+        model = 'resnet34'
 
         #
 
         train_ds_path = build_dataset({
             'benign': ['Markers_Train_Remove_Markers/Benign_Remove/train'],
             'malignant': ['Markers_Train_Remove_Markers/Malignant_Remove/train'],
-        }, root='Dataset_doppler_100b')  # n-10 m-10
+        }, root='Dataset_doppler_100c')  # 70% 70% (doppler matched)
 
         validate_ds_path = build_dataset({
             'benign': ['Markers_Train_Remove_Markers/Benign_Remove/validate'],
             'malignant': ['Markers_Train_Remove_Markers/Malignant_Remove/validate'],
-        }, root='Dataset_doppler_100b')  # 10 10
+        }, root='Dataset_doppler_100c')  # 30% 30% (doppler matched)
 
         ckpt = demo_thyroid_train(model, train_ds_path, validate_ds_path)
         #ckpt = demo_thyroid_train_with_doppler(model, train_ds_path, validate_ds_path)
@@ -314,6 +315,6 @@ if __name__ == '__main__':
         test_ds_path = build_dataset({
             'benign': ['Markers_Train_Remove_Markers/Benign_Remove/test'],
             'malignant': ['Markers_Train_Remove_Markers/Malignant_Remove/test'],
-        }, root='Dataset_doppler_100b')  # 10 10
+        }, root='Dataset_doppler_100c')  # max max (doppler not matched)
 
         demo_thyroid_test(ckpt, model, test_ds_path)
