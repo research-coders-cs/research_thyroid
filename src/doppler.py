@@ -226,10 +226,10 @@ def get_sample_paths():  # used by `demo_doppler_compare()`
 
 #
 
-dir_mtrm_benign = 'Dataset_doppler_100b/Markers_Train_Remove_Markers/Benign_Remove/train'
-dir_mtrm_malignant = 'Dataset_doppler_100b/Markers_Train_Remove_Markers/Malignant_Remove/train'
-dir_dtc_benign = 'Dataset_doppler_100b/Doppler_Train_Crop/Benign/matched'
-dir_dtc_malignant = 'Dataset_doppler_100b/Doppler_Train_Crop/Malignant/matched'
+dir_mtrm_benign = 'Dataset_doppler_100c/Markers_Train_Remove_Markers/Benign_Remove/train'
+dir_mtrm_malignant = 'Dataset_doppler_100c/Markers_Train_Remove_Markers/Malignant_Remove/train'
+dir_dtc_benign = 'Dataset_doppler_100c/Doppler_Train_Crop/Benign/matched'
+dir_dtc_malignant = 'Dataset_doppler_100c/Doppler_Train_Crop/Malignant/matched'
 
 to_doppler = {
     #-------- 'Siriraj_sample_doppler_comp'
