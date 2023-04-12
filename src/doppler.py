@@ -428,7 +428,7 @@ def resolve_hw_slices(bbox_crop, train_img_copy, train_img_path, idx, size, save
             iou, isec_in_crop, qualify)
         print('@@ debug_fname_jpg:', debug_fname_jpg)
 
-        if 1:  # debug dump
+        if savepath is not None:  # debug dump
             bbox_draw(train_img_copy, bbox, (255, 255, 0), 1)  # blue
             bbox_draw(train_img_copy, bbox_crop, (0, 0, 255), 1)  # red
             cv2.imwrite(os.path.join(savepath, debug_fname_jpg), train_img_copy)

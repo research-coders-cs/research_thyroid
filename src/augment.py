@@ -14,7 +14,7 @@ def img_gpu_to_cpu(img):
     img_full = NormalizeData(img_full) * 255
     return img_full
 
-def batch_augment(images, paths, attention_map, savepath, use_doppler=False,
+def batch_augment(images, paths, attention_map, savepath=None, use_doppler=False,
                   mode='crop', theta=0.5, padding_ratio=0.1):
     print('@@ images.size():', images.size())
     batches, _, imgH, imgW = images.size()

@@ -80,7 +80,7 @@ def test(device, net, batch_size, data_loader, ckpt, savepath=None):
             # Attention Cropping
             ##################################
             crop_image = batch_augment(
-                X, paths, attention_maps, savepath,
+                X, paths, attention_maps, savepath=None, use_doppler=False,
                 mode='crop', theta=0.85, padding_ratio=0.05)
 
             # crop images forward

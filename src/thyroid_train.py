@@ -91,7 +91,7 @@ def _train(device, logs, train_loader, net, feature_center, optimizer, pbar, wit
         ##################################
         with torch.no_grad():
             drop_images = batch_augment(
-                X, paths, attention_map[:, 1:, :, :], savepath_batch,
+                X, paths, attention_map[:, 1:, :, :], savepath_batch, use_doppler=False,
                 mode='drop', theta=(0.2, 0.5))
 
         if 1:  # @@
@@ -189,7 +189,7 @@ def _validate(device, logs, validate_loader, net, pbar, savepath):
           # Object Localization and Refinement
           ##################################
           crop_images = batch_augment(
-              X, paths, attention_map, savepath_batch,
+              X, paths, attention_map, savepath_batch, use_doppler=False,
               mode='crop', theta=(0.7, 0.95), padding_ratio=0.05)
           y_pred_crop, _, _ = net(crop_images)
 
