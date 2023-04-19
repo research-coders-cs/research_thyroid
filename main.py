@@ -44,13 +44,8 @@ def demo_thyroid_test(ckpt, model=MODEL_DEFAULT, ds_path=TEST_DS_PATH_DEFAULT,
     device = get_device()
     print("@@ device:", device)
 
-    #
-
-    print('@@ ds_path:', ds_path)
-    print("@@ len(ds_path['malignant']):", len(ds_path['malignant']))
-    print("@@ len(ds_path['benign']):", len(ds_path['benign']))
-
-    #
+    #print('@@ ds_path:', ds_path)
+    print("@@ lens ds_path:", len(ds_path['benign']), len(ds_path['malignant']))
 
     test_dataset = ThyroidDataset(
         phase='test',
@@ -98,19 +93,15 @@ def _demo_thyroid_train(with_doppler, model, train_ds_path, validate_ds_path, sa
     device = get_device()
     print("@@ device:", device)
 
-    #
-
     print('@@ with_doppler:', with_doppler)
     print('@@ model:', model)
     print('@@ savepath:', savepath)
 
     #print('@@ train_ds_path:', train_ds_path)
-    print(len(train_ds_path['benign']), len(train_ds_path['malignant']))
+    print("@@ lens train_ds_path:", len(train_ds_path['benign']), len(train_ds_path['malignant']))
 
-    print('@@ validate_ds_path:', validate_ds_path)
-    print(len(validate_ds_path['benign']), len(validate_ds_path['malignant']))
-
-    #
+    #print('@@ validate_ds_path:', validate_ds_path)
+    print("@@ lens validate_ds_path:", len(validate_ds_path['benign']), len(validate_ds_path['malignant']))
 
     target_resize = 250
     batch_size = 8 #@param ["8", "16", "4", "1"] {type:"raw"}
@@ -315,7 +306,7 @@ if __name__ == '__main__':
 
         demo_thyroid_test(ckpt, model, test_ds_path)
 
-    if 0:  # 'heatmap-compare-doppler_100c-TrueFalse--rounds--tests_100d'
+    if 0:  # experiment - 'heatmap-compare-doppler_100c-TrueFalse--rounds--tests_100d'
         # ckpt = './heatmap-compare-doppler_100c-TrueFalse--rounds/train-test-doppler-False/output/demo_thyroid_train/resnet34_250_8_lr-1e5_n4'
         # ckpt = './heatmap-compare-doppler_100c-TrueFalse--rounds/train-test-doppler-False/run-2/output/demo_thyroid_train/resnet34_250_8_lr-1e5_n4'
         # ckpt = './heatmap-compare-doppler_100c-TrueFalse--rounds/train-test-doppler-False/run-3/output/demo_thyroid_train/resnet34_250_8_lr-1e5_n4'
@@ -327,3 +318,9 @@ if __name__ == '__main__':
             'benign': ['Markers_Train_Remove_Markers/Benign_Remove/test'],
             'malignant': ['Markers_Train_Remove_Markers/Malignant_Remove/test'],
         }, root='Dataset_doppler_100d'))
+
+    if 1:  # experiment - default
+        model = 'densenet121'
+        ckpt = demo_thyroid_train(model)
+
+        demo_thyroid_test(ckpt, model)
