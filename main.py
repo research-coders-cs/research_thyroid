@@ -311,16 +311,25 @@ if __name__ == '__main__':
         # ckpt = './heatmap-compare-doppler_100c-TrueFalse--rounds/train-test-doppler-False/run-2/output/demo_thyroid_train/resnet34_250_8_lr-1e5_n4'
         # ckpt = './heatmap-compare-doppler_100c-TrueFalse--rounds/train-test-doppler-False/run-3/output/demo_thyroid_train/resnet34_250_8_lr-1e5_n4'
         # ckpt = './heatmap-compare-doppler_100c-TrueFalse--rounds/train-test-doppler-True/output/demo_thyroid_train_with_doppler/resnet34_250_8_lr-1e5_n4'
-        # ckpt = './heatmap-compare-doppler_100c-TrueFalse--rounds/train-test-doppler-True/run-2/output/demo_thyroid_train_with_doppler/resnet34_250_8_lr-1e5_n4'
-        ckpt = './heatmap-compare-doppler_100c-TrueFalse--rounds/train-test-doppler-True/run-3/output/demo_thyroid_train_with_doppler/resnet34_250_8_lr-1e5_n4'
+        ckpt = './heatmap-compare-doppler_100c-TrueFalse--rounds/train-test-doppler-True/run-2/output/demo_thyroid_train_with_doppler/resnet34_250_8_lr-1e5_n4'
+        # ckpt = './heatmap-compare-doppler_100c-TrueFalse--rounds/train-test-doppler-True/run-3/output/demo_thyroid_train_with_doppler/resnet34_250_8_lr-1e5_n4'
 
         demo_thyroid_test(ckpt, 'resnet34', build_dataset({
             'benign': ['Markers_Train_Remove_Markers/Benign_Remove/test'],
             'malignant': ['Markers_Train_Remove_Markers/Malignant_Remove/test'],
         }, root='Dataset_doppler_100d'))
 
-    if 1:  # experiment - default
-        model = 'densenet121'
+    if 1:  # demo - acc 0.680
+        ckpt = 'WSDAN_doppler_100d-resnet34_250_8_lr-1e5_n4.ckpt'
+        test_ds_path = build_dataset({
+            'benign': ['Markers_Train_Remove_Markers/Benign_Remove/test'],
+            'malignant': ['Markers_Train_Remove_Markers/Malignant_Remove/test'],
+        }, root='Dataset_doppler_100d')
+
+        demo_thyroid_test(ckpt, 'resnet34', test_ds_path, 250, 8)
+
+    if 0:  # experiment - default
+        model = 'resnet34'
         ckpt = demo_thyroid_train(model)
 
         demo_thyroid_test(ckpt, model)
