@@ -3,7 +3,7 @@ from torch.utils.data import DataLoader
 
 from digitake.preprocess import build_dataset
 
-import wsdan
+import wsdan  # via 'research-thyroid-wsdan' pkg
 from wsdan.wsdan import WSDAN
 from wsdan.transform import ThyroidDataset, get_transform##, get_transform_center_crop, transform_fn
 from wsdan.utils import mk_artifact_dir, get_device, show_data_loader
@@ -318,7 +318,7 @@ if __name__ == '__main__':
             'malignant': ['Markers_Train_Remove_Markers/Malignant_Remove/test'],
         }, root='Dataset_doppler_100d'))
 
-    if 1:  # demo - acc 0.680
+    if 0:  # demo - acc 0.65-0.68
         ckpt = 'WSDAN_doppler_100d-resnet34_250_8_lr-1e5_n4.ckpt'
         test_ds_path = build_dataset({
             'benign': ['Markers_Train_Remove_Markers/Benign_Remove/test'],
@@ -327,7 +327,7 @@ if __name__ == '__main__':
 
         demo_thyroid_test(ckpt, 'resnet34', test_ds_path, 250, 8)
 
-    if 0:  # experiment - default
+    if 1:  # experiment - default
         model = 'resnet34'
         ckpt = demo_thyroid_train(model)
 
