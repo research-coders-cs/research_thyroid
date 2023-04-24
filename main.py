@@ -2,11 +2,13 @@ import torch
 from torch.utils.data import DataLoader
 
 from digitake.preprocess import build_dataset
-from src.wsdan.wsdan import WSDAN
-from src.wsdan.transform import ThyroidDataset, get_transform##, get_transform_center_crop, transform_fn
-from src.wsdan.utils import mk_artifact_dir, get_device, show_data_loader
-from src.wsdan.stats import print_scores, print_auc, print_poa
-from src.wsdan import thyroid_train, thyroid_test
+
+import wsdan
+from wsdan.wsdan import WSDAN
+from wsdan.transform import ThyroidDataset, get_transform##, get_transform_center_crop, transform_fn
+from wsdan.utils import mk_artifact_dir, get_device, show_data_loader
+from wsdan.stats import print_scores, print_auc, print_poa
+from wsdan import thyroid_train, thyroid_test
 
 import os
 import logging
@@ -123,7 +125,7 @@ def _demo_thyroid_train(with_doppler, model, train_ds_path, validate_ds_path, sa
 
     #
 
-    from src.wsdan.doppler import to_doppler  # !!!!
+    from wsdan.doppler import to_doppler  # !!!!
 
     train_dataset = ThyroidDataset(
         phase='train',
@@ -240,7 +242,7 @@ def demo_thyroid_train_with_doppler(
 def demo_doppler_compare():
     print('\n\n\n\n@@ demo_doppler_comp(): ^^')
 
-    from src.wsdan.doppler import doppler_comp, get_iou, plot_comp, get_sample_paths
+    from wsdan.doppler import doppler_comp, get_iou, plot_comp, get_sample_paths
     import matplotlib.pyplot as plt
     savepath = mk_artifact_dir('demo_doppler_comp')
 
