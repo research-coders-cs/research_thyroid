@@ -142,8 +142,7 @@ def _demo_thyroid_train(with_doppler, model, train_ds_path, validate_ds_path, sa
         batch_size=batch_size,
         shuffle=True,
         num_workers=workers,
-        pin_memory=True
-    )
+        pin_memory=True)
 
     if 0:
         print('@@ show_data_loader(train_loader) -------- ^^')
@@ -156,16 +155,14 @@ def _demo_thyroid_train(with_doppler, model, train_ds_path, validate_ds_path, sa
         phase='val',
         dataset=validate_ds_path,
         transform=get_transform(target_resize, phase='basic'),
-        with_alpha_channel=False
-      )
+        with_alpha_channel=False)
 
     validate_loader = DataLoader(
         validate_dataset,
         batch_size=batch_size * 4,
         shuffle=False,
         num_workers=workers,
-        pin_memory=True
-    )
+        pin_memory=True)
 
     #
 
