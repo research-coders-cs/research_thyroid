@@ -1,91 +1,27 @@
 import torch
-from torch.utils.data import DataLoader
+# from torch.utils.data import DataLoader
 
 from digitake.preprocess import build_dataset
 
 import wsdan  # via 'research-thyroid-wsdan' pkg
-from wsdan.net import WSDAN, net_train, net_test
 
-from wsdan.demo.transform import ThyroidDataset, get_transform##, get_transform_center_crop, transform_fn
-from wsdan.demo.utils import mk_artifact_dir, get_device, show_data_loader
-from wsdan.demo.stats import print_scores, print_auc, print_poa
+# from wsdan.net import WSDAN, net_train, net_test
+
+# both
+# from wsdan.demo.transform import ThyroidDataset, get_transform##, get_transform_center_crop, transform_fn
+# from wsdan.demo.utils import mk_artifact_dir, get_device
+
+# test only
+# from wsdan.demo.utils import mk_artifact_dir, get_device, show_data_loader
+# from wsdan.demo.stats import print_scores, print_auc, print_poa
+
+from wsdan.demo import demo_test, \
+    TRAIN_DS_PATH_DEFAULT, VALIDATE_DS_PATH_DEFAULT, TEST_DS_PATH_DEFAULT, \
+    MODEL_DEFAULT
+
 
 import logging
 logging.basicConfig(level=logging.INFO)
-
-
-WSDAN_NUM_CLASSES = 2
-
-TRAIN_DS_PATH_DEFAULT = build_dataset({
-    'benign': ['Train/Benign'],
-    'malignant': ['Train/Malignant'],
-}, root='Dataset_train_test_val')  # 21 20
-
-VALIDATE_DS_PATH_DEFAULT = build_dataset({
-    'benign': ['Val/Benign'],
-    'malignant': ['Val/Malignant'],
-}, root='Dataset_train_test_val')  # 10 10
-
-TEST_DS_PATH_DEFAULT = build_dataset({
-    'benign': ['Test/Benign'],
-    'malignant': ['Test/Malignant'],
-}, root='Dataset_train_test_val')  # 10 10
-
-MODEL_DEFAULT = 'densenet121'
-
-
-def demo_thyroid_test(ckpt, model=MODEL_DEFAULT, ds_path=TEST_DS_PATH_DEFAULT,
-        target_resize=250, batch_size=8, num_attention_maps=32):
-
-    print('\n\n@@ demo_thyroid_test(): ^^')
-    print("@@ model:", model)
-    print("@@ target_resize:", target_resize)
-    print("@@ batch_size:", batch_size)
-
-    device = get_device()
-    print("@@ device:", device)
-
-    #print('@@ ds_path:', ds_path)
-    print("@@ lens ds_path:", len(ds_path['benign']), len(ds_path['malignant']))
-
-    test_dataset = ThyroidDataset(
-        phase='test',
-        dataset=ds_path,
-        transform=get_transform(target_resize, phase='basic'),
-        with_alpha_channel=False)
-
-    #@@workers = 2
-    workers = 0  # @@
-    print('@@ workers:', workers)
-
-    test_loader = DataLoader(
-        test_dataset,
-        batch_size=len(test_dataset),  # @@
-        shuffle=False,
-        num_workers=workers,
-        pin_memory=True)
-
-    #
-
-    net = WSDAN(num_classes=WSDAN_NUM_CLASSES, M=num_attention_maps, model=model, pretrained=True)
-    net.to(device)
-
-    results = net_test.test(device, net, batch_size, test_loader, ckpt,
-        savepath=mk_artifact_dir('demo_thyroid_test'))
-    # print('@@ results:', results)
-
-    if 1:
-        print('\n\n@@ ======== print_scores(results)')
-        print_scores(results)
-
-    if 0:
-        _enable_plot = 0  # @@
-        print(f'\n\n@@ ======== print_auc(results, enable_plot={_enable_plot})')
-        print_auc(results, len(test_dataset), enable_plot=_enable_plot)
-
-    if 1:
-        print(f'\n\n@@ ======== print_poa(results)')
-        print_poa(results)
 
 
 def _demo_thyroid_train(with_doppler, model, train_ds_path, validate_ds_path, savepath):
@@ -124,7 +60,7 @@ def _demo_thyroid_train(with_doppler, model, train_ds_path, validate_ds_path, sa
 
     #
 
-    from wsdan.doppler import to_doppler  # !!!!
+    from wsdan.net.doppler import to_doppler  # !!!!
 
     train_dataset = ThyroidDataset(
         phase='train',
@@ -243,15 +179,15 @@ def demo_thyroid_train_with_doppler(
 if __name__ == '__main__':
     print("@@ torch.__version__:", torch.__version__)
 
-    if 1:  # adaptation of 'compare.{ipynb,py}' exported from https://colab.research.google.com/drive/1kxMFgo1LyVqPYqhS6_UJKUsVvA2-l9wk
+    if 0:  # adaptation of 'compare.{ipynb,py}' exported from https://colab.research.google.com/drive/1kxMFgo1LyVqPYqhS6_UJKUsVvA2-l9wk
         wsdan.demo.doppler_compare()
 
-    if 0:
+    if 1:
         # ckpt = 'ttt/51/output/demo_thyroid_train/densenet_250_8_lr-1e5_n4_75.000'  # 0.800
-        # demo_thyroid_test(ckpt)  # TODO - generate 'confusion_matrix_test-*.png', 'test-*.png'
+        # demo_test.run(ckpt)  # TODO - generate 'confusion_matrix_test-*.png', 'test-*.png'
 
         ckpt = 'densenet_224_8_lr-1e5_n4_95.968.ckpt'  # 0.9xx, LGTM
-        demo_thyroid_test(ckpt, 'densenet121', TEST_DS_PATH_DEFAULT, 224, 8)
+        demo_test.run(ckpt, 'densenet121', TEST_DS_PATH_DEFAULT, 224, 8)
 
     if 0:
         #model = 'densenet121'
@@ -299,7 +235,7 @@ if __name__ == '__main__':
 
         demo_thyroid_test(ckpt, 'resnet34', test_ds_path, 250, 8)
 
-    if 1:  # experiment - default
+    if 0:  # experiment - default
         model = 'resnet34'
         ckpt = demo_thyroid_train(model)
 
