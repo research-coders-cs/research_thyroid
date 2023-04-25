@@ -15,9 +15,11 @@ import wsdan  # via 'research-thyroid-wsdan' pkg
 # from wsdan.demo.utils import mk_artifact_dir, get_device, show_data_loader
 # from wsdan.demo.stats import print_scores, print_auc, print_poa
 
-from wsdan.demo import demo_test, \
-    TRAIN_DS_PATH_DEFAULT, VALIDATE_DS_PATH_DEFAULT, TEST_DS_PATH_DEFAULT, \
-    MODEL_DEFAULT
+from wsdan.demo import test as demo_test
+from wsdan.demo import train as demo_train
+from wsdan.demo import train_with_doppler as demo_train_with_doppler
+from wsdan.demo import MODEL_DEFAULT, \
+    TRAIN_DS_PATH_DEFAULT, VALIDATE_DS_PATH_DEFAULT, TEST_DS_PATH_DEFAULT
 
 
 import logging
@@ -184,10 +186,10 @@ if __name__ == '__main__':
 
     if 1:
         # ckpt = 'ttt/51/output/demo_thyroid_train/densenet_250_8_lr-1e5_n4_75.000'  # 0.800
-        # demo_test.run(ckpt)  # TODO - generate 'confusion_matrix_test-*.png', 'test-*.png'
+        # demo.test(ckpt)  # TODO - generate 'confusion_matrix_test-*.png', 'test-*.png'
 
         ckpt = 'densenet_224_8_lr-1e5_n4_95.968.ckpt'  # 0.9xx, LGTM
-        demo_test.run(ckpt, 'densenet121', TEST_DS_PATH_DEFAULT, 224, 8)
+        demo_test(ckpt, 'densenet121', TEST_DS_PATH_DEFAULT, 224, 8)
 
     if 0:
         #model = 'densenet121'
@@ -237,6 +239,7 @@ if __name__ == '__main__':
 
     if 0:  # experiment - default
         model = 'resnet34'
-        ckpt = demo_thyroid_train(model)
+        ####ckpt = demo_thyroid_train(model)
+        ckpt = demo_train(model)
 
-        demo_thyroid_test(ckpt, model)
+        demo_test(ckpt, model)
