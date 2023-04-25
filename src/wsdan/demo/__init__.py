@@ -85,8 +85,8 @@ def _train(with_doppler, model, train_ds_path, validate_ds_path, savepath):
     lr_ = "lr-1e5" #@param ["lr-1e3", "lr-1e5"]
 
     #total_epochs = 1
-    total_epochs = 2
-    #total_epochs = 40
+    #total_epochs = 2
+    total_epochs = 40
 
     run_name = f"{model}_{target_resize}_{batch_size}_{lr_}_n{number}"
     print('@@ run_name:', run_name)
