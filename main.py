@@ -4,11 +4,11 @@ from torch.utils.data import DataLoader
 from digitake.preprocess import build_dataset
 
 import wsdan  # via 'research-thyroid-wsdan' pkg
-from wsdan.wsdan import WSDAN
+from wsdan.net import WSDAN, net_train, net_test
+
 from wsdan.transform import ThyroidDataset, get_transform##, get_transform_center_crop, transform_fn
 from wsdan.utils import mk_artifact_dir, get_device, show_data_loader
 from wsdan.stats import print_scores, print_auc, print_poa
-from wsdan import thyroid_train, thyroid_test
 
 import os
 import logging
@@ -71,7 +71,7 @@ def demo_thyroid_test(ckpt, model=MODEL_DEFAULT, ds_path=TEST_DS_PATH_DEFAULT,
     net = WSDAN(num_classes=WSDAN_NUM_CLASSES, M=num_attention_maps, model=model, pretrained=True)
     net.to(device)
 
-    results = thyroid_test.test(device, net, batch_size, test_loader, ckpt,
+    results = net_test.test(device, net, batch_size, test_loader, ckpt,
         savepath=mk_artifact_dir('demo_thyroid_test'))
     # print('@@ results:', results)
 
@@ -117,8 +117,8 @@ def _demo_thyroid_train(with_doppler, model, train_ds_path, validate_ds_path, sa
     lr_ = "lr-1e5" #@param ["lr-1e3", "lr-1e5"]
 
     #total_epochs = 1
-    #total_epochs = 2
-    total_epochs = 40
+    total_epochs = 2
+    #total_epochs = 40
 
     run_name = f"{model}_{target_resize}_{batch_size}_{lr_}_n{number}"
     print('@@ run_name:', run_name)
@@ -215,7 +215,7 @@ def _demo_thyroid_train(with_doppler, model, train_ds_path, validate_ds_path, sa
     logging.info('Start training: Total epochs: {}, Batch size: {}, Training size: {}, Validation size: {}'
         .format(total_epochs, batch_size, len(train_dataset), len(validate_dataset)))
 
-    ckpt = thyroid_train.train(
+    ckpt = net_train.train(
         device, net, feature_center, batch_size, train_loader, validate_loader,
         optimizer, scheduler, run_name, logs, START_EPOCH, total_epochs,
         with_doppler=with_doppler, savepath=savepath)
