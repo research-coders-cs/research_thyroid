@@ -6,11 +6,10 @@ from digitake.preprocess import build_dataset
 import wsdan  # via 'research-thyroid-wsdan' pkg
 from wsdan.net import WSDAN, net_train, net_test
 
-from wsdan.transform import ThyroidDataset, get_transform##, get_transform_center_crop, transform_fn
-from wsdan.utils import mk_artifact_dir, get_device, show_data_loader
-from wsdan.stats import print_scores, print_auc, print_poa
+from wsdan.demo.transform import ThyroidDataset, get_transform##, get_transform_center_crop, transform_fn
+from wsdan.demo.utils import mk_artifact_dir, get_device, show_data_loader
+from wsdan.demo.stats import print_scores, print_auc, print_poa
 
-import os
 import logging
 logging.basicConfig(level=logging.INFO)
 
@@ -239,40 +238,13 @@ def demo_thyroid_train_with_doppler(
         mk_artifact_dir('demo_thyroid_train_with_doppler'))
 
 
-def demo_doppler_compare():
-    print('\n\n\n\n@@ demo_doppler_comp(): ^^')
-
-    from wsdan.doppler import doppler_comp, get_iou, plot_comp, get_sample_paths
-    import matplotlib.pyplot as plt
-    savepath = mk_artifact_dir('demo_doppler_comp')
-
-    for path_doppler, path_markers, path_markers_label in get_sample_paths():
-        print('\n@@ -------- calling doppler_comp() for')
-        print(f'  {os.path.basename(path_doppler)} vs')
-        print(f'  {os.path.basename(path_markers)}')
-
-        bbox_doppler, bbox_markers, border_img_doppler, border_img_markers = doppler_comp(
-            path_doppler, path_markers, path_markers_label)
-        print('@@ bbox_doppler:', bbox_doppler)
-        print('@@ bbox_markers:', bbox_markers)
-
-        iou = get_iou(bbox_doppler, bbox_markers)
-        print('@@ iou:', iou)
-
-        plt = plot_comp(border_img_doppler, border_img_markers, path_doppler, path_markers)
-        stem = os.path.splitext(os.path.basename(path_doppler))[0]
-        fname = f'{savepath}/comp-doppler-{stem}.jpg'
-        plt.savefig(fname, bbox_inches='tight')
-        print('@@ saved -', fname)
-
-    print('@@ demo_doppler_comp(): $$')
 
 
 if __name__ == '__main__':
     print("@@ torch.__version__:", torch.__version__)
 
-    if 0:  # adaptation of 'compare.{ipynb,py}' exported from https://colab.research.google.com/drive/1kxMFgo1LyVqPYqhS6_UJKUsVvA2-l9wk
-        demo_doppler_compare()
+    if 1:  # adaptation of 'compare.{ipynb,py}' exported from https://colab.research.google.com/drive/1kxMFgo1LyVqPYqhS6_UJKUsVvA2-l9wk
+        wsdan.demo.doppler_compare()
 
     if 0:
         # ckpt = 'ttt/51/output/demo_thyroid_train/densenet_250_8_lr-1e5_n4_75.000'  # 0.800
