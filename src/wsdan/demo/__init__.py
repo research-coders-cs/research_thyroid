@@ -26,6 +26,7 @@ TEST_DS_PATH_DEFAULT = build_dataset({
     'malignant': ['Test/Malignant'],
 }, root='Dataset_train_test_val')  # 10 10
 
+TOTAL_EPOCHS_DEFAULT = 100
 MODEL_DEFAULT = 'densenet121'
 
 print("@@ torch.__version__:", torch.__version__)
@@ -57,13 +58,12 @@ def doppler_compare():
         print('@@ saved -', fname)
 
 
-def _train(with_doppler, model, train_ds_path, validate_ds_path, savepath):
-    print('\n\n@@ _demo_thyroid_train(): ^^')
-
+def _train(with_doppler, total_epochs, model, train_ds_path, validate_ds_path, savepath):
     device = get_device()
     print("@@ device:", device)
 
     print('@@ with_doppler:', with_doppler)
+    print('@@ total_epochs:', total_epochs)
     print('@@ model:', model)
     print('@@ savepath:', savepath)
 
@@ -83,10 +83,6 @@ def _train(with_doppler, model, train_ds_path, validate_ds_path, savepath):
 
     lr = 0.001 #@param ["0.001", "0.00001"] {type:"raw"}
     lr_ = "lr-1e5" #@param ["lr-1e3", "lr-1e5"]
-
-    #total_epochs = 1
-    #total_epochs = 2
-    total_epochs = 40
 
     run_name = f"{model}_{target_resize}_{batch_size}_{lr_}_n{number}"
     print('@@ run_name:', run_name)
@@ -193,18 +189,20 @@ def _train(with_doppler, model, train_ds_path, validate_ds_path, savepath):
 
 
 def train(
+        total_epochs=TOTAL_EPOCHS_DEFAULT,
         model=MODEL_DEFAULT,
         train_ds_path=TRAIN_DS_PATH_DEFAULT,
         validate_ds_path=VALIDATE_DS_PATH_DEFAULT):
-    return _train(False, model, train_ds_path, validate_ds_path,
+    return _train(False, total_epochs, model, train_ds_path, validate_ds_path,
         mk_artifact_dir('demo_train'))
 
 
 def train_with_doppler(
+        total_epochs=TOTAL_EPOCHS_DEFAULT,
         model=MODEL_DEFAULT,
         train_ds_path=TRAIN_DS_PATH_DEFAULT,
         validate_ds_path=VALIDATE_DS_PATH_DEFAULT):
-    return _train(True, model, train_ds_path, validate_ds_path,
+    return _train(True, total_epochs, model, train_ds_path, validate_ds_path,
         mk_artifact_dir('demo_train_with_doppler'))
 
 
@@ -213,7 +211,6 @@ def test(ckpt, model=MODEL_DEFAULT, ds_path=TEST_DS_PATH_DEFAULT,
     from .utils import show_data_loader
     from .stats import print_scores, print_auc, print_poa
 
-    print('\n\n@@ demo_thyroid_test(): ^^')
     print("@@ model:", model)
     print("@@ target_resize:", target_resize)
     print("@@ batch_size:", batch_size)

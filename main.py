@@ -7,8 +7,7 @@ import wsdan  # 'research-thyroid-wsdan' pkg (i.e. 'src/wsdan/*')
 from wsdan.demo import test as demo_test
 from wsdan.demo import train as demo_train
 from wsdan.demo import train_with_doppler as demo_train_with_doppler
-from wsdan.demo import MODEL_DEFAULT, \
-    TRAIN_DS_PATH_DEFAULT, VALIDATE_DS_PATH_DEFAULT, TEST_DS_PATH_DEFAULT
+
 
 # TODO - `print()` -> `logging.info()` in 'src/wsdan/**/*.py'; output control in Colab
 #      - arg `total_epochs`
@@ -21,10 +20,12 @@ if __name__ == '__main__':
         # ckpt = 'ttt/51/output/demo_train/densenet_250_8_lr-1e5_n4_75.000'  # 0.800
         # demo.test(ckpt)  # TODO - generate 'confusion_matrix_test-*.png', 'test-*.png'
 
+        from wsdan.demo import TEST_DS_PATH_DEFAULT
         ckpt = 'densenet_224_8_lr-1e5_n4_95.968.ckpt'  # 0.9xx, LGTM
         demo_test(ckpt, 'densenet121', TEST_DS_PATH_DEFAULT, 224, 8)
 
     if 0:
+        total_epochs = 40
         #model = 'densenet121'
         model = 'resnet34'
 
@@ -38,8 +39,8 @@ if __name__ == '__main__':
             'malignant': ['Markers_Train_Remove_Markers/Malignant_Remove/validate'],
         }, root='Dataset_doppler_100d')  # 30% 30% (doppler matched)
 
-        #ckpt = demo_train(model, train_ds_path, validate_ds_path)
-        ckpt = demo_train_with_doppler(model, train_ds_path, validate_ds_path)
+        #ckpt = demo_train(total_epochs, model, train_ds_path, validate_ds_path)
+        ckpt = demo_train_with_doppler(total_epochs, model, train_ds_path, validate_ds_path)
 
         test_ds_path = build_dataset({
             'benign': ['Markers_Train_Remove_Markers/Benign_Remove/test'],
@@ -71,7 +72,8 @@ if __name__ == '__main__':
         demo_test(ckpt, 'resnet34', test_ds_path, 250, 8)
 
     if 1:  # experiment - default
+        total_epochs = 42
         model = 'resnet34'
-        ckpt = demo_train(model)
 
+        ckpt = demo_train(total_epochs, model)
         demo_test(ckpt, model)
