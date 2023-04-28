@@ -12,10 +12,9 @@ def mk_artifact_dir(dirname):
     return path
 
 def get_device():
-    USE_GPU = False#True
     digitake.model.set_reproducible(2565)
 
-    if USE_GPU:
+    if os.environ.get('WSDAN_USE_GPU') == '1':
         # GPU settings
         assert torch.cuda.is_available(), "Don't forget to turn on gpu runtime!"
         os.environ['CUDA_VISIBLE_DEVICES'] = '0'
