@@ -25,7 +25,7 @@ def get_device():
     else:
         device = "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
 
-    print('@@ get_device(): device', device)
+    print('@@ get_device(): device:', device)
     return device
 
 def show_data_loader(data_loader, plt_show=False):
