@@ -35,7 +35,7 @@ jobs:
           ##sudo apt install nvidia-cudnn && sudo /usr/sbin/update-nvidia-cudnn -u
           #----
           wget https://developer.download.nvidia.com/compute/redist/cudnn/v8.5.0/local_installers/11.7/cudnn-linux-x86_64-8.5.0.96_cuda11-archive.tar.xz
-          tar -xzvf cudnn-linux-x86_64-8.5.0.96_cuda11-archive.tar.xz
+          tar xvf cudnn-linux-x86_64-8.5.0.96_cuda11-archive.tar.xz
           sudo cp -P cuda/include/cudnn.h /usr/local/cuda-11.7/include
           sudo cp -P cuda/lib/libcudnn* /usr/local/cuda-11.7/lib64/
           sudo chmod a+r /usr/local/cuda-11.7/lib64/libcudnn*
