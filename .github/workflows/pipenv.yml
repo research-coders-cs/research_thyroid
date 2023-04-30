@@ -33,12 +33,6 @@ jobs:
           sudo apt install nvidia-cuda-toolkit
           #---- ** primus852/cuda_11.7_installation_on_Ubuntu_22.04 - https://gist.github.com/primus852/b6bac167509e6f352efb8a462dcf1854
           sudo apt install cuda-11-7
-          #--
-          echo 'export PATH=/usr/local/cuda-11.7/bin:$PATH' >> ~/.bashrc
-          echo 'export LD_LIBRARY_PATH=/usr/local/cuda-11.7/lib64:$LD_LIBRARY_PATH' >> ~/.bashrc
-          source ~/.bashrc
-          sudo ldconfig
-          #--
           wget https://developer.download.nvidia.com/compute/redist/cudnn/v8.5.0/local_installers/11.7/cudnn-linux-x86_64-8.5.0.96_cuda11-archive.tar.xz
           tar xvf cudnn-linux-x86_64-8.5.0.96_cuda11-archive.tar.xz
           sudo cp -P cudnn-linux-x86_64-8.5.0.96_cuda11-archive/include/cudnn.h /usr/local/cuda-11.7/include
