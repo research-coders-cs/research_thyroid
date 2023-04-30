@@ -30,10 +30,10 @@ jobs:
           sudo add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/ /"
           #----
           sudo apt update
-          sudo apt install cuda-11-7
           sudo apt install nvidia-cuda-toolkit
           sudo apt install nvidia-cudnn && sudo /usr/sbin/update-nvidia-cudnn -u
           sudo apt install unrar
+          sudo apt install cuda-11-7
     - name: Install pipenv
       run: pip install pipenv
     - name: Run test 🧪🧪🧪🧪
