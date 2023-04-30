@@ -1,9 +1,5 @@
 SHELL := /bin/bash
 
-# see '.github/workflows/pipenv.yml' for 'cuda-11-7' setup
-export PATH := /usr/local/cuda-11.7/bin:$(PATH)
-export LD_LIBRARY_PATH := /usr/local/cuda-11.7/lib64:$(LD_LIBRARY_PATH)
-
 ci:
 	pipenv install
 	##make test-legacy  # dev/debug
@@ -38,7 +34,7 @@ test: Dataset_train_test_val \
 	Siriraj_sample_doppler_comp \
 	Dataset_doppler_100d \
 	WSDAN_doppler_100d-resnet34_250_8_lr-1e5_n4.ckpt
-	@echo $(LD_LIBRARY_PATH)
+	@echo LD_LIBRARY_PATH: $(LD_LIBRARY_PATH)
 	pipenv run python3 -m pip install --force-reinstall .  # for `import wsdan` to work
 	rm -rf log.txt output && mkdir output
 	time pipenv run python3 main.py 2>&1 | tee log.txt
