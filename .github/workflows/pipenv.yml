@@ -23,11 +23,17 @@ jobs:
     - uses: actions/checkout@v1
     - name: Install apt packages
       run: |
+          #---- for 'cuda-11-7'
+          wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-ubuntu2204.pin
+          sudo mv cuda-ubuntu2204.pin /etc/apt/preferences.d/cuda-repository-pin-600
+          sudo apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/3bf863cc.pub
+          sudo add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/ /"
+          #----
           sudo apt update
+          sudo apt install cuda-11-7
           sudo apt install nvidia-cuda-toolkit
           sudo apt install nvidia-cudnn && sudo /usr/sbin/update-nvidia-cudnn -u
           sudo apt install unrar
-          sudo apt install libcupti-dev
     - name: Install pipenv
       run: pip install pipenv
     - name: Run test 🧪🧪🧪🧪
