@@ -1,5 +1,5 @@
 import torch
-import digitake
+from .. import digitake
 import os
 
 

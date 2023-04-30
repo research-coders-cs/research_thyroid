@@ -1,7 +1,7 @@
 import torch
 from torch.utils.data import DataLoader
 
-from digitake.preprocess import build_dataset
+from ..digitake.preprocess import build_dataset
 
 from ..net import WSDAN, net_train, net_test
 
@@ -97,7 +97,7 @@ def _train(with_doppler, total_epochs, model, train_ds_path, validate_ds_path, s
         transform=get_transform(target_resize, phase='basic'),
     #==== @@ orig
         with_alpha_channel=False  # if False, it will load image as RGB(3-channel)
-    #==== @@ WIP w.r.t. 'digitake/src/digitake/preprocess/thyroid.py'
+    #==== @@ WIP w.r.t. 'digitake/preprocess/thyroid.py'
         # mask_dict=to_doppler if with_doppler else None,  # !!!!
         # with_alpha_channel=with_doppler  # !!!! TODO debug with `True`
     #====

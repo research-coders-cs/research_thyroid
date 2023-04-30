@@ -5,7 +5,7 @@ import wsdan  # 'research-thyroid-wsdan' pkg (i.e. 'src/wsdan/*')
 from wsdan.demo import test as demo_test
 from wsdan.demo import train as demo_train
 from wsdan.demo import train_with_doppler as demo_train_with_doppler
-from wsdan import build_dataset
+from wsdan.digitake.preprocess import build_dataset
 
 
 # TODO - `print()` -> `logging.info()` in 'src/wsdan/**/*.py'; output control in Colab
@@ -14,7 +14,7 @@ if __name__ == '__main__':
     if 0:  # adaptation of 'compare.{ipynb,py}' exported from https://colab.research.google.com/drive/1kxMFgo1LyVqPYqhS6_UJKUsVvA2-l9wk
         wsdan.demo.doppler_compare()
 
-    if 0:
+    if 1:
         # ckpt = 'ttt/51/output/demo_train/densenet_250_8_lr-1e5_n4_75.000'  # 0.800
         # demo.test(ckpt)  # TODO - generate 'confusion_matrix_test-*.png', 'test-*.png'
 
