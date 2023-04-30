@@ -1,5 +1,6 @@
 SHELL := /bin/bash
 
+# see '.github/workflows/pipenv.yml' for 'cuda-11-7' setup
 export PATH := /usr/local/cuda-11.7/bin:$(PATH)
 export LD_LIBRARY_PATH := /usr/local/cuda-11.7/lib64:$(LD_LIBRARY_PATH)
 
