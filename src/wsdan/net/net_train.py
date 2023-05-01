@@ -50,7 +50,7 @@ def _train(device, logs, train_loader, net, feature_center, optimizer, pbar, wit
     for batch_idx, (X, y, p) in enumerate(train_loader):
         optimizer.zero_grad()
 
-        print(f"(batch_idx={batch_idx}) X[0].shape:", X[0].shape)
+        #print(f"(batch_idx={batch_idx}) X[0].shape:", X[0].shape)
         paths = p['path']  # @@
 
         if savepath_epoch:
@@ -321,8 +321,7 @@ writer = SummaryWriter()
 def train(device, net, feature_center, batch_size, train_loader, validate_loader,
              optimizer, scheduler, run_name, logs, start_epoch, total_epochs,
              with_doppler=False, savepath='.'):
-
-    # TODO - include the 'Run/XX_d' tensorboard in output !!!!
+    # ?? - include the 'Run/XX_d' tensorboard in output
 
     mc_monitor = 'val/{}'.format(raw_metric.name)
     mc = ModelCheckpoint(
@@ -337,11 +336,9 @@ def train(device, net, feature_center, batch_size, train_loader, validate_loader
         mc.reset()
 
     for epoch in range(start_epoch, start_epoch + total_epochs):
-        num_epoch = epoch + 1
-        print(('#' * 10), 'epoch ', str(num_epoch), ('#' * 10))
-
         mc.on_epoch_begin()
 
+        num_epoch = epoch + 1
         logs['epoch'] = num_epoch
         logs['lr'] = optimizer.param_groups[0]['lr']
 

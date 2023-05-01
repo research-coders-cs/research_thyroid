@@ -9,7 +9,6 @@ logger = logging.getLogger('@@')
 logger.setLevel(level=logging.DEBUG if 1 else logging.INFO)
 
 
-# TODO - `print()` -> `logging.info()` in 'src/wsdan/**/*.py'; output control in Colab
 if __name__ == '__main__':
 
     if 0:  # adaptation of 'compare.{ipynb,py}' exported from https://colab.research.google.com/drive/1kxMFgo1LyVqPYqhS6_UJKUsVvA2-l9wk
