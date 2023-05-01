@@ -5,6 +5,9 @@ import numpy as np
 import random
 from .doppler import resolve_hw_slices
 
+import logging
+logger = logging.getLogger('@@')
+
 
 def NormalizeData(data):
     return (data - np.min(data)) / (np.max(data) - np.min(data))
@@ -16,7 +19,7 @@ def img_gpu_to_cpu(img):
 
 def batch_augment(images, paths, attention_map, savepath=None, use_doppler=False,
                   mode='crop', theta=0.5, padding_ratio=0.1):
-    print('@@ images.size():', images.size())
+    logger.debug(f'images.size(): {images.size()}')
     batches, _, imgH, imgW = images.size()
 
     if mode == 'crop':
@@ -36,7 +39,7 @@ def batch_augment(images, paths, attention_map, savepath=None, use_doppler=False
             width_max = min(int(nonzero_indices[:, 1].max().item() + padding_ratio * imgW), imgW)
 
             #-------- @@
-            print(f'@@ [idx={idx}] crop: ({width_min}, {height_min}), ({width_max}, {height_max})')
+            logger.debug(f'[idx={idx}] crop: ({width_min}, {height_min}), ({width_max}, {height_max})')
 
             if use_doppler:
                 bbox_crop = np.array([
@@ -58,7 +61,7 @@ def batch_augment(images, paths, attention_map, savepath=None, use_doppler=False
                 size=(imgH, imgW)))
 
         crop_images = torch.cat(crop_images, dim=0)
-        print("@@ crop_images.shape:", crop_images.shape)
+        logger.debug(f"crop_images.shape: {crop_images.shape}")
         return crop_images
 
     elif mode == 'drop':
@@ -75,7 +78,7 @@ def batch_augment(images, paths, attention_map, savepath=None, use_doppler=False
         drop_masks = torch.cat(drop_masks, dim=0)
         drop_images = images * drop_masks.float()
 
-        print("drop_images : ", drop_images.shape)
+        logger.debug(f"drop_images: {drop_images.shape}")
         return drop_images
 
     else:

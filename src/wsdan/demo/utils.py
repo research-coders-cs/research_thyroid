@@ -15,9 +15,8 @@ def get_device():
     digitake.model.set_reproducible(2565)
 
     use_gpu = os.environ.get('WSDAN_USE_GPU')
-    #print('@@ get_device(): use_gpu', use_gpu)
     if use_gpu == '1':  # force
-        print('@@ get_device(): GPU settings...')
+        print('@@ get_device(): force GPU settings...')
         assert torch.cuda.is_available(), "Don't forget to turn on gpu runtime!"
         os.environ['CUDA_VISIBLE_DEVICES'] = '0'
         device = torch.device("cuda")
@@ -25,7 +24,6 @@ def get_device():
     else:
         device = "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
 
-    print('@@ get_device(): device:', device)
     return device
 
 def show_data_loader(data_loader, plt_show=False):

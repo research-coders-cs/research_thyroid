@@ -1,11 +1,12 @@
-import logging
-logging.basicConfig(level=logging.INFO)
-
 import wsdan  # 'research-thyroid-wsdan' pkg (i.e. 'src/wsdan/*')
 from wsdan.demo import test as demo_test
 from wsdan.demo import train as demo_train
 from wsdan.demo import train_with_doppler as demo_train_with_doppler
 from wsdan.digitake.preprocess import build_dataset
+
+import logging
+logger = logging.getLogger('@@')
+logger.setLevel(level=logging.DEBUG if 1 else logging.INFO)
 
 
 # TODO - `print()` -> `logging.info()` in 'src/wsdan/**/*.py'; output control in Colab
