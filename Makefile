@@ -25,14 +25,14 @@ densenet_224_8_lr-1e5_n4_95.968.ckpt:
 	curl -O -L $(DL_ASSETS)/$@
 Siriraj_sample_doppler_comp:
 	curl -O -L $(DL_ASSETS)/$@.zip && unzip $@.zip
-Dataset_doppler_100d:
+Dataset_doppler_100e:
 	curl -O -L $(DL_ASSETS)/$@.zip && unzip $@.zip
 WSDAN_doppler_100d-resnet34_250_8_lr-1e5_n4.ckpt:
 	curl -O -L $(DL_ASSETS)/$@
 test: Dataset_train_test_val \
 	densenet_224_8_lr-1e5_n4_95.968.ckpt \
 	Siriraj_sample_doppler_comp \
-	Dataset_doppler_100d \
+	Dataset_doppler_100e \
 	WSDAN_doppler_100d-resnet34_250_8_lr-1e5_n4.ckpt
 	@echo LD_LIBRARY_PATH: $(LD_LIBRARY_PATH)
 	pipenv run python3 -m pip install --force-reinstall .  # for `import wsdan` to work
