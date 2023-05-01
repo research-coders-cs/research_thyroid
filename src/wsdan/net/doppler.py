@@ -3,6 +3,9 @@ import cv2
 import numpy as np
 import pandas as pd
 
+import logging
+logger = logging.getLogger('@@')
+
 
 def detect_doppler(img):
     if len(img.shape) < 3:
@@ -100,7 +103,7 @@ def get_iou(truth, pred):
     _intersection_of_mark = area_of_intersection / area_mark
     #@@ intersection_of_mark = np.round(_intersection_of_mark * 100, 2)
 
-    print('@@ get_iou(): area_{of_intersection,mark,of_union}, intersection_of_mark: %0.1f, %0.1f, %0.1f' % (
+    logger.debug('get_iou(): area_{of_intersection,mark,of_union}, intersection_of_mark: %0.1f, %0.1f, %0.1f' % (
         area_of_intersection, area_mark, area_of_union))
 
     #@@return iou, intersection_of_mark
@@ -409,7 +412,7 @@ def resolve_hw_slices(bbox_crop, train_img_copy, train_img_path, idx, size, save
         raw = cv2.imread(path_doppler)
         bbox_raw = detect_doppler(raw)
         if bbox_raw is None:
-            print(f'@@ detect_doppler() failed for: {path_doppler}; using `bbox_crop` instead')
+            logger.debug(f'detect_doppler() failed for: {path_doppler}; using `bbox_crop` instead')
             return bbox_to_hw_slices(bbox_crop)
 
         bbox = np.array([
@@ -418,15 +421,15 @@ def resolve_hw_slices(bbox_crop, train_img_copy, train_img_path, idx, size, save
             dtype=np.float32)
 
         if bbox[2] - bbox[0] < 1. or bbox[3] - bbox[1] < 1.:
-            print('@@ `bbox` too squeezed due to scaling; using `bbox_crop` instead')
+            logger.debug('`bbox` too squeezed due to scaling; using `bbox_crop` instead')
             return bbox_to_hw_slices(bbox_crop)
 
         iou, isec_in_crop = get_iou(bbox, bbox_crop)
-        print('@@ THRESH_ISEC_IN_CROP:', THRESH_ISEC_IN_CROP)
+        logger.debug('THRESH_ISEC_IN_CROP:', THRESH_ISEC_IN_CROP)
         qualify = 1 if iou > 1e-4 and isec_in_crop > THRESH_ISEC_IN_CROP else 0
         debug_fname_jpg = f'debug_crop_doppler_{idx}_iou_%0.4f_isecincrop_%0.3f_qualify_%d.jpg' % (
             iou, isec_in_crop, qualify)
-        print('@@ debug_fname_jpg:', debug_fname_jpg)
+        logger.debug('debug_fname_jpg:', debug_fname_jpg)
 
         if savepath is not None:  # debug dump
             bbox_draw(train_img_copy, bbox, (255, 255, 0), 1)  # blue
