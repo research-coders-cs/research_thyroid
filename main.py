@@ -22,8 +22,8 @@ if __name__ == '__main__':
         ckpt = 'densenet_224_8_lr-1e5_n4_95.968.ckpt'  # 0.9xx, LGTM
         demo_test(ckpt, 'densenet121', TEST_DS_PATH_DEFAULT, 224, 8)
 
-    if 0:
-        total_epochs = 40
+    if 1:
+        total_epochs = 10
         #model = 'densenet121'
         model = 'resnet34'
 
@@ -69,7 +69,7 @@ if __name__ == '__main__':
 
         demo_test(ckpt, 'resnet34', test_ds_path, 250, 8)
 
-    if 1:  # experiment - default
+    if 0:  # experiment - default
         total_epochs = 10
         model = 'resnet34'
 
