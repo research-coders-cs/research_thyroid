@@ -229,10 +229,10 @@ def get_sample_paths():  # used by `demo_doppler_compare()`
 
 #
 
-dir_mtrm_benign = 'Dataset_doppler_100d/Markers_Train_Remove_Markers/Benign_Remove/train'
-dir_mtrm_malignant = 'Dataset_doppler_100d/Markers_Train_Remove_Markers/Malignant_Remove/train'
-dir_dtc_benign = 'Dataset_doppler_100d/Doppler_Train_Crop/Benign/matched'
-dir_dtc_malignant = 'Dataset_doppler_100d/Doppler_Train_Crop/Malignant/matched'
+dir_mtrm_benign = 'Dataset_doppler_100e/Markers_Train_Remove_Markers/Benign_Remove/train'
+dir_mtrm_malignant = 'Dataset_doppler_100e/Markers_Train_Remove_Markers/Malignant_Remove/train'
+dir_dtc_benign = 'Dataset_doppler_100e/Doppler_Train_Crop/Benign/matched'
+dir_dtc_malignant = 'Dataset_doppler_100e/Doppler_Train_Crop/Malignant/matched'
 
 to_doppler = {
     #-------- 'Siriraj_sample_doppler_comp'
@@ -382,6 +382,8 @@ to_doppler = {
     f'{dir_mtrm_malignant}/malignant_siriraj_0001-0124_c0123_1_p0293.png': f'{dir_dtc_malignant}/malignant_siriraj_0001-0124_c0123_2_p0294.png',
     f'{dir_mtrm_malignant}/malignant_siriraj_0001-0124_c0063_1_p0113.png': f'{dir_dtc_malignant}/malignant_siriraj_0001-0124_c0063_2_p0114.png',
     f'{dir_mtrm_malignant}/malignant_siriraj_0001-0124_c0124_1_p0296.png': f'{dir_dtc_malignant}/malignant_siriraj_0001-0124_c0124_2_p0297.png',
+    #-------- 100e, extra (doppler-synthesis matches)
+    #f'{dir_mtrm_benign}/*.png': f'{dir_dtc_benign}/*.png',
     #--------
 }
 

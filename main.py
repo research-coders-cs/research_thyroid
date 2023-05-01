@@ -30,12 +30,12 @@ if __name__ == '__main__':
         train_ds_path = build_dataset({
             'benign': ['Markers_Train_Remove_Markers/Benign_Remove/train'],
             'malignant': ['Markers_Train_Remove_Markers/Malignant_Remove/train'],
-        }, root='Dataset_doppler_100d')  # 70% 70% (doppler matched)
+        }, root='Dataset_doppler_100e')  # 70% + extra, 70% (doppler matched)
 
         validate_ds_path = build_dataset({
             'benign': ['Markers_Train_Remove_Markers/Benign_Remove/validate'],
             'malignant': ['Markers_Train_Remove_Markers/Malignant_Remove/validate'],
-        }, root='Dataset_doppler_100d')  # 30% 30% (doppler matched)
+        }, root='Dataset_doppler_100e')  # 30% 30% (doppler matched)
 
         #ckpt = demo_train(total_epochs, model, train_ds_path, validate_ds_path)
         ckpt = demo_train_with_doppler(total_epochs, model, train_ds_path, validate_ds_path)
@@ -43,7 +43,7 @@ if __name__ == '__main__':
         test_ds_path = build_dataset({
             'benign': ['Markers_Train_Remove_Markers/Benign_Remove/test'],
             'malignant': ['Markers_Train_Remove_Markers/Malignant_Remove/test'],
-        }, root='Dataset_doppler_100d')  # 75 75
+        }, root='Dataset_doppler_100e')  # 75 75
 
         demo_test(ckpt, model, test_ds_path)
 
