@@ -650,11 +650,11 @@ def resolve_hw_slices(bbox_crop, train_img_copy, train_img_path, idx, size, save
             return bbox_to_hw_slices(bbox_crop)
 
         iou, isec_in_crop = get_iou(bbox, bbox_crop)
-        logger.debug('THRESH_ISEC_IN_CROP:', THRESH_ISEC_IN_CROP)
+        logger.debug(f'THRESH_ISEC_IN_CROP: {THRESH_ISEC_IN_CROP}')
         qualify = 1 if iou > 1e-4 and isec_in_crop > THRESH_ISEC_IN_CROP else 0
         debug_fname_jpg = f'debug_crop_doppler_{idx}_iou_%0.4f_isecincrop_%0.3f_qualify_%d.jpg' % (
             iou, isec_in_crop, qualify)
-        logger.debug('debug_fname_jpg:', debug_fname_jpg)
+        logger.debug(f'debug_fname_jpg: {debug_fname_jpg}')
 
         if savepath is not None:  # debug dump
             bbox_draw(train_img_copy, bbox, (255, 255, 0), 1)  # blue
