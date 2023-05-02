@@ -23,7 +23,7 @@ if __name__ == '__main__':
         demo_test(ckpt, 'densenet121', TEST_DS_PATH_DEFAULT, 224, 8)
 
     if 1:
-        total_epochs = 10
+        total_epochs = 5
         #model = 'densenet121'
         model = 'resnet34'
 

@@ -646,7 +646,7 @@ def resolve_hw_slices(bbox_crop, train_img_copy, train_img_path, idx, size, save
             dtype=np.float32)
 
         if bbox[2] - bbox[0] < 1. or bbox[3] - bbox[1] < 1.:
-            logger.debug('`bbox` too squeezed due to scaling; using `bbox_crop` instead')
+            logger.debug('doppler `bbox` too squeezed due to scaling; using `bbox_crop` instead')
             return bbox_to_hw_slices(bbox_crop)
 
         iou, isec_in_crop = get_iou(bbox, bbox_crop)
