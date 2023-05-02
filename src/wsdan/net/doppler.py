@@ -2,6 +2,7 @@ import os
 import cv2
 import numpy as np
 import pandas as pd
+import hashlib
 
 import logging
 logger = logging.getLogger('@@')
@@ -652,8 +653,9 @@ def resolve_hw_slices(bbox_crop, train_img_copy, train_img_path, idx, size, save
         iou, isec_in_crop = get_iou(bbox, bbox_crop)
         logger.debug(f'THRESH_ISEC_IN_CROP: {THRESH_ISEC_IN_CROP}')
         qualify = 1 if iou > 1e-4 and isec_in_crop > THRESH_ISEC_IN_CROP else 0
-        debug_fname_jpg = f'debug_crop_doppler_{idx}_iou_%0.4f_isecincrop_%0.3f_qualify_%d.jpg' % (
-            iou, isec_in_crop, qualify)
+        digest = hashlib.md5(path_doppler.encode('utf-8')).hexdigest()
+        debug_fname_jpg = f'debug_crop_doppler_{idx}_iou_%0.4f_isecincrop_%0.3f_qualify_%d_digest_%s.jpg' % (
+            iou, isec_in_crop, qualify, digest)
         logger.debug(f'debug_fname_jpg: {debug_fname_jpg}')
 
         if savepath is not None:  # debug dump
