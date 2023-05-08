@@ -89,7 +89,11 @@ def _train(with_doppler, total_epochs, model, train_ds_path, validate_ds_path, s
 
     #
 
-    from wsdan.net.doppler import to_doppler  # !!!!
+    #----!!!!
+    from wsdan.net.doppler import get_to_doppler
+    dataset_doppler_root = train_ds_path['benign'][0].split('/')[0]
+    #print('@@ dataset_doppler_root:', dataset_doppler_root)
+    #----!!!!
 
     train_dataset = ThyroidDataset(
         phase='train',
@@ -98,7 +102,7 @@ def _train(with_doppler, total_epochs, model, train_ds_path, validate_ds_path, s
     #==== @@ orig
         with_alpha_channel=False  # if False, it will load image as RGB(3-channel)
     #==== @@ WIP w.r.t. 'digitake/preprocess/thyroid.py'
-        # mask_dict=to_doppler if with_doppler else None,  # !!!!
+        # mask_dict=get_to_doppler(dataset_doppler_root) if with_doppler else None,  # !!!!
         # with_alpha_channel=with_doppler  # !!!! TODO debug with `True`
     #====
     )
