@@ -2,11 +2,11 @@ name: CI
 
 on:
   push:
-    branches: [ new ]
+    branches: [ CICD ]
     paths-ignore:
       - '**/README.md'
   pull_request:
-    branches: [ new ]
+    branches: [ CICD ]
 
 jobs:
   test:
