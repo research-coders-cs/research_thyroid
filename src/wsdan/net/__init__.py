@@ -168,3 +168,26 @@ class WSDAN(nn.Module):
 
         model_dict.update(pretrained_dict)
         super(WSDAN, self).load_state_dict(model_dict)
+
+
+# https://github.com/GuYuc/WS-DAN.PyTorch/blob/87779124f619ceeb445ddfb0246c8a22ff324db4/eval.py#L37
+def generate_heatmap(attention_maps):
+    heat_attention_maps = []
+    heat_attention_maps.append(attention_maps[:, 0, ...])  # R
+    heat_attention_maps.append(attention_maps[:, 0, ...] * (attention_maps[:, 0, ...] < 0.5).float() + \
+                               (1. - attention_maps[:, 0, ...]) * (attention_maps[:, 0, ...] >= 0.5).float())  # G
+    heat_attention_maps.append(1. - attention_maps[:, 0, ...])  # B
+    return torch.stack(heat_attention_maps, dim=1)
+
+
+def generate_heatmap_custom(attention_maps, threshold=0.5):
+    print("Total attentions map. =", attention_maps.shape)
+
+    amax = attention_maps.max()
+    threshold=attention_maps.mean()
+    heat_attention_maps = []
+    heat_attention_maps.append(attention_maps[:, 0, ...]/amax)  # R
+    heat_attention_maps.append(attention_maps[:, 0, ...] * (attention_maps[:, 0, ...] < threshold).float() + \
+        (1. - attention_maps[:, 0, ...]) * (attention_maps[:, 0, ...] >= threshold).float())  # G
+    heat_attention_maps.append((1. - attention_maps[:, 0, ...]))  # B
+    return torch.stack(heat_attention_maps, dim=1)

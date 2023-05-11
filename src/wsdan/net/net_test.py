@@ -6,25 +6,13 @@ ToPILImage = transforms.ToPILImage()
 
 from .metric import TopKAccuracyMetric
 from .augment import batch_augment
+from . import generate_heatmap, generate_heatmap_custom
 
 import os
 import logging
 
 from tqdm import tqdm
 #from tqdm.notebook import tqdm
-
-
-def generate_heatmap(attention_maps, threshold=0.5):
-    print("Total attentions map. =", attention_maps.shape)
-
-    amax = attention_maps.max()
-    threshold=attention_maps.mean()
-    heat_attention_maps = []
-    heat_attention_maps.append(attention_maps[:, 0, ...]/amax)  # R
-    heat_attention_maps.append(attention_maps[:, 0, ...] * (attention_maps[:, 0, ...] < threshold).float() + \
-        (1. - attention_maps[:, 0, ...]) * (attention_maps[:, 0, ...] >= threshold).float())  # G
-    heat_attention_maps.append((1. - attention_maps[:, 0, ...]))  # B
-    return torch.stack(heat_attention_maps, dim=1)
 
 
 def test(device, net, batch_size, data_loader, ckpt, savepath=None):
@@ -91,16 +79,24 @@ def test(device, net, batch_size, data_loader, ckpt, savepath=None):
 
             channel = 3
 
-            # reshape attention maps
-            print(f"Input Shape:{X.shape} vs Attention Shape: {attention_maps.shape}")
-            A = attention_maps.expand(-1, 4, 8, 8) if channel == 4 else attention_maps
-            print(f"New Attention: {A.shape}, size={(X.size(2), X.size(3))}")
-            attention_maps = functional.interpolate(A, size=(X.size(2), X.size(3)))
-            attention_maps = attention_maps.cpu() / attention_maps.max().item()
+            if 1:
+                # reshape attention maps
+                attention_maps = functional.interpolate(attention_maps, size=(X.size(2), X.size(3)))
+                attention_maps = torch.sqrt(attention_maps.cpu() / attention_maps.max().item())
 
-            # get heat attention maps
-            heat_threshold = 0.5
-            heat_attention_maps = generate_heatmap(attention_maps, threshold=heat_threshold)
+                # get heat attention maps
+                heat_attention_maps = generate_heatmap(attention_maps)
+            else:
+                # reshape attention maps
+                print(f"Input Shape:{X.shape} vs Attention Shape: {attention_maps.shape}")
+                A = attention_maps.expand(-1, 4, 8, 8) if channel == 4 else attention_maps
+                print(f"New Attention: {A.shape}, size={(X.size(2), X.size(3))}")
+                attention_maps = functional.interpolate(A, size=(X.size(2), X.size(3)))
+                attention_maps = attention_maps.cpu() / attention_maps.max().item()
+
+                # get heat attention maps
+                heat_threshold = 0.5
+                heat_attention_maps = generate_heatmap_custom(attention_maps, threshold=heat_threshold)
 
             # raw_image, heat_attention, raw_attention
             raw_image = X.cpu() * STD + MEAN
