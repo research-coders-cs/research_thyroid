@@ -95,7 +95,7 @@ def test(device, net, batch_size, data_loader, ckpt, savepath=None):
             print(f"Input Shape:{X.shape} vs Attention Shape: {attention_maps.shape}")
             A = attention_maps.expand(-1, 4, 8, 8) if channel == 4 else attention_maps
             print(f"New Attention: {A.shape}, size={(X.size(2), X.size(3))}")
-            attention_maps = functional.interpolate(A, size=(X.size(2), X.size(3)))
+            attention_maps = functional.interpolate(A, size=(X.size(2), X.size(3)), mode='bilinear')
             attention_maps = attention_maps.cpu() / attention_maps.max().item()
 
             # get heat attention maps
