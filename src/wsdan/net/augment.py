@@ -4,6 +4,7 @@ from torch.nn import functional
 import numpy as np
 import random
 from .doppler import resolve_hw_slices
+from . import generate_heatmap  # !!!!
 
 import logging
 logger = logging.getLogger('@@')
@@ -68,6 +69,12 @@ def batch_augment(images, paths, attention_map, savepath=None, use_doppler=False
         drop_masks = []
         for idx in range(batches):
             atten_map = attention_map[idx:idx + 1]
+
+            # !!!! cf. doppler.py for savepath stuff
+            # if savepath is not None:  # debug dump
+            #     pass
+            # !!!!
+
             if isinstance(theta, tuple):
                 theta_d = random.uniform(*theta) * atten_map.max()
             else:
