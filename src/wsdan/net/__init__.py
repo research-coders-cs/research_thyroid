@@ -27,7 +27,7 @@ class BAP(nn.Module):
 
         # match size
         if AH != H or AW != W:
-            attentions = functional.interpolate(attentions, size=(H, W))
+            attentions = functional.interpolate(attentions, size=(H, W), mode='bilinear')
 
         # feature_matrix: (B, M, C) -> (B, M * C)
         if self.pool is None:

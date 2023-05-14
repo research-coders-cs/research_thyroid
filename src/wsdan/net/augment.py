@@ -32,7 +32,7 @@ def batch_augment(images, paths, attention_map, savepath=None, use_doppler=False
             else:
                 theta_c = theta * atten_map.max()
 
-            crop_mask = functional.interpolate(atten_map, size=(imgH, imgW)) >= theta_c
+            crop_mask = functional.interpolate(atten_map, size=(imgH, imgW), mode='bilinear') >= theta_c
             nonzero_indices = torch.nonzero(crop_mask[0, 0, ...])
             height_min = max(int(nonzero_indices[:, 0].min().item() - padding_ratio * imgH), 0)
             height_max = min(int(nonzero_indices[:, 0].max().item() + padding_ratio * imgH), imgH)
@@ -59,7 +59,7 @@ def batch_augment(images, paths, attention_map, savepath=None, use_doppler=False
             crop_images.append(functional.interpolate(
                 #images[idx:idx + 1, :, height_min:height_max, width_min:width_max],
                 images[idx:idx + 1, :, sh, sw],  # @@
-                size=(imgH, imgW)))
+                size=(imgH, imgW), mode='bilinear'))
 
         crop_images = torch.cat(crop_images, dim=0)
         logger.debug(f"crop_images.shape: {crop_images.shape}")
@@ -80,7 +80,7 @@ def batch_augment(images, paths, attention_map, savepath=None, use_doppler=False
             else:
                 theta_d = theta * atten_map.max()
             drop_masks.append(functional.interpolate(
-                atten_map, size=(imgH, imgW)) < theta_d)
+                atten_map, size=(imgH, imgW), mode='bilinear') < theta_d)
 
         drop_masks = torch.cat(drop_masks, dim=0)
         drop_images = images * drop_masks.float()
