@@ -51,14 +51,6 @@ def test(device, net, batch_size, data_loader, ckpt, savepath=None):
             X = X.to(device)
             y = y.to(device)
 
-            mean = X.mean((0,2,3)).view(1, 3, 1, 1)
-            std = X.std((0,2,3)).view(1, 3, 1, 1)
-
-            MEAN = mean.cpu()     # torch.tensor([0.5, 0.5, 0.5]).view(1, 3, 1, 1)
-            STD = std.cpu()           # torch.tensor([0.1, 0.1, 0.1]).view(1, 3, 1, 1)
-            # MEAN = torch.tensor([0.485, 0.456, 0.406]).view(1, 3, 1, 1)
-            # STD = torch.tensor([0.229, 0.224, 0.225]).view(1, 3, 1, 1)
-
             ##################################
             # Raw Image
             ##################################
@@ -79,47 +71,25 @@ def test(device, net, batch_size, data_loader, ckpt, savepath=None):
 
             channel = 3
 
-            if 1:
-                # reshape attention maps
-                attention_maps = functional.interpolate(attention_maps, size=(X.size(2), X.size(3)))
-                attention_maps = torch.sqrt(attention_maps.cpu() / attention_maps.max().item())
-
-                # get heat attention maps
-                heat_attention_maps = generate_heatmap(attention_maps)
-            else:
-                # reshape attention maps
-                print(f"Input Shape:{X.shape} vs Attention Shape: {attention_maps.shape}")
-                A = attention_maps.expand(-1, 4, 8, 8) if channel == 4 else attention_maps
-                print(f"New Attention: {A.shape}, size={(X.size(2), X.size(3))}")
-                attention_maps = functional.interpolate(A, size=(X.size(2), X.size(3)))
-                attention_maps = attention_maps.cpu() / attention_maps.max().item()
-
-                # get heat attention maps
-                heat_threshold = 0.5
-                heat_attention_maps = generate_heatmap_custom(attention_maps, threshold=heat_threshold)
-
-            # raw_image, heat_attention, raw_attention
-            raw_image = X.cpu() * STD + MEAN
-
-            print(f"X:{raw_image.shape} vs HEAT Shape: {heat_attention_maps.shape}")
-            #H = heat_attention_maps.repeat(1, 4, 1, 1)
-            grays_dim = heat_attention_maps.shape[:]
-            grays_dim = [grays_dim[0], 1, grays_dim[2], grays_dim[3]]
-            ones = torch.ones(grays_dim)
-
-            H = torch.hstack([heat_attention_maps, ones]) if channel == 4 else heat_attention_maps
-            heat_attention_image = raw_image * 0.5 + H *0.5
-
-            raw_attention_image = raw_image * attention_maps
-
+            heat_attention_image = None
             if savepath is not None:
+                MEAN = torch.tensor([0.485, 0.456, 0.406]).view(1, 3, 1, 1)
+                STD = torch.tensor([0.229, 0.224, 0.225]).view(1, 3, 1, 1)
+                raw_image = X.cpu() * STD + MEAN
+
                 for idx in range(X.size(0)):
                     rimg = ToPILImage(raw_image[idx])
-                    raimg = ToPILImage(raw_attention_image[idx])
-                    haimg = ToPILImage(heat_attention_image[idx])
                     rimg.save(os.path.join(savepath, '%03d_raw.png' % (i * batch_size + idx)))
-                    raimg.save(os.path.join(savepath, '%03d_raw_atten.png' % (i * batch_size + idx)))
-                    haimg.save(os.path.join(savepath, '%03d_heat_atten.png' % (i * batch_size + idx)))
+
+                    atten_map = attention_maps[idx:idx + 1]
+                    _attention_maps = functional.interpolate(
+                        atten_map, size=(X.size(2), X.size(3)), mode='bilinear')
+                    _attention_maps = _attention_maps.cpu() / _attention_maps.max().item()
+                    heat_attention_map = generate_heatmap(_attention_maps)
+
+                    heat_attention_image = (raw_image * 0.3) + (heat_attention_map.cpu() * 0.7)
+                    himg = ToPILImage(heat_attention_image[idx])
+                    himg.save(os.path.join(savepath, '%03d_heat_atten.png' % (i * batch_size + idx)))
 
             results = (X, crop_image, y_pred, y, p, heat_attention_image, y_pred_crop)
 
