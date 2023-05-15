@@ -14,7 +14,7 @@ if __name__ == '__main__':
     if 0:  # adaptation of 'compare.{ipynb,py}' exported from https://colab.research.google.com/drive/1kxMFgo1LyVqPYqhS6_UJKUsVvA2-l9wk
         wsdan.demo.doppler_compare()
 
-    if 1:
+    if 0:
         # ckpt = 'ttt/51/output/demo_train/densenet_250_8_lr-1e5_n4_75.000'  # 0.800
         # demo.test(ckpt)  # TODO - generate 'confusion_matrix_test-*.png', 'test-*.png'
 
@@ -69,7 +69,7 @@ if __name__ == '__main__':
 
         demo_test(ckpt, 'resnet34', test_ds_path, 250, 8)
 
-    if 0:  # experiment - default
+    if 1:  # experiment - default
         total_epochs = 10
         model = 'resnet34'
 

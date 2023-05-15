@@ -68,9 +68,8 @@ def test(device, net, batch_size, data_loader, ckpt, savepath=None):
                 raw_image = get_raw_image(X.cpu())
                 batches, _, imgH, imgW = X.size()
                 for idx in range(batches):
-                    atten_map = attention_maps[idx:idx + 1]
-                    img_num = i * batch_size + idx
-                    dump_heatmap(savepath, raw_image, atten_map, imgH, imgW, idx, img_num)
+                    dump_heatmap(savepath, '%06d' % (i * batch_size + idx),
+                                 raw_image, attention_maps[idx:idx + 1], imgH, imgW, idx)
 
             results = (X, crop_image, y_pred, y, p)
 

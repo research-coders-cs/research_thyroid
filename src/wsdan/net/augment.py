@@ -27,9 +27,9 @@ def get_raw_image(batch_image):
     STD = torch.tensor([0.229, 0.224, 0.225]).view(1, 3, 1, 1)
     return batch_image * STD + MEAN
 
-def dump_heatmap(savepath, raw_image, atten_map, imgH, imgW, batch_index, img_num):
+def dump_heatmap(savepath, prefix, raw_image, atten_map, imgH, imgW, batch_index):
     rimg = ToPILImage(raw_image[batch_index])
-    rimg.save(os.path.join(savepath, '%06d_raw.png' % img_num))
+    rimg.save(os.path.join(savepath, f'{prefix}_raw.png'))
 
     _attention_maps = functional.interpolate(
         atten_map, size=(imgH, imgW), mode='bilinear')
@@ -38,7 +38,7 @@ def dump_heatmap(savepath, raw_image, atten_map, imgH, imgW, batch_index, img_nu
 
     heat_attention_image = (raw_image * 0.3) + (heat_attention_map.cpu() * 0.7)
     himg = ToPILImage(heat_attention_image[batch_index])
-    himg.save(os.path.join(savepath, '%06d_heat_atten.png' % img_num))
+    himg.save(os.path.join(savepath, f'{prefix}_heat_atten.png'))
 
 def NormalizeData(data):
     return (data - np.min(data)) / (np.max(data) - np.min(data))
@@ -51,12 +51,15 @@ def img_gpu_to_cpu(img):
 def batch_augment(images, paths, attention_map, savepath=None, use_doppler=False,
                   mode='crop', theta=0.5, padding_ratio=0.1):
     logger.debug(f'images.size(): {images.size()}')
+    raw_image = get_raw_image(images.cpu())  # @@
     batches, _, imgH, imgW = images.size()
 
     if mode == 'crop':
         crop_images = []
         for idx in range(batches):
             atten_map = attention_map[idx:idx + 1]
+            if savepath is not None:  # @@ debug
+                dump_heatmap(savepath, f'debug_crop_idx_{idx}', raw_image, atten_map, imgH, imgW, idx)
             if isinstance(theta, tuple):
                 theta_c = random.uniform(*theta) * atten_map.max()
             else:
@@ -99,11 +102,8 @@ def batch_augment(images, paths, attention_map, savepath=None, use_doppler=False
         drop_masks = []
         for idx in range(batches):
             atten_map = attention_map[idx:idx + 1]
-
-            # !!!! cf. doppler.py for savepath stuff
-            # if savepath is not None:  # debug dump
-            #     pass
-            # !!!!
+            if savepath is not None:  # @@ debug
+                dump_heatmap(savepath, f'debug_drop_idx_{idx}', raw_image, atten_map, imgH, imgW, idx)
 
             if isinstance(theta, tuple):
                 theta_d = random.uniform(*theta) * atten_map.max()
