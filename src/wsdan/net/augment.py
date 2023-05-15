@@ -1,14 +1,44 @@
 import torch
 from torch.nn import functional
 
+from torchvision import transforms
+ToPILImage = transforms.ToPILImage()
+
 import numpy as np
 import random
+import os
 from .doppler import resolve_hw_slices
-from . import generate_heatmap  # !!!!
 
 import logging
 logger = logging.getLogger('@@')
 
+
+# https://github.com/GuYuc/WS-DAN.PyTorch/blob/87779124f619ceeb445ddfb0246c8a22ff324db4/eval.py#L37
+def generate_heatmap(attention_maps):
+    heat_attention_maps = []
+    heat_attention_maps.append(attention_maps[:, 0, ...])  # R
+    heat_attention_maps.append(attention_maps[:, 0, ...] * (attention_maps[:, 0, ...] < 0.5).float() + \
+                               (1. - attention_maps[:, 0, ...]) * (attention_maps[:, 0, ...] >= 0.5).float())  # G
+    heat_attention_maps.append(1. - attention_maps[:, 0, ...])  # B
+    return torch.stack(heat_attention_maps, dim=1)
+
+def get_raw_image(batch_image):
+    MEAN = torch.tensor([0.485, 0.456, 0.406]).view(1, 3, 1, 1)
+    STD = torch.tensor([0.229, 0.224, 0.225]).view(1, 3, 1, 1)
+    return batch_image * STD + MEAN
+
+def dump_heatmap(savepath, raw_image, atten_map, imgH, imgW, batch_index, img_num):
+    rimg = ToPILImage(raw_image[batch_index])
+    rimg.save(os.path.join(savepath, '%06d_raw.png' % img_num))
+
+    _attention_maps = functional.interpolate(
+        atten_map, size=(imgH, imgW), mode='bilinear')
+    _attention_maps = _attention_maps.cpu() / _attention_maps.max().item()
+    heat_attention_map = generate_heatmap(_attention_maps)
+
+    heat_attention_image = (raw_image * 0.3) + (heat_attention_map.cpu() * 0.7)
+    himg = ToPILImage(heat_attention_image[batch_index])
+    himg.save(os.path.join(savepath, '%06d_heat_atten.png' % img_num))
 
 def NormalizeData(data):
     return (data - np.min(data)) / (np.max(data) - np.min(data))

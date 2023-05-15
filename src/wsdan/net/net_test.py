@@ -1,14 +1,9 @@
 import torch
 from torch.nn import functional
 
-from torchvision import transforms
-ToPILImage = transforms.ToPILImage()
-
 from .metric import TopKAccuracyMetric
-from .augment import batch_augment
-from . import generate_heatmap, generate_heatmap_custom
+from .augment import batch_augment, get_raw_image, dump_heatmap
 
-import os
 import logging
 
 from tqdm import tqdm
@@ -69,29 +64,15 @@ def test(device, net, batch_size, data_loader, ckpt, savepath=None):
 
             y_pred = (y_pred_raw + (y_pred_crop * 2 * importance)) / 3.
 
-            channel = 3
-
-            heat_attention_image = None
             if savepath is not None:
-                MEAN = torch.tensor([0.485, 0.456, 0.406]).view(1, 3, 1, 1)
-                STD = torch.tensor([0.229, 0.224, 0.225]).view(1, 3, 1, 1)
-                raw_image = X.cpu() * STD + MEAN
-
-                for idx in range(X.size(0)):
-                    rimg = ToPILImage(raw_image[idx])
-                    rimg.save(os.path.join(savepath, '%03d_raw.png' % (i * batch_size + idx)))
-
+                raw_image = get_raw_image(X.cpu())
+                batches, _, imgH, imgW = X.size()
+                for idx in range(batches):
                     atten_map = attention_maps[idx:idx + 1]
-                    _attention_maps = functional.interpolate(
-                        atten_map, size=(X.size(2), X.size(3)), mode='bilinear')
-                    _attention_maps = _attention_maps.cpu() / _attention_maps.max().item()
-                    heat_attention_map = generate_heatmap(_attention_maps)
+                    img_num = i * batch_size + idx
+                    dump_heatmap(savepath, raw_image, atten_map, imgH, imgW, idx, img_num)
 
-                    heat_attention_image = (raw_image * 0.3) + (heat_attention_map.cpu() * 0.7)
-                    himg = ToPILImage(heat_attention_image[idx])
-                    himg.save(os.path.join(savepath, '%03d_heat_atten.png' % (i * batch_size + idx)))
-
-            results = (X, crop_image, y_pred, y, p, heat_attention_image, y_pred_crop)
+            results = (X, crop_image, y_pred, y, p)
 
             # Top K
             epoch_raw_acc = raw_accuracy(y_pred_raw, y)
