@@ -1,10 +1,41 @@
 import torch
 from torch.nn import functional
 
+from torchvision import transforms
+ToPILImage = transforms.ToPILImage()
+
 import numpy as np
 import random
+import os
 from .doppler import resolve_hw_slices
 
+
+# https://github.com/GuYuc/WS-DAN.PyTorch/blob/87779124f619ceeb445ddfb0246c8a22ff324db4/eval.py#L37
+def generate_heatmap(attention_maps):
+    heat_attention_maps = []
+    heat_attention_maps.append(attention_maps[:, 0, ...])  # R
+    heat_attention_maps.append(attention_maps[:, 0, ...] * (attention_maps[:, 0, ...] < 0.5).float() + \
+                               (1. - attention_maps[:, 0, ...]) * (attention_maps[:, 0, ...] >= 0.5).float())  # G
+    heat_attention_maps.append(1. - attention_maps[:, 0, ...])  # B
+    return torch.stack(heat_attention_maps, dim=1)
+
+def get_raw_image(batch_image):
+    MEAN = torch.tensor([0.485, 0.456, 0.406]).view(1, 3, 1, 1)
+    STD = torch.tensor([0.229, 0.224, 0.225]).view(1, 3, 1, 1)
+    return batch_image * STD + MEAN
+
+def dump_heatmap(savepath, prefix, raw_image, atten_map, imgH, imgW, batch_index):
+    rimg = ToPILImage(raw_image[batch_index])
+    rimg.save(os.path.join(savepath, f'{prefix}_raw.png'))
+
+    _attention_maps = functional.interpolate(
+        atten_map, size=(imgH, imgW), mode='bilinear')
+    _attention_maps = _attention_maps.cpu() / _attention_maps.max().item()
+    heat_attention_map = generate_heatmap(_attention_maps)
+
+    heat_attention_image = (raw_image * 0.3) + (heat_attention_map.cpu() * 0.7)
+    himg = ToPILImage(heat_attention_image[batch_index])
+    himg.save(os.path.join(savepath, f'{prefix}_heat_atten.png'))
 
 def NormalizeData(data):
     return (data - np.min(data)) / (np.max(data) - np.min(data))
@@ -14,15 +45,18 @@ def img_gpu_to_cpu(img):
     img_full = NormalizeData(img_full) * 255
     return img_full
 
-def batch_augment(images, paths, attention_map, savepath, use_doppler=False,
+def batch_augment(images, paths, attention_map, savepath=None, use_doppler=False,
                   mode='crop', theta=0.5, padding_ratio=0.1):
     print('@@ images.size():', images.size())
+    raw_image = get_raw_image(images.cpu())  # @@
     batches, _, imgH, imgW = images.size()
 
     if mode == 'crop':
         crop_images = []
         for idx in range(batches):
             atten_map = attention_map[idx:idx + 1]
+            if savepath is not None:  # @@ debug
+                dump_heatmap(savepath, f'debug_crop_idx_{idx}', raw_image, atten_map, imgH, imgW, idx)
             if isinstance(theta, tuple):
                 theta_c = random.uniform(*theta) * atten_map.max()
             else:
@@ -65,6 +99,9 @@ def batch_augment(images, paths, attention_map, savepath, use_doppler=False,
         drop_masks = []
         for idx in range(batches):
             atten_map = attention_map[idx:idx + 1]
+            if savepath is not None:  # @@ debug
+                dump_heatmap(savepath, f'debug_drop_idx_{idx}', raw_image, atten_map, imgH, imgW, idx)
+
             if isinstance(theta, tuple):
                 theta_d = random.uniform(*theta) * atten_map.max()
             else:
