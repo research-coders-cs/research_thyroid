@@ -192,7 +192,7 @@ def _train(with_doppler, total_epochs, model, train_ds_path, validate_ds_path, s
             print(v_2_ds_path, __v_2_ds_path)
             exit()  # !!!!
 
-        kfolds = [[t_0_ds_path, v_0_ds_path], [t_1_ds_path, v_1_ds_path], [t_2_ds_path, v_2_ds_path]]
+        kfolds = [(t_0_ds_path, v_0_ds_path), (t_1_ds_path, v_1_ds_path), (t_2_ds_path, v_2_ds_path)]
         for k, tv in enumerate(kfolds):
             print(f"@@ fold: {k}")
             print("@@ lens t_k_ds_path:", len(tv[0]['benign']), len(tv[0]['malignant']))  # 20 20
@@ -201,19 +201,14 @@ def _train(with_doppler, total_epochs, model, train_ds_path, validate_ds_path, s
             # print("@@ lens v_k_ds_path:", tv[1]['benign'], tv[1]['malignant'])  # [...] [...]
 
         ####exit()  # !!!!
-        k = 2  # !!!! !!!!
-        print(f'@@ ⚠️⚠️⚠️⚠️ using k={k}-fold version for train_ds_path and validate_ds_path:')
-        train_ds_path = kfolds[k][0]
-        validate_ds_path = kfolds[k][1]
     #====!!!!
+    else:
+        kfolds = [(train_ds_path, validate_ds_path)]
 
-    #
-
-    train_loader = create_train_loader(
-        train_ds_path, target_resize, batch_size, workers, with_doppler)
-
-    validate_loader = create_validate_loader(
-        validate_ds_path, target_resize, batch_size, workers)
+    kfold_loaders = [(
+        create_train_loader(tv_ds_path[0], target_resize, batch_size, workers, with_doppler),
+        create_validate_loader(tv_ds_path[1], target_resize, batch_size, workers))
+        for tv_ds_path in kfolds]
 
     #
 
@@ -261,11 +256,10 @@ def _train(with_doppler, total_epochs, model, train_ds_path, validate_ds_path, s
 
     #
 
-    print('Start training: Total epochs: {}, Batch size: {}, Training size: {}, Validation size: {}'
-        .format(total_epochs, batch_size, len(train_dataset), len(validate_dataset)))
+    print('Start training: Total epochs: {}, Batch size: {}'.format(total_epochs, batch_size))
 
     ckpt = net_train.train(
-        device, net, feature_center, batch_size, train_loader, validate_loader,
+        device, net, feature_center, batch_size, kfold_loaders,
         optimizer, scheduler, run_name, logs, START_EPOCH, total_epochs,
         with_doppler=with_doppler, savepath=savepath)
     print('@@ done; ckpt:', ckpt)

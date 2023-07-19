@@ -318,7 +318,7 @@ drop_metric = TopKAccuracyMetric()
 top_misclassified = {}
 writer = SummaryWriter()
 
-def train(device, net, feature_center, batch_size, train_loader, validate_loader,
+def train(device, net, feature_center, batch_size, kfold_loaders,
              optimizer, scheduler, run_name, logs, start_epoch, total_epochs,
              with_doppler=False, savepath='.'):
     # ?? - include the 'Run/XX_d' tensorboard in output
@@ -334,6 +334,13 @@ def train(device, net, feature_center, batch_size, train_loader, validate_loader
         mc.set_best_score(logs[mc_monitor])
     else:
         mc.reset()
+
+    if len(kfold_loaders) > 1:
+        k = 2  # !!!! !!!!
+        print(f'@@ ⚠️⚠️⚠️⚠️ using k={k}-fold version for train_loader and validate_loader:')
+        train_loader, validate_loader = kfold_loaders[k]  # !!!!
+    else:
+        train_loader, validate_loader = kfold_loaders[0]  # k-fold disabled
 
     for epoch in range(start_epoch, start_epoch + total_epochs):
         mc.on_epoch_begin()
