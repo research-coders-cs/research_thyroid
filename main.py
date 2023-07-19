@@ -69,9 +69,15 @@ if __name__ == '__main__':
 
         demo_test(ckpt, 'resnet34', test_ds_path, 250, 8)
 
-    if 1:  # experiment - default
+    if 0:  # experiment - default
         total_epochs = 10
         model = 'resnet34'
 
         ckpt = demo_train(total_epochs, model)
         demo_test(ckpt, model)
+
+    if 1:  # !!!! k-fold dev
+        total_epochs = 1
+        model = 'resnet34'
+        ckpt = demo_train(total_epochs, model)
+        ##demo_test(ckpt, model)
