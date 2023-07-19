@@ -67,6 +67,52 @@ def slice_split(li_in_const, slice_in):
     del li_out[slice_in]
     return li_out_sliced, li_out
 
+def create_train_loader(train_ds_path, target_resize, batch_size, workers, with_doppler=False):
+    #----!!!!
+    from wsdan.net.doppler import get_to_doppler
+    dataset_doppler_root = train_ds_path['benign'][0].split('/')[0]
+    #print('@@ dataset_doppler_root:', dataset_doppler_root)
+    #----!!!!
+
+    train_dataset = ThyroidDataset(
+        phase='train',
+        dataset=train_ds_path,
+        transform=get_transform(target_resize, phase='basic'),
+    #==== @@ orig
+        with_alpha_channel=False  # if False, it will load image as RGB(3-channel)
+    #==== @@ WIP w.r.t. 'digitake/preprocess/thyroid.py'
+        # mask_dict=get_to_doppler(dataset_doppler_root) if with_doppler else None,  # !!!!
+        # with_alpha_channel=with_doppler  # !!!! TODO debug with `True`
+    #====
+    )
+
+    train_loader = DataLoader(
+        train_dataset,
+        batch_size=batch_size,
+        shuffle=True,
+        num_workers=workers,
+        pin_memory=True)
+
+    if 0:
+        print('@@ show_data_loader(train_loader) -------- ^^')
+        _channel, _, _, _ = show_data_loader(train_loader)  # only the first batch shown
+        print('@@ show_data_loader(train_loader) -------- $$')
+
+    return train_loader
+
+def create_validate_loader(validate_ds_path, target_resize, batch_size, workers):
+    validate_dataset = ThyroidDataset(
+        phase='val',
+        dataset=validate_ds_path,
+        transform=get_transform(target_resize, phase='basic'),
+        with_alpha_channel=False)
+
+    return DataLoader(
+        validate_dataset,
+        batch_size=batch_size * 4,
+        shuffle=False,
+        num_workers=workers,
+        pin_memory=True)
 
 def _train(with_doppler, total_epochs, model, train_ds_path, validate_ds_path, savepath):
     device = get_device()
@@ -156,57 +202,18 @@ def _train(with_doppler, total_epochs, model, train_ds_path, validate_ds_path, s
 
         ####exit()  # !!!!
         k = 2  # !!!! !!!!
-        print(f'@@ !!!! using k={k}-fold version for train_ds_path and validate_ds_path:')
+        print(f'@@ ⚠️⚠️⚠️⚠️ using k={k}-fold version for train_ds_path and validate_ds_path:')
         train_ds_path = kfolds[k][0]
         validate_ds_path = kfolds[k][1]
     #====!!!!
 
     #
 
-    #----!!!!
-    from wsdan.net.doppler import get_to_doppler
-    dataset_doppler_root = train_ds_path['benign'][0].split('/')[0]
-    #print('@@ dataset_doppler_root:', dataset_doppler_root)
-    #----!!!!
+    train_loader = create_train_loader(
+        train_ds_path, target_resize, batch_size, workers, with_doppler)
 
-    train_dataset = ThyroidDataset(
-        phase='train',
-        dataset=train_ds_path,
-        transform=get_transform(target_resize, phase='basic'),
-    #==== @@ orig
-        with_alpha_channel=False  # if False, it will load image as RGB(3-channel)
-    #==== @@ WIP w.r.t. 'digitake/preprocess/thyroid.py'
-        # mask_dict=get_to_doppler(dataset_doppler_root) if with_doppler else None,  # !!!!
-        # with_alpha_channel=with_doppler  # !!!! TODO debug with `True`
-    #====
-    )
-
-    train_loader = DataLoader(
-        train_dataset,
-        batch_size=batch_size,
-        shuffle=True,
-        num_workers=workers,
-        pin_memory=True)
-
-    if 0:
-        print('@@ show_data_loader(train_loader) -------- ^^')
-        _channel, _, _, _ = show_data_loader(train_loader)  # only the first batch shown
-        print('@@ show_data_loader(train_loader) -------- $$')
-
-    #
-
-    validate_dataset = ThyroidDataset(
-        phase='val',
-        dataset=validate_ds_path,
-        transform=get_transform(target_resize, phase='basic'),
-        with_alpha_channel=False)
-
-    validate_loader = DataLoader(
-        validate_dataset,
-        batch_size=batch_size * 4,
-        shuffle=False,
-        num_workers=workers,
-        pin_memory=True)
+    validate_loader = create_validate_loader(
+        validate_ds_path, target_resize, batch_size, workers)
 
     #
 
