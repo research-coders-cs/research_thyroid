@@ -77,7 +77,8 @@ if __name__ == '__main__':
         demo_test(ckpt, model)
 
     if 1:  # !!!! k-fold dev
-        total_epochs = 1
+        #total_epochs = 1
+        total_epochs = 10
         model = 'resnet34'
         ckpt = demo_train(total_epochs, model)
-        ##demo_test(ckpt, model)
+        demo_test(ckpt, model)
