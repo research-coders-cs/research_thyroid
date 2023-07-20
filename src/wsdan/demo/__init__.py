@@ -146,7 +146,8 @@ def _train(with_doppler, total_epochs, model, train_ds_path, validate_ds_path, s
     #
 
     #====!!!!
-    if 1:
+    if 0:  # k-fold disabled
+    # if 1:  # !!!!
         mix_ds_path  = build_dataset({
             'benign': ['Train/Benign', 'Val/Benign'],
             'malignant': ['Train/Malignant', 'Val/Malignant'],
