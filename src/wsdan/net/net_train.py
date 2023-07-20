@@ -350,7 +350,7 @@ def train(device, net, feature_center, batch_size, kfold_loaders,
 
             mc.on_epoch_begin()
 
-            num_epoch = num_epoch_base + k * 0.1
+            num_epoch = num_epoch_base + k * 0.001
 
             logs['epoch'] = num_epoch
             logs['lr'] = optimizer.param_groups[0]['lr']
