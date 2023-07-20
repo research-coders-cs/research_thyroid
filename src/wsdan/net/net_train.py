@@ -335,52 +335,60 @@ def train(device, net, feature_center, batch_size, kfold_loaders,
     else:
         mc.reset()
 
-    if len(kfold_loaders) > 1:
-        k = 2  # !!!! !!!!
-        print(f'@@ ⚠️⚠️⚠️⚠️ using k={k}-fold version for train_loader and validate_loader:')
-        train_loader, validate_loader = kfold_loaders[k]  # !!!!
+    num_k = len(kfold_loaders)
+    if num_k > 1:
+        print(f'@@ ⚠️⚠️⚠️⚠️ each epoch will be k={num_k}-fold for train_loader and validate_loader')
     else:
-        train_loader, validate_loader = kfold_loaders[0]  # k-fold disabled
+        print(f'@@ k-fold disabled')
 
     for epoch in range(start_epoch, start_epoch + total_epochs):
-        mc.on_epoch_begin()
 
-        num_epoch = epoch + 1
-        logs['epoch'] = num_epoch
-        logs['lr'] = optimizer.param_groups[0]['lr']
+        num_epoch_base = epoch + 1
 
-        logging.info('Epoch {:03d}, Learning Rate {:g}'.format(num_epoch, optimizer.param_groups[0]['lr']))
+        for k in range(0, num_k):
+            train_loader, validate_loader = kfold_loaders[k]
 
-        pbar = tqdm(total=len(train_loader), unit=' batches')
-        pbar.set_description('Epoch {}/{}'.format(num_epoch, total_epochs))
+            mc.on_epoch_begin()
 
-        if num_epoch < 3:  # debug
-            savepath_epoch = os.path.join(savepath, f'epoch_{num_epoch}')
-            if not os.path.exists(savepath_epoch):
-                os.makedirs(savepath_epoch, exist_ok=True)
-        else:
-            savepath_epoch = None
+            num_epoch = num_epoch_base + k * 0.1
 
-        _train(device, logs, train_loader, net, feature_center, optimizer,
-            pbar, with_doppler, savepath_epoch)
+            logs['epoch'] = num_epoch
+            logs['lr'] = optimizer.param_groups[0]['lr']
 
-        _validate(device, logs, validate_loader, net,
-            pbar, savepath_epoch)
+            logging.info('Epoch {:g}, Learning Rate {:g}'.format(num_epoch, optimizer.param_groups[0]['lr']))
 
-        # Checkpoints
-        if isinstance(scheduler, torch.optim.lr_scheduler.ReduceLROnPlateau):
-            scheduler.step(logs['val/loss'])
-        else:
-            scheduler.step()
+            if num_epoch < 3:  # debug
+                savepath_epoch = os.path.join(savepath, f'epoch_{num_epoch}')
+                if not os.path.exists(savepath_epoch):
+                    os.makedirs(savepath_epoch, exist_ok=True)
+            else:
+                savepath_epoch = None
 
-        mc.on_epoch_end(num_epoch, logs, net, feature_center=feature_center)
+            # !!!! iterate k-folds !!!!
+            pbar = tqdm(total=len(train_loader), unit=' batches')
+            pbar.set_description('Epoch {}/{}'.format(num_epoch, total_epochs))
 
-        #@@wandb.log(logs)
-        pbar.close()
-        writer.flush()
+            _train(device, logs, train_loader, net, feature_center, optimizer,
+                pbar, with_doppler, savepath_epoch)
 
-        gc.collect()
-        torch.cuda.empty_cache()
+            _validate(device, logs, validate_loader, net,
+                pbar, savepath_epoch)
+            # !!!! iterate k-folds !!!!
+
+            # Checkpoints
+            if isinstance(scheduler, torch.optim.lr_scheduler.ReduceLROnPlateau):
+                scheduler.step(logs['val/loss'])
+            else:
+                scheduler.step()
+
+            mc.on_epoch_end(num_epoch, logs, net, feature_center=feature_center)
+
+            #@@wandb.log(logs)
+            pbar.close()
+            writer.flush()
+
+            gc.collect()
+            torch.cuda.empty_cache()
 
     #@@wandb.finish()
     return mc.get_savepath_last()  # @@
