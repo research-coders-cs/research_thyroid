@@ -114,6 +114,63 @@ def create_validate_loader(validate_ds_path, target_resize, batch_size, workers)
         num_workers=workers,
         pin_memory=True)
 
+
+def kfold_ds_paths_debug_v1():  # hardcoded w.r.t. 'Dataset_train_test_val.zip'
+    mix_ds_path  = build_dataset({
+        'benign': ['Train/Benign', 'Val/Benign'],
+        'malignant': ['Train/Malignant', 'Val/Malignant'],
+    }, root='Dataset_train_test_val')  # 30 30
+    print("@@ lens trainval_ds_path:", len(mix_ds_path['benign']), len(mix_ds_path['malignant']))
+
+    # fold 0
+    _s = slice(0, 10)
+    mix_ben_v, mix_ben_t = slice_split(mix_ds_path['benign'], _s)
+    mix_mal_v, mix_mal_t = slice_split(mix_ds_path['malignant'], _s)
+    t_0_ds_path = {'benign': mix_ben_t, 'malignant': mix_mal_t}
+    v_0_ds_path = {'benign': mix_ben_v, 'malignant': mix_mal_v}
+    if 0:  # lgtm
+        __t_0_ds_path = {'benign': mix_ds_path['benign'][10:], 'malignant': mix_ds_path['malignant'][10:]}
+        __v_0_ds_path = {'benign': mix_ds_path['benign'][0:10], 'malignant': mix_ds_path['malignant'][0:10]}
+        print(t_0_ds_path, __t_0_ds_path)
+        print(v_0_ds_path, __v_0_ds_path)
+        exit()
+
+    # fold 1
+    _s = slice(10, 20)
+    mix_ben_v, mix_ben_t = slice_split(mix_ds_path['benign'], _s)
+    mix_mal_v, mix_mal_t = slice_split(mix_ds_path['malignant'], _s)
+    t_1_ds_path = {'benign': mix_ben_t, 'malignant': mix_mal_t}
+    v_1_ds_path = {'benign': mix_ben_v, 'malignant': mix_mal_v}
+    if 0:  # lgtm
+        __t_1_ds_path = {'benign': [], 'malignant': []}  # !!!!dummy
+        __v_1_ds_path = {'benign': mix_ds_path['benign'][10:20], 'malignant': mix_ds_path['malignant'][10:20]}
+        print(t_1_ds_path, __t_1_ds_path)
+        print(v_1_ds_path, __v_1_ds_path)
+        exit()
+
+    # fold 2
+    _s = slice(20, 30)
+    mix_ben_v, mix_ben_t = slice_split(mix_ds_path['benign'], _s)
+    mix_mal_v, mix_mal_t = slice_split(mix_ds_path['malignant'], _s)
+    t_2_ds_path = {'benign': mix_ben_t, 'malignant': mix_mal_t}
+    v_2_ds_path = {'benign': mix_ben_v, 'malignant': mix_mal_v}
+    if 0:  # lgtm
+        __t_2_ds_path = {'benign': mix_ds_path['benign'][0:20], 'malignant': mix_ds_path['malignant'][0:20]}
+        __v_2_ds_path = {'benign': mix_ds_path['benign'][20:30], 'malignant': mix_ds_path['malignant'][20:30]}
+        print(t_2_ds_path, __t_2_ds_path)
+        print(v_2_ds_path, __v_2_ds_path)
+        exit()
+
+    ret = [(t_0_ds_path, v_0_ds_path), (t_1_ds_path, v_1_ds_path), (t_2_ds_path, v_2_ds_path)]
+    for k, tv in enumerate(ret):
+        print(f"@@ fold: {k}")
+        print("@@ lens t_k_ds_path:", len(tv[0]['benign']), len(tv[0]['malignant']))  # 20 20
+        print("@@ lens v_k_ds_path:", len(tv[1]['benign']), len(tv[1]['malignant']))  # 10 10
+        # print("@@ lens t_k_ds_path:", tv[0]['benign'], tv[0]['malignant'])  # [...] [...]
+        # print("@@ lens v_k_ds_path:", tv[1]['benign'], tv[1]['malignant'])  # [...] [...]
+
+    return ret
+
 def _train(with_doppler, total_epochs, model, train_ds_path, validate_ds_path, savepath):
     device = get_device()
     print("@@ device:", device)
@@ -145,71 +202,15 @@ def _train(with_doppler, total_epochs, model, train_ds_path, validate_ds_path, s
 
     #
 
-    #====!!!!
-    if 0:  # k-fold disabled
-    # if 1:  # !!!!
-        mix_ds_path  = build_dataset({
-            'benign': ['Train/Benign', 'Val/Benign'],
-            'malignant': ['Train/Malignant', 'Val/Malignant'],
-        }, root='Dataset_train_test_val')  # 30 30
-        print("@@ lens trainval_ds_path:", len(mix_ds_path['benign']), len(mix_ds_path['malignant']))
-
-        # fold 0
-        _s = slice(0, 10)
-        mix_ben_v, mix_ben_t = slice_split(mix_ds_path['benign'], _s)
-        mix_mal_v, mix_mal_t = slice_split(mix_ds_path['malignant'], _s)
-        t_0_ds_path = {'benign': mix_ben_t, 'malignant': mix_mal_t}
-        v_0_ds_path = {'benign': mix_ben_v, 'malignant': mix_mal_v}
-        if 0:  # lgtm
-            __t_0_ds_path = {'benign': mix_ds_path['benign'][10:], 'malignant': mix_ds_path['malignant'][10:]}
-            __v_0_ds_path = {'benign': mix_ds_path['benign'][0:10], 'malignant': mix_ds_path['malignant'][0:10]}
-            print(t_0_ds_path, __t_0_ds_path)
-            print(v_0_ds_path, __v_0_ds_path)
-            exit()  # !!!!
-
-        # fold 1
-        _s = slice(10, 20)
-        mix_ben_v, mix_ben_t = slice_split(mix_ds_path['benign'], _s)
-        mix_mal_v, mix_mal_t = slice_split(mix_ds_path['malignant'], _s)
-        t_1_ds_path = {'benign': mix_ben_t, 'malignant': mix_mal_t}
-        v_1_ds_path = {'benign': mix_ben_v, 'malignant': mix_mal_v}
-        if 0:  # lgtm
-            __t_1_ds_path = {'benign': [], 'malignant': []}  # !!!!dummy
-            __v_1_ds_path = {'benign': mix_ds_path['benign'][10:20], 'malignant': mix_ds_path['malignant'][10:20]}
-            print(t_1_ds_path, __t_1_ds_path)
-            print(v_1_ds_path, __v_1_ds_path)
-            exit()  # !!!!
-
-        # fold 2
-        _s = slice(20, 30)
-        mix_ben_v, mix_ben_t = slice_split(mix_ds_path['benign'], _s)
-        mix_mal_v, mix_mal_t = slice_split(mix_ds_path['malignant'], _s)
-        t_2_ds_path = {'benign': mix_ben_t, 'malignant': mix_mal_t}
-        v_2_ds_path = {'benign': mix_ben_v, 'malignant': mix_mal_v}
-        if 0:  # lgtm
-            __t_2_ds_path = {'benign': mix_ds_path['benign'][0:20], 'malignant': mix_ds_path['malignant'][0:20]}
-            __v_2_ds_path = {'benign': mix_ds_path['benign'][20:30], 'malignant': mix_ds_path['malignant'][20:30]}
-            print(t_2_ds_path, __t_2_ds_path)
-            print(v_2_ds_path, __v_2_ds_path)
-            exit()  # !!!!
-
-        kfolds = [(t_0_ds_path, v_0_ds_path), (t_1_ds_path, v_1_ds_path), (t_2_ds_path, v_2_ds_path)]
-        for k, tv in enumerate(kfolds):
-            print(f"@@ fold: {k}")
-            print("@@ lens t_k_ds_path:", len(tv[0]['benign']), len(tv[0]['malignant']))  # 20 20
-            print("@@ lens v_k_ds_path:", len(tv[1]['benign']), len(tv[1]['malignant']))  # 10 10
-            # print("@@ lens t_k_ds_path:", tv[0]['benign'], tv[0]['malignant'])  # [...] [...]
-            # print("@@ lens v_k_ds_path:", tv[1]['benign'], tv[1]['malignant'])  # [...] [...]
-
-        ####exit()  # !!!!
-    #====!!!!
-    else:
-        kfolds = [(train_ds_path, validate_ds_path)]
+    if 1:  # !!!!
+        kfold_ds_paths = kfold_ds_paths_debug_v1()
+    else:  # k-fold disabled
+        kfold_ds_paths = [(train_ds_path, validate_ds_path)]
 
     kfold_loaders = [(
         create_train_loader(tv_ds_path[0], target_resize, batch_size, workers, with_doppler),
         create_validate_loader(tv_ds_path[1], target_resize, batch_size, workers))
-        for tv_ds_path in kfolds]
+        for tv_ds_path in kfold_ds_paths]
 
     #
 
