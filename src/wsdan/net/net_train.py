@@ -337,9 +337,11 @@ def train(device, net, feature_center, batch_size, kfold_loaders,
 
     num_k = len(kfold_loaders)
     if num_k > 1:
-        print(f'@@ ⚠️⚠️⚠️⚠️ each epoch will be k={num_k}-fold for train_loader and validate_loader')
-    else:
+        print(f'@@ k-fold ENABLED; each epoch will be k={num_k}-fold for train_loader and validate_loader')
+    elif num_k == 1:
         print(f'@@ k-fold disabled')
+    else:
+        raise ValueError(f'num_k: {num_k}')
 
     for epoch in range(start_epoch, start_epoch + total_epochs):
 
@@ -364,7 +366,8 @@ def train(device, net, feature_center, batch_size, kfold_loaders,
             else:
                 savepath_epoch = None
 
-            # !!!! iterate k-folds !!!!
+            #
+
             pbar = tqdm(total=len(train_loader), unit=' batches')
             pbar.set_description('Epoch {}/{}'.format(num_epoch, total_epochs))
 
@@ -373,7 +376,8 @@ def train(device, net, feature_center, batch_size, kfold_loaders,
 
             _validate(device, logs, validate_loader, net,
                 pbar, savepath_epoch)
-            # !!!! iterate k-folds !!!!
+
+            #
 
             # Checkpoints
             if isinstance(scheduler, torch.optim.lr_scheduler.ReduceLROnPlateau):
