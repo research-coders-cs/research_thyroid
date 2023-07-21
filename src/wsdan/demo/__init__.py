@@ -161,15 +161,33 @@ def kfold_ds_paths_debug_v1():  # hardcoded w.r.t. 'Dataset_train_test_val.zip'
         print(v_2_ds_path, __v_2_ds_path)
         exit()
 
-    ret = [(t_0_ds_path, v_0_ds_path), (t_1_ds_path, v_1_ds_path), (t_2_ds_path, v_2_ds_path)]
-    for k, tv in enumerate(ret):
+    out = [(t_0_ds_path, v_0_ds_path), (t_1_ds_path, v_1_ds_path), (t_2_ds_path, v_2_ds_path)]
+    for k, tv in enumerate(out):
         print(f"@@ fold: {k}")
         print("@@ lens t_k_ds_path:", len(tv[0]['benign']), len(tv[0]['malignant']))  # 20 20
         print("@@ lens v_k_ds_path:", len(tv[1]['benign']), len(tv[1]['malignant']))  # 10 10
         # print("@@ lens t_k_ds_path:", tv[0]['benign'], tv[0]['malignant'])  # [...] [...]
         # print("@@ lens v_k_ds_path:", tv[1]['benign'], tv[1]['malignant'])  # [...] [...]
 
-    return ret
+    return out
+
+
+def slice_mix_ds_path(mix_ds_path, slice_v):
+    mix_ben_vt = slice_split(mix_ds_path['benign'], slice_v)
+    mix_mal_vt = slice_split(mix_ds_path['malignant'], slice_v)
+    return ({'benign': mix_ben_vt[1], 'malignant': mix_mal_vt[1]},
+            {'benign': mix_ben_vt[0], 'malignant': mix_mal_vt[0]})
+
+def kfold_ds_paths_debug_v2():  # hardcoded w.r.t. 'Dataset_train_test_val.zip'
+    mix_ds_path  = build_dataset({
+        'benign': ['Train/Benign', 'Val/Benign'],
+        'malignant': ['Train/Malignant', 'Val/Malignant'],
+    }, root='Dataset_train_test_val')  # 30 30
+    print("@@ lens trainval_ds_path:", len(mix_ds_path['benign']), len(mix_ds_path['malignant']))
+
+    return [slice_mix_ds_path(mix_ds_path, slice_v)
+           for slice_v in (slice(0, 10), slice(10, 20), slice(20, 30))]
+
 
 def _train(with_doppler, total_epochs, model, train_ds_path, validate_ds_path, savepath):
     device = get_device()
@@ -203,7 +221,8 @@ def _train(with_doppler, total_epochs, model, train_ds_path, validate_ds_path, s
     #
 
     if 1:  # !!!!
-        kfold_ds_paths = kfold_ds_paths_debug_v1()
+        ##kfold_ds_paths = kfold_ds_paths_debug_v1()
+        kfold_ds_paths = kfold_ds_paths_debug_v2()
     else:  # k-fold disabled
         kfold_ds_paths = [(train_ds_path, validate_ds_path)]
 
