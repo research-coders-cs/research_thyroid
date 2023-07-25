@@ -198,11 +198,8 @@ def _train(with_doppler, total_epochs, model, ds_paths, savepath):
     print('@@ model:', model)
     print('@@ savepath:', savepath)
 
-    #print('@@ train_ds_path:', train_ds_path)
-    print("@@ lens train_ds_path:", len(train_ds_path['benign']), len(train_ds_path['malignant']))
-
-    #print('@@ validate_ds_path:', validate_ds_path)
-    print("@@ lens validate_ds_path:", len(validate_ds_path['benign']), len(validate_ds_path['malignant']))
+    for k, dsp in ds_paths.items():
+        print(f"@@ lens ds_paths['{k}']:", len(dsp['benign']), len(dsp['malignant']))
 
     target_resize = 250
     batch_size = 8 #@param ["8", "16", "4", "1"] {type:"raw"}
