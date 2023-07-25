@@ -188,6 +188,10 @@ def kfold_ds_paths_debug_v2():  # hardcoded w.r.t. 'Dataset_train_test_val.zip'
     return [slice_mix_ds_path(mix_ds_path, slice_v)
            for slice_v in (slice(0, 10), slice(10, 20), slice(20, 30))]
 
+def kfold_ds_paths_debug_v3(mix_ds_path, validation_slices):  # !!!!
+    print("@@ lens trainval_ds_path:", len(mix_ds_path['benign']), len(mix_ds_path['malignant']))
+    return [slice_mix_ds_path(mix_ds_path, vs) for vs in validation_slices]
+
 
 def _train(with_doppler, total_epochs, model, ds_paths, savepath):
     device = get_device()
@@ -217,11 +221,17 @@ def _train(with_doppler, total_epochs, model, ds_paths, savepath):
 
     #
 
-    if 0:  # !!!!
-        ##kfold_ds_paths = kfold_ds_paths_debug_v1()
-        kfold_ds_paths = kfold_ds_paths_debug_v2()
-    else:  # k-fold disabled
+    mix_ds_path = ds_paths.get('mix')
+    if mix_ds_path is None:
+        print("@@ k-fold is disabled")
         kfold_ds_paths = [(ds_paths['train'], ds_paths['validate'])]
+    else:
+        print("@@ k-fold is ENABLED")
+        ##kfold_ds_paths = kfold_ds_paths_debug_v1()
+        ##kfold_ds_paths = kfold_ds_paths_debug_v2()
+        #==== !!!!
+        validation_slices = (slice(0, 10), slice(10, 20), slice(20, 30))  # !!!!
+        kfold_ds_paths = kfold_ds_paths_debug_v3(mix_ds_path, validation_slices)
 
     kfold_loaders = [(
         create_train_loader(tv_ds_path[0], target_resize, batch_size, workers, with_doppler),
