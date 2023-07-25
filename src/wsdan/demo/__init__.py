@@ -189,7 +189,7 @@ def kfold_ds_paths_debug_v2():  # hardcoded w.r.t. 'Dataset_train_test_val.zip'
            for slice_v in (slice(0, 10), slice(10, 20), slice(20, 30))]
 
 
-def _train(with_doppler, total_epochs, model, train_ds_path, validate_ds_path, savepath):
+def _train(with_doppler, total_epochs, model, ds_paths, savepath):
     device = get_device()
     print("@@ device:", device)
 
@@ -220,11 +220,11 @@ def _train(with_doppler, total_epochs, model, train_ds_path, validate_ds_path, s
 
     #
 
-    if 1:  # !!!!
+    if 0:  # !!!!
         ##kfold_ds_paths = kfold_ds_paths_debug_v1()
         kfold_ds_paths = kfold_ds_paths_debug_v2()
     else:  # k-fold disabled
-        kfold_ds_paths = [(train_ds_path, validate_ds_path)]
+        kfold_ds_paths = [(ds_paths['train'], ds_paths['validate'])]
 
     kfold_loaders = [(
         create_train_loader(tv_ds_path[0], target_resize, batch_size, workers, with_doppler),
@@ -291,19 +291,15 @@ def _train(with_doppler, total_epochs, model, train_ds_path, validate_ds_path, s
 def train(
         total_epochs=TOTAL_EPOCHS_DEFAULT,
         model=MODEL_DEFAULT,
-        train_ds_path=TRAIN_DS_PATH_DEFAULT,
-        validate_ds_path=VALIDATE_DS_PATH_DEFAULT):
-    return _train(False, total_epochs, model, train_ds_path, validate_ds_path,
-        mk_artifact_dir('demo_train'))
+        ds_paths={'train': TRAIN_DS_PATH_DEFAULT, 'validate': VALIDATE_DS_PATH_DEFAULT}):
+    return _train(False, total_epochs, model, ds_paths, mk_artifact_dir('demo_train'))
 
 
 def train_with_doppler(
         total_epochs=TOTAL_EPOCHS_DEFAULT,
         model=MODEL_DEFAULT,
-        train_ds_path=TRAIN_DS_PATH_DEFAULT,
-        validate_ds_path=VALIDATE_DS_PATH_DEFAULT):
-    return _train(True, total_epochs, model, train_ds_path, validate_ds_path,
-        mk_artifact_dir('demo_train_with_doppler'))
+        ds_paths={'train': TRAIN_DS_PATH_DEFAULT, 'validate': VALIDATE_DS_PATH_DEFAULT}):
+    return _train(True, total_epochs, model, ds_paths, mk_artifact_dir('demo_train_with_doppler'))
 
 
 def test(ckpt, model=MODEL_DEFAULT, ds_path=TEST_DS_PATH_DEFAULT,

@@ -26,19 +26,19 @@ if __name__ == '__main__':
         total_epochs = 5
         #model = 'densenet121'
         model = 'resnet34'
+        ds_paths = {
+            'train': build_dataset({
+                'benign': ['Markers_Train_Remove_Markers/Benign_Remove/train'],
+                'malignant': ['Markers_Train_Remove_Markers/Malignant_Remove/train'],
+            }, root='Dataset_doppler_100e'),  # 70% + extra, 70% (doppler matched)
+            'validate': build_dataset({
+                'benign': ['Markers_Train_Remove_Markers/Benign_Remove/validate'],
+                'malignant': ['Markers_Train_Remove_Markers/Malignant_Remove/validate'],
+            }, root='Dataset_doppler_100e'),  # 30% 30% (doppler matched)
+        }
 
-        train_ds_path = build_dataset({
-            'benign': ['Markers_Train_Remove_Markers/Benign_Remove/train'],
-            'malignant': ['Markers_Train_Remove_Markers/Malignant_Remove/train'],
-        }, root='Dataset_doppler_100e')  # 70% + extra, 70% (doppler matched)
-
-        validate_ds_path = build_dataset({
-            'benign': ['Markers_Train_Remove_Markers/Benign_Remove/validate'],
-            'malignant': ['Markers_Train_Remove_Markers/Malignant_Remove/validate'],
-        }, root='Dataset_doppler_100e')  # 30% 30% (doppler matched)
-
-        #ckpt = demo_train(total_epochs, model, train_ds_path, validate_ds_path)
-        ckpt = demo_train_with_doppler(total_epochs, model, train_ds_path, validate_ds_path)
+        #ckpt = demo_train(total_epochs, model, ds_paths)
+        ckpt = demo_train_with_doppler(total_epochs, model, ds_paths)
 
         test_ds_path = build_dataset({
             'benign': ['Markers_Train_Remove_Markers/Benign_Remove/test'],
