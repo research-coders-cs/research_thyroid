@@ -81,10 +81,11 @@ if __name__ == '__main__':
         total_epochs = 10
         model = 'resnet34'
         ds_paths = {
-            'mix': build_dataset({
+            'kfold': build_dataset({
                 'benign': ['Train/Benign', 'Val/Benign'],
                 'malignant': ['Train/Malignant', 'Val/Malignant'],
-            }, root='Dataset_train_test_val')  # 30 30
+            }, root='Dataset_train_test_val'),  # 30 30
+            'kfold_slices_val': [slice(0, 10), slice(10, 20), slice(20, 30)],
         }
-        ckpt = demo_train(total_epochs, model)
+        ckpt = demo_train(total_epochs, model, ds_paths)
         demo_test(ckpt, model)
