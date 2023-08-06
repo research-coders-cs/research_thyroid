@@ -936,6 +936,8 @@ def resolve_hw_slices(bbox_crop, train_img_copy, train_img_path, idx, size, save
     if path_doppler:
         # get doppler bbox (scaled)
         raw = cv2.imread(path_doppler)
+        if raw is None:
+            raise ValueError(f'invalid `raw` for: {path_doppler}')
         bbox_raw = detect_doppler(raw)
         if bbox_raw is None:
             logger.debug(f'detect_doppler() failed for: {path_doppler}; using `bbox_crop` instead')
