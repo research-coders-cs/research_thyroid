@@ -921,8 +921,8 @@ def bbox_draw(img, bbox, color=(255, 0, 0), thickness=1):
         (int(bbox[2]), int(bbox[3])), color, thickness)
 
 # ======== TODO refactor ^^ into preprocessing part i.e. `ThyroidDataset()`
-def resolve_hw_slices(bbox_crop, train_img_copy, train_img_path, idx, size, savepath):
-    THRESH_ISEC_IN_CROP = 0.25
+def resolve_hw_slices(bbox_crop, train_img_copy, train_img_path, idx, size, savepath, config):
+    thresh_isec_in_crop = config['thresh_isec_in_crop']
 
     #print('@@ train_img_path:', train_img_path)
     dataset_doppler_root = train_img_path.split('/')[0]
@@ -953,8 +953,8 @@ def resolve_hw_slices(bbox_crop, train_img_copy, train_img_path, idx, size, save
             return bbox_to_hw_slices(bbox_crop)
 
         iou, isec_in_crop = get_iou(bbox, bbox_crop)
-        logger.debug(f'THRESH_ISEC_IN_CROP: {THRESH_ISEC_IN_CROP}')
-        qualify = 1 if iou > 1e-4 and isec_in_crop > THRESH_ISEC_IN_CROP else 0
+        logger.debug(f'thresh_isec_in_crop: {thresh_isec_in_crop}')
+        qualify = 1 if iou > 1e-4 and isec_in_crop > thresh_isec_in_crop else 0
         digest = hashlib.md5(path_doppler.encode('utf-8')).hexdigest()
         debug_fname_jpg = f'debug_crop_doppler_{idx}_iou_%0.4f_isecincrop_%0.3f_qualify_%d_digest_%s.jpg' % (
             iou, isec_in_crop, qualify, digest)

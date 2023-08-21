@@ -48,7 +48,8 @@ def img_gpu_to_cpu(img):
     img_full = NormalizeData(img_full) * 255
     return img_full
 
-def batch_augment(images, paths, attention_map, savepath=None, use_doppler=False,
+def batch_augment(images, paths, attention_map, savepath=None,
+                  use_doppler=False, config_doppler=None,
                   mode='crop', theta=0.5, padding_ratio=0.1):
     logger.debug(f'images.size(): {images.size()}')
     raw_image = get_raw_image(images.cpu())  # @@
@@ -84,7 +85,7 @@ def batch_augment(images, paths, attention_map, savepath=None, use_doppler=False
                 train_img_path = paths[idx]
 
                 sh, sw = resolve_hw_slices(
-                    bbox_crop, train_img_copy, train_img_path, idx, (imgH, imgW), savepath)
+                    bbox_crop, train_img_copy, train_img_path, idx, (imgH, imgW), savepath, config_doppler)
             else:
                 sh, sw = slice(height_min, height_max), slice(width_min, width_max)
             #-------- @@

@@ -35,7 +35,8 @@ class SaveFeatures():  # @@ not used at the moment
     def remove(self): self.hook.remove()
 
 
-def _train(device, logs, train_loader, net, feature_center, optimizer, pbar, with_doppler, savepath_epoch):
+def _train(device, logs, train_loader, net, feature_center, optimizer, pbar,
+           with_doppler, config_doppler, savepath_epoch):
 
     # metrics initialization
     loss_container.reset()
@@ -78,7 +79,8 @@ def _train(device, logs, train_loader, net, feature_center, optimizer, pbar, wit
         ##################################
         with torch.no_grad():
             crop_images = batch_augment(X, paths, attention_map[:, :1, :, :],
-                savepath=savepath_batch, use_doppler=with_doppler,
+                savepath=savepath_batch,
+                use_doppler=with_doppler, config_doppler=config_doppler,
                 mode='crop', theta=(0.7, 0.95), padding_ratio=0.1)
 
         if savepath_batch:  # @@
@@ -320,7 +322,7 @@ writer = SummaryWriter()
 
 def train(device, net, feature_center, batch_size, kfold_loaders,
              optimizer, scheduler, run_name, logs, start_epoch, total_epochs,
-             with_doppler=False, savepath='.'):
+             with_doppler=False, config_doppler=None, savepath='.'):
     # ?? - include the 'Run/XX_d' tensorboard in output
 
     mc_monitor = 'val/{}'.format(raw_metric.name)
@@ -372,7 +374,7 @@ def train(device, net, feature_center, batch_size, kfold_loaders,
             pbar.set_description('Epoch {}/{}'.format(num_epoch, total_epochs))
 
             _train(device, logs, train_loader, net, feature_center, optimizer,
-                pbar, with_doppler, savepath_epoch)
+                pbar, with_doppler, config_doppler, savepath_epoch)
 
             _validate(device, logs, validate_loader, net,
                 pbar, savepath_epoch)

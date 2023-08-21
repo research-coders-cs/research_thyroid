@@ -189,7 +189,7 @@ def kfold_ds_paths_debug_v2():  # hardcoded w.r.t. 'Dataset_train_test_val.zip'
             for slice_v in (slice(0, 10), slice(10, 20), slice(20, 30))]
 
 
-def _train(with_doppler, total_epochs, model, ds_paths, savepath):
+def _train(with_doppler, total_epochs, model, ds_paths, savepath, config_doppler=None):
     device = get_device()
     print("@@ device:", device)
 
@@ -289,7 +289,7 @@ def _train(with_doppler, total_epochs, model, ds_paths, savepath):
     ckpt = net_train.train(
         device, net, feature_center, batch_size, kfold_loaders,
         optimizer, scheduler, run_name, logs, START_EPOCH, total_epochs,
-        with_doppler=with_doppler, savepath=savepath)
+        with_doppler=with_doppler, config_doppler=config_doppler, savepath=savepath)
     print('@@ done; ckpt:', ckpt)
 
     return ckpt
@@ -305,8 +305,10 @@ def train(
 def train_with_doppler(
         total_epochs=TOTAL_EPOCHS_DEFAULT,
         model=MODEL_DEFAULT,
-        ds_paths={'train': TRAIN_DS_PATH_DEFAULT, 'validate': VALIDATE_DS_PATH_DEFAULT}):
-    return _train(True, total_epochs, model, ds_paths, mk_artifact_dir('demo_train_with_doppler'))
+        ds_paths={'train': TRAIN_DS_PATH_DEFAULT, 'validate': VALIDATE_DS_PATH_DEFAULT},
+        config_doppler={'thresh_isec_in_crop': 0.25}):
+    return _train(True, total_epochs, model, ds_paths, mk_artifact_dir('demo_train_with_doppler'),
+                  config_doppler=config_doppler)
 
 
 def test(ckpt, model=MODEL_DEFAULT, ds_path=TEST_DS_PATH_DEFAULT,
