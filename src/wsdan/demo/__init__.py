@@ -194,6 +194,7 @@ def _train(with_doppler, total_epochs, model, ds_paths, savepath, config_doppler
     print("@@ device:", device)
 
     print('@@ with_doppler:', with_doppler)
+    print('@@ config_doppler:', config_doppler)
     print('@@ total_epochs:', total_epochs)
     print('@@ model:', model)
     print('@@ savepath:', savepath)
