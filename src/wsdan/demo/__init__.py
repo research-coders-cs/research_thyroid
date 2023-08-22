@@ -307,7 +307,12 @@ def train_with_doppler(
         total_epochs=TOTAL_EPOCHS_DEFAULT,
         model=MODEL_DEFAULT,
         ds_paths={'train': TRAIN_DS_PATH_DEFAULT, 'validate': VALIDATE_DS_PATH_DEFAULT},
-        config_doppler={'thresh_isec_in_crop': 0.25}):
+        config_doppler={
+            'thresh_isec_in_crop': 0.25,  # default
+            #'thresh_isec_in_crop': 0.50,
+            #'thresh_isec_in_crop': 0.75,
+            #'thresh_force_doppler_in_crop': True,
+        }):
     return _train(True, total_epochs, model, ds_paths, mk_artifact_dir('demo_train_with_doppler'),
                   config_doppler=config_doppler)
 
