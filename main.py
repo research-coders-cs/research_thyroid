@@ -39,7 +39,10 @@ if __name__ == '__main__':
 
         #ckpt = demo_train(total_epochs, model, ds_paths)
         ckpt = demo_train_with_doppler(total_epochs, model, ds_paths, {  # <-- config_doppler=None
-            'thresh_isec_in_crop': 0.50,
+            'thresh_isec_in_crop': 0.25,
+            #'thresh_isec_in_crop': 0.50,
+            #'thresh_isec_in_crop': 0.75,
+            #'thresh_force_doppler_in_crop': True,
         })
 
         test_ds_path = build_dataset({
