@@ -22,7 +22,7 @@ if __name__ == '__main__':
         ckpt = 'densenet_224_8_lr-1e5_n4_95.968.ckpt'  # 0.9xx, LGTM
         demo_test(ckpt, 'densenet121', TEST_DS_PATH_DEFAULT, 224, 8)
 
-    if 1:
+    if 0:
         total_epochs = 5
         #model = 'densenet121'
         model = 'resnet34'
@@ -81,16 +81,20 @@ if __name__ == '__main__':
         ckpt = demo_train(total_epochs, model)
         demo_test(ckpt, model)
 
-    if 0:  # !!!! k-fold dev
+    if 1:  # !!!! k-fold dev
         #total_epochs = 1
-        total_epochs = 10
+        total_epochs = 2
         model = 'resnet34'
         ds_paths = {
             'kfold': build_dataset({
                 'benign': ['Train/Benign', 'Val/Benign'],
                 'malignant': ['Train/Malignant', 'Val/Malignant'],
             }, root='Dataset_train_test_val'),  # 30 30
-            'kfold_slices_val': [slice(0, 10), slice(10, 20), slice(20, 30)],
+            'kfold_slices_val': [
+                [slice(0, 10), slice(0, 8)],
+                [slice(10, 20), slice(8, 16)],
+                [slice(20, 30), slice(16, 24)],
+            ],
         }
         ckpt = demo_train(total_epochs, model, ds_paths)
         demo_test(ckpt, model)

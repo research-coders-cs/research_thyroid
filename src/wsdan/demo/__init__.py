@@ -172,9 +172,9 @@ def kfold_ds_paths_debug_v1():  # hardcoded w.r.t. 'Dataset_train_test_val.zip'
     return out
 
 
-def slice_mix_ds_path(mix_ds_path, slice_v):
-    mix_ben_vt = slice_split(mix_ds_path['benign'], slice_v)
-    mix_mal_vt = slice_split(mix_ds_path['malignant'], slice_v)
+def slice_mix_ds_path(mix_ds_path, slice_v_ben, slice_v_mal):
+    mix_ben_vt = slice_split(mix_ds_path['benign'], slice_v_ben)
+    mix_mal_vt = slice_split(mix_ds_path['malignant'], slice_v_mal)
     return ({'benign': mix_ben_vt[1], 'malignant': mix_mal_vt[1]},
             {'benign': mix_ben_vt[0], 'malignant': mix_mal_vt[0]})
 
@@ -231,8 +231,8 @@ def _train(with_doppler, total_epochs, model, ds_paths, savepath, config_doppler
         print("@@ k-fold is ENABLED")
         ##kfold_ds_paths = kfold_ds_paths_debug_v1()
         ##kfold_ds_paths = kfold_ds_paths_debug_v2()
-        kfold_ds_paths = [slice_mix_ds_path(kfold_ds_path, sv)
-                          for sv in ds_paths['kfold_slices_val']]
+        kfold_ds_paths = [slice_mix_ds_path(kfold_ds_path, svb, svm)
+                          for (svb, svm) in ds_paths['kfold_slices_val']]
 
     kfold_loaders = [(
         create_train_loader(tv_ds_path[0], target_resize, batch_size, workers, with_doppler),
