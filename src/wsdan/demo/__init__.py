@@ -229,10 +229,39 @@ def _train(with_doppler, total_epochs, model, ds_paths, savepath, config_doppler
         kfold_ds_paths = [(ds_paths['train'], ds_paths['validate'])]
     else:
         print("@@ k-fold is ENABLED")
+        #====
         ##kfold_ds_paths = kfold_ds_paths_debug_v1()
         ##kfold_ds_paths = kfold_ds_paths_debug_v2()
+        #==== @@
+        k = len(ds_paths['kfold_slices_val'])
+        print("@@ k:", k)
+
+        #---- ^^ adjust dataset lengths, updating `kfold_ds_path`
+        mix_ben_len_truncated = len(kfold_ds_path['benign']) - len(kfold_ds_path['benign']) % k
+        mix_mal_len_truncated = len(kfold_ds_path['malignant']) - len(kfold_ds_path['malignant']) % k
+        kfold_ds_path['benign'] = kfold_ds_path['benign'][0:mix_ben_len_truncated]
+        kfold_ds_path['malignant'] = kfold_ds_path['malignant'][0:mix_mal_len_truncated]
+
+        mix_ben_len, mix_mal_len = len(kfold_ds_path['benign']), len(kfold_ds_path['malignant'])
+        assert mix_ben_len % k == 0
+        assert mix_mal_len % k == 0
+        print("@@ [after truncation] lens of kfold_ds_path:", mix_ben_len, mix_mal_len)
+        #---- $$ adjust dataset lengths
+
         kfold_ds_paths = [slice_mix_ds_path(kfold_ds_path, svb, svm)
                           for (svb, svm) in ds_paths['kfold_slices_val']]
+        if 1:  # check
+            ##print("@@ kfold_ds_paths:", kfold_ds_paths)
+            print("@@ -------- `kfold_ds_paths`, check: ^^")
+            for smdp in kfold_ds_paths:
+                print("@@ ----")
+                print("@@ bt:", len(smdp[0]['benign']))
+                print("@@ mt:", len(smdp[0]['malignant']))
+                print("@@ bv:", len(smdp[1]['benign']))
+                print("@@ mv:", len(smdp[1]['malignant']))
+            print("@@ -------- `kfold_ds_paths`, check: $$")
+            ##exit()  # !!!!
+        #====
 
     kfold_loaders = [(
         create_train_loader(tv_ds_path[0], target_resize, batch_size, workers, with_doppler),

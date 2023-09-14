@@ -85,12 +85,17 @@ if __name__ == '__main__':
         #total_epochs = 1
         total_epochs = 2
         model = 'resnet34'
+
+        kfold = build_dataset({
+            'benign': ['Train/Benign', 'Val/Benign'],
+            'malignant': ['Train/Malignant', 'Val/Malignant'],
+        }, root='Dataset_train_test_val')
+        kfold['benign'] = kfold['benign'][0:30]
+        kfold['malignant'] = kfold['malignant'][0:25]
+
         ds_paths = {
-            'kfold': build_dataset({
-                'benign': ['Train/Benign', 'Val/Benign'],
-                'malignant': ['Train/Malignant', 'Val/Malignant'],
-            }, root='Dataset_train_test_val'),  # 30 30
-            'kfold_slices_val': [
+            'kfold': kfold,  # 30 25 --(to_be_truncated)--> 30 24
+            'kfold_slices_val': [  # k=3
                 [slice(0, 10), slice(0, 8)],
                 [slice(10, 20), slice(8, 16)],
                 [slice(20, 30), slice(16, 24)],
