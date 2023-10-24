@@ -36,6 +36,6 @@ test: Dataset_train_test_val \
 	WSDAN_doppler_100d-resnet34_250_8_lr-1e5_n4.ckpt
 	@echo LD_LIBRARY_PATH: $(LD_LIBRARY_PATH)
 	pipenv run python3 -m pip install --force-reinstall .  # for `import wsdan` to work
-	rm -rf log.txt output && mkdir output
+	rm -rf log.txt output.zip output && mkdir output
 	time pipenv run python3 main.py 2>&1 | tee log.txt
 	zip -r output.zip output > /dev/null
