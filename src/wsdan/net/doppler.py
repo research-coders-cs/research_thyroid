@@ -920,35 +920,46 @@ def bbox_draw(img, bbox, color=(255, 0, 0), thickness=1):
         (int(bbox[0]), int(bbox[1])),
         (int(bbox[2]), int(bbox[3])), color, thickness)
 
-# ======== TODO refactor ^^ into preprocessing part i.e. `ThyroidDataset()`
-def resolve_hw_slices(bbox_crop, train_img_copy, train_img_path, idx, size, savepath, config):
 
+def get_path_doppler(train_img_path):
     #print('@@ train_img_path:', train_img_path)
     dataset_doppler_root = train_img_path.split('/')[0]
     to_doppler = get_to_doppler(dataset_doppler_root)
     path_doppler = to_doppler[train_img_path] if train_img_path in to_doppler else None
     #print('@@ path_doppler:', path_doppler)
 
+    return path_doppler
+
+def get_bbox_doppler(path_doppler, size):
+    # get doppler bbox (scaled)
+    raw = cv2.imread(path_doppler)
+    if raw is None:
+        raise ValueError(f'invalid `raw` for: {path_doppler}')
+    bbox_raw = detect_doppler(raw)
+    if bbox_raw is None:
+        logger.debug(f'detect_doppler() failed for: {path_doppler}; using `bbox_crop` instead')
+        return None
+
+    bbox = np.array([
+        bbox_raw[0] * size[0] / raw.shape[1], bbox_raw[1] * size[1] / raw.shape[0],
+        bbox_raw[2] * size[0] / raw.shape[1], bbox_raw[3] * size[1] / raw.shape[0]],
+        dtype=np.float32)
+
+    if bbox[2] - bbox[0] < 1. or bbox[3] - bbox[1] < 1.:
+        logger.debug('doppler `bbox` too squeezed due to scaling; using `bbox_crop` instead')
+        return None
+
+    return bbox
+
+def resolve_hw_slices(bbox_crop, train_img_copy, train_img_path, idx, size, savepath, config):
+
+    path_doppler = get_path_doppler(train_img_path)
     if 1 and path_doppler is None:  # strict check
         raise ValueError(f'`path_doppler` not found for: {train_img_path}')
 
     if path_doppler:
-        # get doppler bbox (scaled)
-        raw = cv2.imread(path_doppler)
-        if raw is None:
-            raise ValueError(f'invalid `raw` for: {path_doppler}')
-        bbox_raw = detect_doppler(raw)
-        if bbox_raw is None:
-            logger.debug(f'detect_doppler() failed for: {path_doppler}; using `bbox_crop` instead')
-            return bbox_to_hw_slices(bbox_crop)
-
-        bbox = np.array([
-            bbox_raw[0] * size[0] / raw.shape[1], bbox_raw[1] * size[1] / raw.shape[0],
-            bbox_raw[2] * size[0] / raw.shape[1], bbox_raw[3] * size[1] / raw.shape[0]],
-            dtype=np.float32)
-
-        if bbox[2] - bbox[0] < 1. or bbox[3] - bbox[1] < 1.:
-            logger.debug('doppler `bbox` too squeezed due to scaling; using `bbox_crop` instead')
+        bbox = get_bbox_doppler(path_doppler, size)
+        if bbox is None:
             return bbox_to_hw_slices(bbox_crop)
 
         iou, isec_in_crop = get_iou(bbox, bbox_crop)
