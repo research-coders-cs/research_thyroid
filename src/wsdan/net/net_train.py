@@ -96,7 +96,8 @@ def _train(device, logs, train_loader, net, feature_center, optimizer, pbar,
         ##################################
         with torch.no_grad():
             drop_images = batch_augment(X, paths, attention_map[:, 1:, :, :],
-                savepath=savepath_batch, use_doppler=False,
+                savepath=savepath_batch,
+                use_doppler=with_doppler, config_doppler=config_doppler,
                 mode='drop', theta=(0.2, 0.5))
 
         if savepath_batch:  # @@
@@ -104,7 +105,7 @@ def _train(device, logs, train_loader, net, feature_center, optimizer, pbar,
                 fname = os.path.join(savepath_batch, f'final_drop_idx_{idx}.jpg')
                 cv2.imwrite(fname, img_gpu_to_cpu(drop_images[idx]))
 
-        # if with_doppler: exit(99)  # @@ !!!!
+        ##if with_doppler: exit(99)  # @@ !!!!
 
         # drop images forward
         y_pred_drop, _, _ = net(drop_images)

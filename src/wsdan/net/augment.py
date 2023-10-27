@@ -7,7 +7,7 @@ ToPILImage = transforms.ToPILImage()
 import numpy as np
 import random
 import os
-from .doppler import resolve_hw_slices
+from .doppler import resolve_hw_slices, get_path_doppler, get_bbox_doppler, bbox_to_hw_slices
 
 import logging
 logger = logging.getLogger('@@')
@@ -113,8 +113,31 @@ def batch_augment(images, paths, attention_map, savepath=None,
             drop_masks.append(functional.interpolate(
                 atten_map, size=(imgH, imgW), mode='bilinear') < theta_d)
 
-        drop_masks = torch.cat(drop_masks, dim=0)
-        drop_images = images * drop_masks.float()
+        #==== orig
+        #drop_masks = torch.cat(drop_masks, dim=0)
+        #drop_images = images * drop_masks.float()
+        #==== @@
+        drop_masks = torch.cat(drop_masks, dim=0).float()
+        if use_doppler:
+            img_sz = (imgH, imgW)
+            for idx in range(drop_masks.shape[0]):
+                bbox_doppler = get_bbox_doppler(get_path_doppler(paths[idx]), img_sz)
+                if bbox_doppler is not None:
+                    doppler_mask = torch.full(img_sz, 0.)
+                    sh, sw = bbox_to_hw_slices(bbox_doppler)
+                    for ridx in range(sh.start, sh.stop):
+                        doppler_mask[ridx][sw] = 1.
+
+                    #logger.debug(f"!! BEF drop_masks[idx]: {drop_masks[idx]}")
+                    drop_masks[idx][0] = doppler_mask * drop_masks[idx][0]
+                    #logger.debug(f"!! AFT drop_masks[idx]: {drop_masks[idx]}")
+        drop_images = images * drop_masks
+        #====
+
+        # @@ e.g.
+        # drop_masks.shape  -> torch.Size([8, 1, 250, 250])
+        # images.shape      -> torch.Size([8, 3, 250, 250])
+        # drop_images.shape -> torch.Size([8, 3, 250, 250])
 
         logger.debug(f"drop_images: {drop_images.shape}")
         return drop_images
