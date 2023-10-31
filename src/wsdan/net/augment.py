@@ -129,7 +129,7 @@ def batch_augment(images, paths, attention_map, savepath=None,
                         doppler_mask[ridx][sw] = 1.
 
                     #logger.debug(f"!! BEF drop_masks[idx]: {drop_masks[idx]}")
-                    drop_masks[idx][0] = doppler_mask * drop_masks[idx][0]
+                    drop_masks[idx][0] = doppler_mask * drop_masks[idx][0].cpu()
                     #logger.debug(f"!! AFT drop_masks[idx]: {drop_masks[idx]}")
         drop_images = images * drop_masks
         #====
