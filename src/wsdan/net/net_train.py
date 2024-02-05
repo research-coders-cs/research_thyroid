@@ -362,7 +362,7 @@ def train(device, net, feature_center, batch_size, kfold_loaders,
 
             logging.info('Epoch {:g}, Learning Rate {:g}'.format(num_epoch, optimizer.param_groups[0]['lr']))
 
-            if num_epoch < 3:  # debug
+            if 0 and num_epoch < 3:  # debug
                 savepath_epoch = os.path.join(savepath, f'epoch_{num_epoch}')
                 if not os.path.exists(savepath_epoch):
                     os.makedirs(savepath_epoch, exist_ok=True)
