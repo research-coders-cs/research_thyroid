@@ -38,21 +38,21 @@ def plt_img_tensor(file):
     plt.imshow(x)
     plt_show(plt)
 
-def plt_ep_sec(logs, mode='acc'):
+def plt_ep_val(logs, mode='time'):
     if mode != 'time' and mode != 'acc':
         raise Exception("`mode` should be one of 'time', 'acc'")
 
     for log in logs:
         deltas = log_to_deltas(log, mode)
         xs_ep = range(0, len(deltas))  # (ep0, ep1, ep2, ...) i.e. (0, 1, 2, ...)
-        ys_sec = deltas.values()  # [sec0, sec1, sec2, ...]
+        ys_val = deltas.values()  # [val0, val1, val2, ...]
 
-        plt.plot(xs_ep, ys_sec, label=f'{log.split("/")[-1]}')
+        plt.plot(xs_ep, ys_val, label=f'{log.split("/")[-1]}')
 
         plt.xlim([xs_ep[0], xs_ep[-1]])
 
         if mode == 'time':
-            plt.ylim([0, max(ys_sec) + 5])
+            plt.ylim([0, max(ys_val) + 5])
         elif mode == 'acc':
             plt.ylim([55, 102])
 
@@ -111,37 +111,37 @@ if __name__ == '__main__':
             print(f'Usage: python3 {sys.argv[0]} <log file>')
             exit()
 
-        plt_ep_sec([log])
+        plt_ep_val([log])
         exit()
 
     if 0:
         plt_img_tensor('test.png')
         exit()
 
-    # plt_ep_sec([
+    # plt_ep_val([
     #     'results--doppler_100g-TrueFalse/log-d-ep20-kfold3-r1',
     #     'results--doppler_100g-TrueFalse/log-d-ep20-kfold3-r2',
     #     'results--doppler_100g-TrueFalse/log-d-ep20-kfold3-r3',
     #     'results--doppler_100g-TrueFalse/log-d-ep20-kfold3-r4',
     # ], 'time')
-    #
-    # plt_ep_sec([
+
+    # plt_ep_val([
     #     'results--doppler_100g-TrueFalse/log-d-ep20-kfold3-r1',
     #     'results--doppler_100g-TrueFalse/log-d-ep20-kfold3-r2',
     #     'results--doppler_100g-TrueFalse/log-d-ep20-kfold3-r3',
     #     'results--doppler_100g-TrueFalse/log-d-ep20-kfold3-r4',
     # ], 'acc')
 
-    plt_ep_sec([
-        'results--doppler_100g-TrueFalse/log-nd-ep20-kfold3-r5',
-        'results--doppler_100g-TrueFalse/log-nd-ep20-kfold3-r6',
-        'results--doppler_100g-TrueFalse/log-nd-ep20-kfold3-r7',
-        'results--doppler_100g-TrueFalse/log-nd-ep20-kfold3-r8',
-    ], 'acc')
-
-    plt_ep_sec([
+    plt_ep_val([
         'results--doppler_100g-TrueFalse/log-nd-ep20-kfold3-r5',
         'results--doppler_100g-TrueFalse/log-nd-ep20-kfold3-r6',
         'results--doppler_100g-TrueFalse/log-nd-ep20-kfold3-r7',
         'results--doppler_100g-TrueFalse/log-nd-ep20-kfold3-r8',
     ], 'time')
+
+    plt_ep_val([
+        'results--doppler_100g-TrueFalse/log-nd-ep20-kfold3-r5',
+        'results--doppler_100g-TrueFalse/log-nd-ep20-kfold3-r6',
+        'results--doppler_100g-TrueFalse/log-nd-ep20-kfold3-r7',
+        'results--doppler_100g-TrueFalse/log-nd-ep20-kfold3-r8',
+    ], 'acc')
