@@ -67,6 +67,75 @@ def plt_ep_val(logs, mode='time'):
     ##plt.legend(loc='upper right')
     plt.legend(loc='lower right')
     plt_show(plt)
+
+
+def plt_auc():
+    test_size = 20
+    pred = torch.tensor([[ 0.6650, -0.4284],
+        [ 0.2460, -0.1261],
+        [-0.4980,  0.5372],
+        [-0.0229, -0.0511],
+        [ 0.5294, -0.2512],
+        [ 0.2646,  0.2131],
+        [-1.3620,  0.9549],
+        [-1.1261,  0.5606],
+        [-0.9976,  0.1080],
+        [ 0.5730, -0.4583],
+        [-0.0655,  0.3107],
+        [-0.1167, -0.2246],
+        [ 0.4521, -0.5234],
+        [-0.1683,  0.4976],
+        [ 0.6475, -0.1778],
+        [-0.5879,  0.0949],
+        [-0.0213,  0.1973],
+        [ 0.2243, -0.4667],
+        [-0.7021,  0.7416],
+        [-0.1003,  0.1517]], dtype=torch.float32)
+    true = torch.tensor([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1])
+    if 0:
+        print('@@ test_size:', test_size)
+        print('@@ pred:', pred)
+        print('@@ true:', true)
+
+    from sklearn.metrics import roc_curve, auc, roc_auc_score
+
+    # Compute ROC curve and ROC area for each class
+    y_pred_b = np.zeros((test_size), dtype=float)
+    y_pred_m = np.zeros((test_size), dtype=float)
+
+    y_m = true.detach().cpu().numpy()
+    y_b = 1 - y_m
+
+    for i, (y_hat, y) in enumerate(zip(pred, true)):
+        y_pred_b[i] = float(y_hat[0])
+        y_pred_m[i] = float(y_hat[1])
+
+    fpr_b, tpr_b, _ = roc_curve(y_b, y_pred_b)
+    fpr_m, tpr_m, _ = roc_curve(y_m, y_pred_m)
+    roc_auc_b = auc(fpr_b, tpr_b)
+    roc_auc_m = auc(fpr_m, tpr_m)
+
+    print('@@ y_b:', y_b)
+    print('@@ y_m:', y_m)
+    # print('@@ fpr_b:', fpr_b)
+    # print('@@ tpr_b:', tpr_b)
+    # print('@@ fpr_m:', fpr_m)
+    # print('@@ tpr_m:', tpr_m)
+    print('@@ roc_auc_b:', roc_auc_b)
+    print('@@ roc_auc_m:', roc_auc_m)
+
+    plt.plot(fpr_b, tpr_b, color = 'darkgreen',
+             lw = 2, label = "ROC Curve for Benign (AUC = %0.3f)" % roc_auc_b)
+    plt.plot(fpr_m, tpr_m, color = 'darkred',
+             lw = 2, label = "ROC Curve for Malignant (AUC = %0.3f)" % roc_auc_m)
+    plt.plot([0,1.0], [0,1.0], color='navy', lw=2, linestyle='--')
+    plt.xlim([0.0, 1.0])
+    plt.ylim([0.0, 1.05])
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    plt.legend(loc = 'lower right')
+    plt_show(plt)
+
 #---- $$
 
 def log_to_deltas(log, mode):
@@ -116,6 +185,10 @@ if __name__ == '__main__':
 
     if 0:
         plt_img_tensor('test.png')
+        exit()
+
+    if 1:
+        plt_auc()
         exit()
 
     # plt_ep_val([
