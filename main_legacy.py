@@ -520,6 +520,12 @@ def print_auc(results, test_size, enable_plot=False):  # @@
     pred = results[2]
     true = results[3]
 
+    if 1:
+        print('!! test_size:', test_size)
+        print('!! pred:', pred)
+        print('!! true:', true)
+        ##exit()
+
     y_m = true.detach().cpu().numpy()
     y_b = 1 - y_m
 
@@ -673,6 +679,6 @@ if __name__ == '__main__':
     print('\n\n@@ ======== print_scores(results)')
     print_scores(results)
 
-    _enable_plot = 0  # @@
+    _enable_plot = 1  # @@
     print(f'\n\n@@ ======== print_auc(results, enable_plot={_enable_plot})')
     print_auc(results, test_size, enable_plot=_enable_plot)
