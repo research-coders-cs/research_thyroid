@@ -92,7 +92,7 @@ def plt_auc():
         [-0.7021,  0.7416],
         [-0.1003,  0.1517]], dtype=torch.float32)
     true = torch.tensor([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1])
-    if 0:
+    if 0:  # !!!! << `results`
         print('@@ test_size:', test_size)
         print('@@ pred:', pred)
         print('@@ true:', true)
@@ -187,7 +187,7 @@ if __name__ == '__main__':
         plt_img_tensor('test.png')
         exit()
 
-    if 1:
+    if 0:
         plt_auc()
         exit()
 
@@ -210,11 +210,22 @@ if __name__ == '__main__':
         'results--doppler_100g-TrueFalse/log-nd-ep20-kfold3-r6',
         'results--doppler_100g-TrueFalse/log-nd-ep20-kfold3-r7',
         'results--doppler_100g-TrueFalse/log-nd-ep20-kfold3-r8',
-    ], 'time')
+        'results--doppler_100g-TrueFalse/log-d-ep20-kfold3-r5',
+        'results--doppler_100g-TrueFalse/log-d-ep20-kfold3-r6',
+        'results--doppler_100g-TrueFalse/log-d-ep20-kfold3-r7',
+        'results--doppler_100g-TrueFalse/log-d-ep20-kfold3-r8',
+    ], 'time')  # ep_time_nd_d_5678.png
 
     plt_ep_val([
         'results--doppler_100g-TrueFalse/log-nd-ep20-kfold3-r5',
         'results--doppler_100g-TrueFalse/log-nd-ep20-kfold3-r6',
         'results--doppler_100g-TrueFalse/log-nd-ep20-kfold3-r7',
         'results--doppler_100g-TrueFalse/log-nd-ep20-kfold3-r8',
-    ], 'acc')
+    ], 'acc')  # ep_model_acc_nd_5678.png
+
+    plt_ep_val([
+        'results--doppler_100g-TrueFalse/log-d-ep20-kfold3-r5',
+        'results--doppler_100g-TrueFalse/log-d-ep20-kfold3-r6',
+        'results--doppler_100g-TrueFalse/log-d-ep20-kfold3-r7',
+        'results--doppler_100g-TrueFalse/log-d-ep20-kfold3-r8',
+    ], 'acc')  # ep_model_acc_d_5678.png
