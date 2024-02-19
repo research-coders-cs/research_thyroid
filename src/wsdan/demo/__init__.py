@@ -347,7 +347,7 @@ def train_with_doppler(
 
 
 def test(ckpt, model=MODEL_DEFAULT, ds_path=TEST_DS_PATH_DEFAULT,
-        target_resize=250, batch_size=8, num_attention_maps=32, auc=False):
+        target_resize=250, batch_size=8, num_attention_maps=32, auc=False, tag=''):
     from .utils import show_data_loader
     from .stats import print_scores, print_auc, print_poa
 
@@ -384,7 +384,7 @@ def test(ckpt, model=MODEL_DEFAULT, ds_path=TEST_DS_PATH_DEFAULT,
     net.to(device)
 
     results = net_test.test(device, net, batch_size, test_loader, ckpt,
-        savepath=mk_artifact_dir('demo_thyroid_test'))
+        savepath=mk_artifact_dir(f'demo_thyroid_test_{tag}'))
     # print('@@ results:', results)
 
     if 1:
