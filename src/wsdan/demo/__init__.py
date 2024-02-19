@@ -397,5 +397,5 @@ def test(ckpt, model=MODEL_DEFAULT, ds_path=TEST_DS_PATH_DEFAULT,
 
     if auc:
         _enable_plot = True  # !!
-        print(f'\n\n@@ ======== print_auc(results, plot={_enable_plot})')
+        print(f'\n\n@@ ======== print_auc(results, plot={_enable_plot}), plot_savepath="{sp}"')
         print_auc(results, len(test_dataset), plot=_enable_plot, plot_savepath=sp)
