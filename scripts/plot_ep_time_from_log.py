@@ -1,8 +1,5 @@
-try:
-    import google.colab
-    IN_COLAB = True
-except:
-    IN_COLAB = False
+# !! pipenv run python3 -m pip install --force-reinstall .  # for `import wsdan` to work
+# !! pipenv run scripts/plot_ep_time_from_log.py
 
 import PIL
 from PIL import Image
@@ -11,7 +8,11 @@ import sys
 import numpy as np
 import datetime
 import time
-if IN_COLAB:
+
+from wsdan.demo.plot_if import is_colab, get_plt, plt_show
+plt = get_plt()
+
+if is_colab():
     import os
     os.chdir('/content/drive/MyDrive/colab/foo')
 
@@ -19,12 +20,6 @@ import torch
 #print(torch.__version__)
 
 #---- ^^
-import matplotlib.pyplot as plt
-
-def plt_show(plt):
-    if not IN_COLAB:
-        print('@@ plt_show(): \'q\' to close interactively')
-    plt.show()
 
 def plt_img_tensor(file):
     img = Image.open(file).convert('RGB')
@@ -92,10 +87,10 @@ def plt_auc():
         [-0.7021,  0.7416],
         [-0.1003,  0.1517]], dtype=torch.float32)
     true = torch.tensor([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1])
-    if 0:  # !!!! << `results`
+    if 0:
         print('@@ test_size:', test_size)
-        print('@@ pred:', pred)
-        print('@@ true:', true)
+        print('@@ pred:', pred)  # results[2]
+        print('@@ true:', true)  # results[3]
 
     from sklearn.metrics import roc_curve, auc, roc_auc_score
 
@@ -187,7 +182,7 @@ if __name__ == '__main__':
         plt_img_tensor('test.png')
         exit()
 
-    if 0:
+    if 1:
         plt_auc()
         exit()
 
