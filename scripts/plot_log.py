@@ -103,7 +103,7 @@ def plt_auc():
 
     results = [None, None, pred, true]
     test_size = 20
-    print_auc(results, test_size, plot=True)
+    print_auc(results, test_size, plot=True, plot_savepath='.')
 
 #---- $$ plot_*()
 

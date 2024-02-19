@@ -383,8 +383,8 @@ def test(ckpt, model=MODEL_DEFAULT, ds_path=TEST_DS_PATH_DEFAULT,
     net = WSDAN(num_classes=WSDAN_NUM_CLASSES, M=num_attention_maps, model=model, pretrained=True)
     net.to(device)
 
-    results = net_test.test(device, net, batch_size, test_loader, ckpt,
-        savepath=mk_artifact_dir(f'demo_thyroid_test_{tag}'))
+    sp = mk_artifact_dir(f'demo_thyroid_test_{tag}')
+    results = net_test.test(device, net, batch_size, test_loader, ckpt, savepath=sp)
     # print('@@ results:', results)
 
     if 1:
@@ -398,4 +398,4 @@ def test(ckpt, model=MODEL_DEFAULT, ds_path=TEST_DS_PATH_DEFAULT,
     if auc:
         _enable_plot = True  # !!
         print(f'\n\n@@ ======== print_auc(results, plot={_enable_plot})')
-        print_auc(results, len(test_dataset), plot=_enable_plot)
+        print_auc(results, len(test_dataset), plot=_enable_plot, plot_savepath=sp)

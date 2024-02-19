@@ -25,7 +25,7 @@ def print_scores(results):  # @@
 
     print(f'@@ Accuracy: (# of ✅) / (# of Cases) = {_score} / {len(pred)} = %0.3f' % (_score / len(pred)))
 
-def print_auc(results, test_size, plot=False):  # @@
+def print_auc(results, test_size, plot=False, plot_savepath=None):  # @@
     from sklearn.metrics import roc_curve, auc, roc_auc_score
 
     # Compute ROC curve and ROC area for each class
@@ -67,6 +67,9 @@ def print_auc(results, test_size, plot=False):  # @@
         plt.xlabel('False Positive Rate')
         plt.ylabel('True Positive Rate')
         plt.legend(loc = 'lower right')
+        if plot_savepath:
+            plt.savefig(f'{plot_savepath}/auc.png', bbox_inches='tight')
+
         plt_show(plt)
 
 def print_poa(results):
