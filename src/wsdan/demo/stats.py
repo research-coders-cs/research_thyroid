@@ -1,6 +1,8 @@
 import torch
 import numpy as np
-from sklearn.metrics import roc_curve, auc, roc_auc_score
+
+from .plot_if import is_colab, get_plt, plt_show
+plt = get_plt()
 
 
 def softmax(x):
@@ -23,7 +25,9 @@ def print_scores(results):  # @@
 
     print(f'@@ Accuracy: (# of ✅) / (# of Cases) = {_score} / {len(pred)} = %0.3f' % (_score / len(pred)))
 
-def print_auc(results, test_size, enable_plot=False):  # @@
+def print_auc(results, test_size, plot=False):  # @@
+    from sklearn.metrics import roc_curve, auc, roc_auc_score
+
     # Compute ROC curve and ROC area for each class
     y_pred_b = np.zeros((test_size), dtype=float)
     y_pred_m = np.zeros((test_size), dtype=float)
@@ -52,10 +56,7 @@ def print_auc(results, test_size, enable_plot=False):  # @@
     print('@@ roc_auc_b: %0.3f' % roc_auc_b)
     print('@@ roc_auc_m: %0.3f' % roc_auc_m)
 
-    if enable_plot:  # @@
-        import matplotlib.pyplot as plt  # @@
-
-        plt.figure()
+    if plot:
         plt.plot(fpr_b, tpr_b, color = 'darkgreen',
                  lw = 2, label = "ROC Curve for Benign (AUC = %0.3f)" % roc_auc_b)
         plt.plot(fpr_m, tpr_m, color = 'darkred',
@@ -66,7 +67,7 @@ def print_auc(results, test_size, enable_plot=False):  # @@
         plt.xlabel('False Positive Rate')
         plt.ylabel('True Positive Rate')
         plt.legend(loc = 'lower right')
-        plt.show()
+        plt_show(plt)
 
 def print_poa(results):
     pred = results[2]

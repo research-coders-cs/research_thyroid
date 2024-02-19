@@ -347,7 +347,7 @@ def train_with_doppler(
 
 
 def test(ckpt, model=MODEL_DEFAULT, ds_path=TEST_DS_PATH_DEFAULT,
-        target_resize=250, batch_size=8, num_attention_maps=32):
+        target_resize=250, batch_size=8, num_attention_maps=32, auc=False):
     from .utils import show_data_loader
     from .stats import print_scores, print_auc, print_poa
 
@@ -391,11 +391,11 @@ def test(ckpt, model=MODEL_DEFAULT, ds_path=TEST_DS_PATH_DEFAULT,
         print('\n\n@@ ======== print_scores(results)')
         print_scores(results)
 
-    if 0:
-        _enable_plot = 0  # @@
-        print(f'\n\n@@ ======== print_auc(results, enable_plot={_enable_plot})')
-        print_auc(results, len(test_dataset), enable_plot=_enable_plot)
-
     if 1:
         print(f'\n\n@@ ======== print_poa(results)')
         print_poa(results)
+
+    if auc:
+        _enable_plot = True  # !!
+        print(f'\n\n@@ ======== print_auc(results, plot={_enable_plot})')
+        print_auc(results, len(test_dataset), plot=_enable_plot)

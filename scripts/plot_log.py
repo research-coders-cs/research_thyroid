@@ -9,8 +9,18 @@ import numpy as np
 import datetime
 import time
 
-from wsdan.demo.plot_if import is_colab, get_plt, plt_show
-plt = get_plt()
+if 1:
+    from wsdan.demo.plot_if import is_colab, get_plt, plt_show
+    plt = get_plt()
+
+    from wsdan.demo.stats import print_auc
+else:  # standalone
+    import matplotlib.pyplot as plt
+    def is_colab():
+        return False
+    def plt_show(plt):
+        print('@@ plt_show(): \'q\' to close interactively')
+        plt.show()
 
 if is_colab():
     import os
@@ -19,7 +29,7 @@ if is_colab():
 import torch
 #print(torch.__version__)
 
-#---- ^^
+#---- ^^ plot_*()
 
 def plt_img_tensor(file):
     img = Image.open(file).convert('RGB')
@@ -63,10 +73,9 @@ def plt_ep_val(logs, mode='time'):
     plt.legend(loc='lower right')
     plt_show(plt)
 
-
 def plt_auc():
-    test_size = 20
-    pred = torch.tensor([[ 0.6650, -0.4284],
+    pred = torch.tensor([
+        [ 0.6650, -0.4284],
         [ 0.2460, -0.1261],
         [-0.4980,  0.5372],
         [-0.0229, -0.0511],
@@ -92,46 +101,11 @@ def plt_auc():
         print('@@ pred:', pred)  # results[2]
         print('@@ true:', true)  # results[3]
 
-    from sklearn.metrics import roc_curve, auc, roc_auc_score
+    results = [None, None, pred, true]
+    test_size = 20
+    print_auc(results, test_size, plot=True)
 
-    # Compute ROC curve and ROC area for each class
-    y_pred_b = np.zeros((test_size), dtype=float)
-    y_pred_m = np.zeros((test_size), dtype=float)
-
-    y_m = true.detach().cpu().numpy()
-    y_b = 1 - y_m
-
-    for i, (y_hat, y) in enumerate(zip(pred, true)):
-        y_pred_b[i] = float(y_hat[0])
-        y_pred_m[i] = float(y_hat[1])
-
-    fpr_b, tpr_b, _ = roc_curve(y_b, y_pred_b)
-    fpr_m, tpr_m, _ = roc_curve(y_m, y_pred_m)
-    roc_auc_b = auc(fpr_b, tpr_b)
-    roc_auc_m = auc(fpr_m, tpr_m)
-
-    print('@@ y_b:', y_b)
-    print('@@ y_m:', y_m)
-    # print('@@ fpr_b:', fpr_b)
-    # print('@@ tpr_b:', tpr_b)
-    # print('@@ fpr_m:', fpr_m)
-    # print('@@ tpr_m:', tpr_m)
-    print('@@ roc_auc_b:', roc_auc_b)
-    print('@@ roc_auc_m:', roc_auc_m)
-
-    plt.plot(fpr_b, tpr_b, color = 'darkgreen',
-             lw = 2, label = "ROC Curve for Benign (AUC = %0.3f)" % roc_auc_b)
-    plt.plot(fpr_m, tpr_m, color = 'darkred',
-             lw = 2, label = "ROC Curve for Malignant (AUC = %0.3f)" % roc_auc_m)
-    plt.plot([0,1.0], [0,1.0], color='navy', lw=2, linestyle='--')
-    plt.xlim([0.0, 1.0])
-    plt.ylim([0.0, 1.05])
-    plt.xlabel('False Positive Rate')
-    plt.ylabel('True Positive Rate')
-    plt.legend(loc = 'lower right')
-    plt_show(plt)
-
-#---- $$
+#---- $$ plot_*()
 
 def log_to_deltas(log, mode):
     with open(log) as file:
