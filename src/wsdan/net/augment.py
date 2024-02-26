@@ -79,7 +79,7 @@ def batch_augment(images, paths, attention_map, savepath=None,
             disable_doppler_crop = config_doppler.get('disable_doppler_crop', False)\
                 if config_doppler is not None else False
             if use_doppler and not disable_doppler_crop:
-                logger.debug('doppler_crop is ON')
+                #logger.debug('doppler_crop is ON')
 
                 bbox_crop = np.array([
                     width_min, height_min,
@@ -91,7 +91,7 @@ def batch_augment(images, paths, attention_map, savepath=None,
                 sh, sw = resolve_hw_slices(
                     bbox_crop, train_img_copy, train_img_path, idx, (imgH, imgW), savepath, config_doppler)
             else:
-                logger.debug('doppler_crop is OFF')
+                #logger.debug('doppler_crop is OFF')
                 sh, sw = slice(height_min, height_max), slice(width_min, width_max)
             #-------- @@
 
@@ -123,7 +123,7 @@ def batch_augment(images, paths, attention_map, savepath=None,
 
         #==== @@
         if use_doppler and not disable_doppler_drop:
-            logger.debug('doppler_drop is ON')
+            #logger.debug('doppler_drop is ON')
 
             drop_masks = torch.cat(drop_masks, dim=0).float()
 
@@ -142,7 +142,7 @@ def batch_augment(images, paths, attention_map, savepath=None,
 
             drop_images = images * drop_masks
         else:  #==== orig
-            logger.debug('doppler_drop is OFF')
+            #logger.debug('doppler_drop is OFF')
             drop_masks = torch.cat(drop_masks, dim=0)
             drop_images = images * drop_masks.float()
         #====
