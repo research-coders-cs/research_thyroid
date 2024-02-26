@@ -76,7 +76,11 @@ def batch_augment(images, paths, attention_map, savepath=None,
             #-------- @@
             logger.debug(f'[idx={idx}] crop: ({width_min}, {height_min}), ({width_max}, {height_max})')
 
-            if use_doppler:
+            disable_doppler_crop = config_doppler.get('disable_doppler_crop', False)\
+                if config_doppler is not None else False
+            if use_doppler and not disable_doppler_crop:
+                logger.debug('doppler_crop is ON')
+
                 bbox_crop = np.array([
                     width_min, height_min,
                     width_max, height_max], dtype=np.float32)
@@ -87,6 +91,7 @@ def batch_augment(images, paths, attention_map, savepath=None,
                 sh, sw = resolve_hw_slices(
                     bbox_crop, train_img_copy, train_img_path, idx, (imgH, imgW), savepath, config_doppler)
             else:
+                logger.debug('doppler_crop is OFF')
                 sh, sw = slice(height_min, height_max), slice(width_min, width_max)
             #-------- @@
 
@@ -113,12 +118,15 @@ def batch_augment(images, paths, attention_map, savepath=None,
             drop_masks.append(functional.interpolate(
                 atten_map, size=(imgH, imgW), mode='bilinear') < theta_d)
 
-        #==== orig
-        #drop_masks = torch.cat(drop_masks, dim=0)
-        #drop_images = images * drop_masks.float()
+        disable_doppler_drop = config_doppler.get('disable_doppler_drop', False)\
+            if config_doppler is not None else False
+
         #==== @@
-        drop_masks = torch.cat(drop_masks, dim=0).float()
-        if use_doppler:
+        if use_doppler and not disable_doppler_drop:
+            logger.debug('doppler_drop is ON')
+
+            drop_masks = torch.cat(drop_masks, dim=0).float()
+
             img_sz = (imgH, imgW)
             for idx in range(drop_masks.shape[0]):
                 bbox_doppler = get_bbox_doppler(get_path_doppler(paths[idx]), img_sz)
@@ -131,7 +139,12 @@ def batch_augment(images, paths, attention_map, savepath=None,
                     #logger.debug(f"!! BEF drop_masks[idx]: {drop_masks[idx]}")
                     drop_masks[idx][0] = doppler_mask * drop_masks[idx][0].cpu()
                     #logger.debug(f"!! AFT drop_masks[idx]: {drop_masks[idx]}")
-        drop_images = images * drop_masks
+
+            drop_images = images * drop_masks
+        else:  #==== orig
+            logger.debug('doppler_drop is OFF')
+            drop_masks = torch.cat(drop_masks, dim=0)
+            drop_images = images * drop_masks.float()
         #====
 
         # @@ e.g.

@@ -43,6 +43,8 @@ if __name__ == '__main__':
             #'thresh_isec_in_crop': 0.50,
             #'thresh_isec_in_crop': 0.75,
             #'thresh_force_doppler_in_crop': True,
+            disable_doppler_crop: False,
+            disable_doppler_drop: False,
         })
 
         test_ds_path = build_dataset({
