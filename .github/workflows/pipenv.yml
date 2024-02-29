@@ -5,6 +5,7 @@ on:
     branches: [ new ]
     paths-ignore:
       - '**/README.md'
+      - 'scripts/**'
   pull_request:
     branches: [ new ]
 
