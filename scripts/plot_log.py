@@ -156,7 +156,7 @@ if __name__ == '__main__':
         plt_img_tensor('test.png')
         exit()
 
-    if 1:
+    if 0:
         plt_auc()
         exit()
 
@@ -174,6 +174,7 @@ if __name__ == '__main__':
     #     'results--doppler_100g-TrueFalse/log-d-ep20-kfold3-r4',
     # ], 'acc')
 
+    """
     plt_ep_val([
         'results--doppler_100g-TrueFalse/log-nd-ep20-kfold3-r5',
         'results--doppler_100g-TrueFalse/log-nd-ep20-kfold3-r6',
@@ -198,3 +199,15 @@ if __name__ == '__main__':
         'results--doppler_100g-TrueFalse/log-d-ep20-kfold3-r7',
         'results--doppler_100g-TrueFalse/log-d-ep20-kfold3-r8',
     ], 'acc')  # ep_model_acc_d_5678.png
+    """
+
+    plt_ep_val([
+        'results--doppler_100g-TrueFalse/log-d-crop-only-r1',
+        'results--doppler_100g-TrueFalse/log-d-crop-only-r2',
+        'results--doppler_100g-TrueFalse/log-d-crop-only-r3',
+    ], 'time')  # ep_time_d_crop_only_123.png
+    plt_ep_val([
+        'results--doppler_100g-TrueFalse/log-d-crop-only-r1',
+        'results--doppler_100g-TrueFalse/log-d-crop-only-r2',
+        'results--doppler_100g-TrueFalse/log-d-crop-only-r3',
+    ], 'acc')  # ep_model_acc_d_crop_only_123.png
