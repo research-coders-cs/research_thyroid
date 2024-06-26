@@ -9,14 +9,13 @@ torchvision = "*"
 jupyter = "*"
 matplotlib = "*"
 tqdm = "*"
-scikit-learn = "*"
-gspread = "*"
-pyparsing = "==2.4.7"
-pytz = "*"
-oauth2client = "*"
-tensorboard = "*"
-opencv-python = "*"
 pandas = "*"
+torchdata = "0.3.0"
+torchtext = "0.12"
+#spacy = "3.2"  # errors on numpy v1 ...
+spacy = "*"
+altair = "*"
+GPUtil = "*"
 
 [dev-packages]
 

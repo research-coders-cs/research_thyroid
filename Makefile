@@ -29,7 +29,15 @@ Dataset_doppler_100e:
 	curl -O -L $(DL_ASSETS)/$@.zip && unzip $@.zip
 WSDAN_doppler_100d-resnet34_250_8_lr-1e5_n4.ckpt:
 	curl -O -L $(DL_ASSETS)/$@
-test: Dataset_train_test_val \
+
+spacy-dl:
+	pipenv run python3 -m spacy download de_core_news_sm
+	pipenv run python3 -m spacy download en_core_web_sm
+test:
+	pipenv run python3 -m pip install --force-reinstall .  # for `import transduction` to work
+	rm -rf log.txt output && mkdir output
+	time pipenv run python3 main.py 2>&1 | tee log.txt
+test0000: Dataset_train_test_val \
 	densenet_224_8_lr-1e5_n4_95.968.ckpt \
 	Siriraj_sample_doppler_comp \
 	Dataset_doppler_100e \
