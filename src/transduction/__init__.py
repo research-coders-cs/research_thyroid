@@ -29,6 +29,8 @@ warnings.filterwarnings("ignore")
 RUN_EXAMPLES = True
 #---- $$
 
+print("@@ torch.__version__:", torch.__version__)
+
 #---- ^^
 # Some convenience helper functions used throughout the notebook
 
