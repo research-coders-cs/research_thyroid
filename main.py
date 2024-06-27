@@ -8,7 +8,7 @@
 #----
 import transduction  # 'research-ai-transduction' pkg (i.e. 'src/transduction/*')
 from transduction import show_example
-from transduction import load_tokenizers, load_vocab
+from transduction import load_tokenizers, load_vocab  # ok with torch 1.11 (enforced by `torchdata==0.3.0`); err with torch 2.3.0
 #----
 
 import logging

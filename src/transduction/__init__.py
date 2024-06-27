@@ -29,7 +29,7 @@ warnings.filterwarnings("ignore")
 RUN_EXAMPLES = True
 #---- $$
 
-print("@@ torch.__version__:", torch.__version__)
+print("@@ torch.__version__:", torch.__version__)  # torch 1.11 (enforced by `torchdata==0.3.0`)
 
 #---- ^^
 # Some convenience helper functions used throughout the notebook
