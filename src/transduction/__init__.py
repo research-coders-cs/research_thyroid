@@ -124,9 +124,7 @@ def build_vocabulary(spacy_de, spacy_en):
     #================
 
     print("Building German Vocabulary ...")
-    print("@@ 1111--aaaa")
     train, val, test = datasets.Multi30k(language_pair=("de", "en"))
-    print("@@ 1111--bbbb")
     vocab_src = build_vocab_from_iterator(
         yield_tokens(train + val + test, tokenize_de, index=0),
         min_freq=2,
@@ -148,14 +146,15 @@ def build_vocabulary(spacy_de, spacy_en):
 
 
 def load_vocab(spacy_de, spacy_en):
-    print("@@ 0000")
-    if not exists("vocab.pt"):
-        print("@@ 1111")
+    vocab_file = "vocab.pt"
+    if not exists(vocab_file):
+        print(f"@@ {vocab_file} not found, generating...")
         vocab_src, vocab_tgt = build_vocabulary(spacy_de, spacy_en)
-        print("@@ 2222")
-        torch.save((vocab_src, vocab_tgt), "vocab.pt")
+        torch.save((vocab_src, vocab_tgt), vocab_file)
     else:
-        vocab_src, vocab_tgt = torch.load("vocab.pt")
+        print(f"@@ {vocab_file} found, loading...")
+        vocab_src, vocab_tgt = torch.load(vocab_file)
+
     print("Finished.\nVocabulary sizes:")
     print(len(vocab_src))
     print(len(vocab_tgt))
