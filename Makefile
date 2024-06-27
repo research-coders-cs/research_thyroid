@@ -35,6 +35,8 @@ spacy-dl:
 	pipenv run python3 -m spacy download en_core_web_sm
 test:
 	pipenv run python3 -m pip install --force-reinstall .  # for `import transduction` to work
+	make run
+run:
 	rm -rf log.txt output && mkdir output
 	time pipenv run python3 main.py 2>&1 | tee log.txt
 test0000: Dataset_train_test_val \
