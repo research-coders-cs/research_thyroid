@@ -1,6 +1,35 @@
 import transduction  # 'research-ai-transduction' pkg (i.e. 'src/transduction/*')
 
+#----
+from transduction.plot_if import is_colab, get_plt, plt_show, plt_imshow
+plt = get_plt()
+
+
+def test_plt_show():  # ok
+    plt.plot([0,1.0], [0,1.0], color='navy', lw=2, linestyle='--')
+    plt.xlim([0.0, 1.0])
+    plt.ylim([0.0, 1.05])
+    if 0 and plot_savepath:
+        plt.savefig(f'{plot_savepath}/auc.png', bbox_inches='tight')
+
+    plt_show(plt)
+
+if 0:
+    test_plt_show()
+
+def test_df_export():  # ok
+    import pandas as pd
+    import dataframe_image as dfi
+    d = {'col1': [1, 2], 'col2': [3, 4]}
+    df = pd.DataFrame(data=d)
+    dfi.export(df, '__df.png')
+
+if 0:
+    test_df_export()
+
+
 from transduction import example_mask  # !!!!
+#----
 
 from transduction.helper import show_example
 from transduction.vocab import load_tokenizers, load_vocab  # ok with torch 1.11 (enforced by `torchdata==0.3.0`); err with torch 2.3.0
@@ -17,7 +46,10 @@ if __name__ == '__main__':
     print("__main__: ^^")
 
     if 1:  # Encoder/Decoder part
-        print("!!!! showme", example_mask())
+        chart = example_mask()  # `alt.Chart`
+        fpath = '__chart.png'
+        chart.save(fpath)  # require pkgs: `dataframe-image`  and `vl-convert-python`
+        plt_imshow(plt, fpath)
 
 
     if 0:

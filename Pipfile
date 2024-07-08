@@ -16,6 +16,8 @@ torchtext = "0.12"
 spacy = "*"
 altair = "*"
 GPUtil = "*"
+dataframe-image = "*"
+vl-convert-python = "*"
 
 [dev-packages]
 
