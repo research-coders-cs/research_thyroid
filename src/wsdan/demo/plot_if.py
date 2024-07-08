@@ -18,3 +18,8 @@ def plt_show(plt):
     if not is_colab():
         print('@@ plt_show(): \'q\' to close interactively')
     plt.show()
+
+def plt_imshow(plt, fpath):
+    plt.figure()
+    plt.imshow(plt.imread(fpath))
+    plt_show(plt)
