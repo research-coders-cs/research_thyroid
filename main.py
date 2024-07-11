@@ -45,14 +45,21 @@ if __name__ == '__main__':
 
     print("__main__: ^^")
 
-    if 1:  # Encoder/Decoder part
-        chart = example_mask()  # `alt.Chart`
-        fpath = '__chart.png'
-        chart.save(fpath)  # require pkgs: `dataframe-image`  and `vl-convert-python`
-        plt_imshow(plt, fpath)
-
-
     if 0:
         # global variables used later in the script
         spacy_de, spacy_en = show_example(load_tokenizers)
         vocab_src, vocab_tgt = show_example(load_vocab, args=[spacy_de, spacy_en])
+
+    if 0:  # Encoder/Decoder part, and TODO
+        chart = example_mask()  # `alt.Chart`
+        fpath = '__chart.png'
+        chart.save(fpath)  # require pkgs: `dataframe-image` and `vl-convert-python`
+        plt_imshow(plt, fpath)
+
+        # TODO ........
+
+
+    if 1:  # https://medium.com/@brianpulfer/vision-transformers-from-scratch-pytorch-a-step-by-step-guide-96c3313c2e0c
+        from transduction.vit.vit_torch import main as vit_main
+
+        vit_main()
