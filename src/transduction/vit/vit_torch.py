@@ -12,6 +12,7 @@ np.random.seed(0)
 torch.manual_seed(0)
 
 from ..plot_if import get_plt, plt_imshow_tensor  # @@
+plt = get_plt()
 
 def patchify(images, n_patches):
     print('@@ patchify(): ^^ images.shape:', images.shape)
@@ -33,7 +34,7 @@ def patchify(images, n_patches):
                     j * patch_size : (j + 1) * patch_size,
                 ]
                 if 1 and idx == 0 and i == 3:  # @@ for j in range(7)
-                    plt_imshow_tensor(get_plt(), patch)  # @@
+                    plt_imshow_tensor(plt, patch)  # @@
                 patches[idx, i * n_patches + j] = patch.flatten()
     return patches
 
@@ -228,12 +229,15 @@ def main():
                 #print('@@ xx.shape:', xx.shape)  # ok
 
             if 1:
-                plt_imshow_tensor(get_plt(), x[0])
-                #plt_imshow_tensor(get_plt(), x[1])
+                plt_imshow_tensor(plt, x[0])
+                #plt_imshow_tensor(plt, x[1])
 
                 patches = patchify(x, model.n_patches)
                 print('@@ patches.shape:', patches.shape)  # torch.Size([128, 49, 16])
 
+            if 1:
+
+                pass
 
             exit()  # @@ !!!! !!!!
             #==== $$
