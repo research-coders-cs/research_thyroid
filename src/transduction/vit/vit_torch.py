@@ -11,14 +11,18 @@ from tqdm import tqdm, trange
 np.random.seed(0)
 torch.manual_seed(0)
 
+from ..plot_if import get_plt, plt_imshow_tensor  # @@
 
 def patchify(images, n_patches):
+    print('@@ patchify(): ^^ images.shape:', images.shape)
     n, c, h, w = images.shape
 
     assert h == w, "Patchify method is implemented for square images only"
 
     patches = torch.zeros(n, n_patches**2, h * w * c // n_patches**2)
     patch_size = h // n_patches
+    print('@@ patchify(): patches.shape:', patches.shape)
+    print('@@ patchify(): patch_size:', patch_size)
 
     for idx, image in enumerate(images):
         for i in range(n_patches):
@@ -28,6 +32,8 @@ def patchify(images, n_patches):
                     i * patch_size : (i + 1) * patch_size,
                     j * patch_size : (j + 1) * patch_size,
                 ]
+                if 1 and idx == 0 and i == 3:  # @@ for j in range(7)
+                    plt_imshow_tensor(get_plt(), patch)  # @@
                 patches[idx, i * n_patches + j] = patch.flatten()
     return patches
 
@@ -212,6 +218,25 @@ def main():
         ):
             x, y = batch
             x, y = x.to(device), y.to(device)
+            #==== ^^
+            if 0:
+                print('@@ type(x):', type(x))  #  <class 'torch.Tensor'>
+                print('@@ x.shape:', x.shape)  # torch.Size([128, 1, 28, 28])  (n: batch_size, c, h, w)
+
+                torch.save(x, 'x_aka_images.pt')  # !!!!
+                #xx = torch.load('x_aka_images.pt')
+                #print('@@ xx.shape:', xx.shape)  # ok
+
+            if 1:
+                plt_imshow_tensor(get_plt(), x[0])
+                #plt_imshow_tensor(get_plt(), x[1])
+
+                patches = patchify(x, model.n_patches)
+                print('@@ patches.shape:', patches.shape)  # torch.Size([128, 49, 16])
+
+
+            exit()  # @@ !!!! !!!!
+            #==== $$
             y_hat = model(x)
             loss = criterion(y_hat, y)
 
@@ -222,6 +247,8 @@ def main():
             optimizer.step()
 
         print(f"Epoch {epoch + 1}/{N_EPOCHS} loss: {train_loss:.2f}")
+
+    # @@ TODO save weights !!!!!!!!
 
     # Test loop
     with torch.no_grad():

@@ -60,6 +60,9 @@ if __name__ == '__main__':
 
 
     if 1:  # https://medium.com/@brianpulfer/vision-transformers-from-scratch-pytorch-a-step-by-step-guide-96c3313c2e0c
-        from transduction.vit.vit_torch import main as vit_main
+        #==== mt; slow, needs building the pkg
+        #from transduction.vit.vit_torch import main as vit_main
+        #==== mr; quick, direct
+        from src.transduction.vit.vit_torch import main as vit_main
 
         vit_main()
