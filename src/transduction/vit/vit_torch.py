@@ -11,7 +11,7 @@ from tqdm import tqdm, trange
 np.random.seed(0)
 torch.manual_seed(0)
 
-from ..plot_if import get_plt, plt_imshow_tensor  # @@
+from ..plot_if import get_plt, plt_imshow, plt_imshow_tensor  # @@
 plt = get_plt()
 
 def patchify(images, n_patches):
@@ -34,6 +34,7 @@ def patchify(images, n_patches):
                     j * patch_size : (j + 1) * patch_size,
                 ]
                 if 1 and idx == 0 and i == 3:  # @@ for j in range(7)
+                    print(f'idx={idx} i={i} j={j} patch.shape={patch.shape} patch:', patch)  # ... patch.shape=torch.Size([1, 4, 4]) ...
                     plt_imshow_tensor(plt, patch)  # @@
                 patches[idx, i * n_patches + j] = patch.flatten()
     return patches
@@ -227,19 +228,47 @@ def main():
                 torch.save(x, 'x_aka_images.pt')  # !!!!
                 #xx = torch.load('x_aka_images.pt')
                 #print('@@ xx.shape:', xx.shape)  # ok
+                exit()  # @@ !!!! !!!!
 
-            if 1:
+            if 0:
                 plt_imshow_tensor(plt, x[0])
                 #plt_imshow_tensor(plt, x[1])
 
                 patches = patchify(x, model.n_patches)
                 print('@@ patches.shape:', patches.shape)  # torch.Size([128, 49, 16])
+                #exit()  # @@ !!!! !!!!
 
             if 1:
+                fpath = 'datasets_mri/50-001/sub-ADNI002S0295_ses-M012/mta_erica_sub-ADNI002S0295_ses-M012_116.png'
+                plt_imshow(plt, fpath)
 
-                pass
+                im = plt.imread(fpath)
+                print('@@ type(im):', type(im))  # <class 'numpy.ndarray'>
+                print('@@ im.shape:', im.shape)  # (480, 640, 4)
 
-            exit()  # @@ !!!! !!!!
+                # !! im[:,:,0] == im[:,:,1] == im[:,:,2] (R=G=B), and im[:,:,3] (alpha) is all ones
+                print('@@ im[:,:,0].shape:', im[:,:,0].shape)  # (480, 640)
+                # print('@@ im[:,:,0]:', im[240:250, 320:330, 0])  # R
+                # print('@@ im[:,:,1]:', im[240:250, 320:330, 1])  # G
+                # print('@@ im[:,:,2]:', im[240:250, 320:330, 2])  # B
+                # print('@@ im[:,:,3]:', im[240:250, 320:330, 3])  # alpha
+
+                t_orig = torch.tensor([im[:,:,0]], dtype=torch.float32)  # extract R channel as tensor
+                print('@@ t_orig.shape:', t_orig.shape)  # torch.Size([1, 480, 640])
+                plt_imshow_tensor(plt, t_orig)
+
+                # extract `t_crop_{left,right}`
+                ch = 230
+                cw = 325
+                r = 160
+                t_crop_left =  t_orig[:, ch-r:ch+r, cw-r:cw]  # torch.Size([1, r*2, r])
+                t_crop_right = t_orig[:, ch-r:ch+r, cw:cw+r]  # torch.Size([1, r*2, r])
+                print('@@ t_crop_left.shape:', t_crop_left.shape)
+                plt_imshow_tensor(plt, t_crop_left)
+                plt_imshow_tensor(plt, t_crop_right)
+
+                exit()  # @@ !!!! !!!!
+
             #==== $$
             y_hat = model(x)
             loss = criterion(y_hat, y)
