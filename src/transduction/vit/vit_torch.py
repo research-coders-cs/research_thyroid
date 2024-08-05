@@ -40,6 +40,38 @@ def patchify(images, n_patches):
     return patches
 
 
+def patchify_mri(images, n_patches_h, n_patches_w):  # @@
+    print('@@ patchify_mri(): ^^ images.shape:', images.shape)
+
+    #n, c, h, w = images.shape
+    #==== !!!!!!!! TODO images should be a Tensor with torch.Size([n, 1, r*2, r])
+    n = 1
+    c, h, w = images.shape
+    images = [images]  # !!!! kludge
+
+    patches = torch.zeros(n, n_patches_h * n_patches_w, h * w * c // (n_patches_h * n_patches_w))
+    patch_size_h = h // n_patches_h
+    patch_size_w = w // n_patches_w
+    print('@@ patchify_mri(): patches.shape:', patches.shape)
+    print('@@ patchify_mri(): patch_size_h:', patch_size_h)
+    print('@@ patchify_mri(): patch_size_w:', patch_size_w)
+
+    for idx, image in enumerate(images):
+        for i in range(n_patches_h):
+            for j in range(n_patches_w):
+                patch = image[
+                    :,
+                    i * patch_size_h : (i + 1) * patch_size_h,
+                    j * patch_size_w : (j + 1) * patch_size_w,
+                ]
+#                if 1 and idx == 0 and i == 3:  # @@ for j in range(..)
+                if 1 and idx == 0:  # @@ for i,j in range(..) range(..)
+                    print(f'idx={idx} i={i} j={j} patch.shape={patch.shape} patch:', patch)  # ... patch.shape=torch.Size([1, 4, 4]) ...
+                    plt_imshow_tensor(plt, patch)  # @@
+                patches[idx, i * n_patches_w + j] = patch.flatten()
+    return patches
+
+
 class MyMSA(nn.Module):
     def __init__(self, d, n_heads=2):
         super(MyMSA, self).__init__()
@@ -236,11 +268,11 @@ def main():
 
                 patches = patchify(x, model.n_patches)
                 print('@@ patches.shape:', patches.shape)  # torch.Size([128, 49, 16])
-                #exit()  # @@ !!!! !!!!
+                exit()  # @@ !!!! !!!!
 
             if 1:
                 fpath = 'datasets_mri/50-001/sub-ADNI002S0295_ses-M012/mta_erica_sub-ADNI002S0295_ses-M012_116.png'
-                plt_imshow(plt, fpath)
+#                plt_imshow(plt, fpath)
 
                 im = plt.imread(fpath)
                 print('@@ type(im):', type(im))  # <class 'numpy.ndarray'>
@@ -255,7 +287,7 @@ def main():
 
                 t_orig = torch.tensor([im[:,:,0]], dtype=torch.float32)  # extract R channel as tensor
                 print('@@ t_orig.shape:', t_orig.shape)  # torch.Size([1, 480, 640])
-                plt_imshow_tensor(plt, t_orig)
+#                plt_imshow_tensor(plt, t_orig)
 
                 # extract `t_crop_{left,right}`
                 ch = 230
@@ -264,8 +296,19 @@ def main():
                 t_crop_left =  t_orig[:, ch-r:ch+r, cw-r:cw]  # torch.Size([1, r*2, r])
                 t_crop_right = t_orig[:, ch-r:ch+r, cw:cw+r]  # torch.Size([1, r*2, r])
                 print('@@ t_crop_left.shape:', t_crop_left.shape)
-                plt_imshow_tensor(plt, t_crop_left)
+#                plt_imshow_tensor(plt, t_crop_left)
                 plt_imshow_tensor(plt, t_crop_right)
+
+                # patchfy stuff
+                n = 1  # !!!!
+
+#                img = t_crop_right.permute(1, 2, 0)  # <c, h, w> -> <h, w, c>
+
+#                #images = torch.zeros(n, 1, r*2, r)
+#                #images[0, i * n_patches_w + j] = t_crop_right.flatten()
+
+#                images = torch.tensor([img[:,:,0]], dtype=torch.float32)
+                patchify_mri(t_crop_right, 8, 4)
 
                 exit()  # @@ !!!! !!!!
 
