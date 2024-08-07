@@ -43,11 +43,7 @@ def patchify(images, n_patches):
 def patchify_mri(images, n_patches_h, n_patches_w):  # @@
     print('@@ patchify_mri(): ^^ images.shape:', images.shape)
 
-    #n, c, h, w = images.shape
-    #==== !!!!!!!! TODO images should be a Tensor with torch.Size([n, 1, r*2, r])
-    n = 1
-    c, h, w = images.shape
-    images = [images]  # !!!! kludge
+    n, c, h, w = images.shape
 
     patches = torch.zeros(n, n_patches_h * n_patches_w, h * w * c // (n_patches_h * n_patches_w))
     patch_size_h = h // n_patches_h
@@ -300,15 +296,9 @@ def main():
                 plt_imshow_tensor(plt, t_crop_right)
 
                 # patchfy stuff
-                n = 1  # !!!!
-
-#                img = t_crop_right.permute(1, 2, 0)  # <c, h, w> -> <h, w, c>
-
-#                #images = torch.zeros(n, 1, r*2, r)
-#                #images[0, i * n_patches_w + j] = t_crop_right.flatten()
-
-#                images = torch.tensor([img[:,:,0]], dtype=torch.float32)
-                patchify_mri(t_crop_right, 8, 4)
+                images = torch.stack([t_crop_left], dim=0)  # -> torch.Size([1, 1, 320, 160])
+                ##images = torch.stack([t_crop_left, t_crop_right], dim=0)  # -> torch.Size([2, 1, 320, 160])
+                patchify_mri(images, 8, 4)
 
                 exit()  # @@ !!!! !!!!
 
