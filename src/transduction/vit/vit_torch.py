@@ -40,11 +40,12 @@ def patchify(images, n_patches):
     return patches
 
 
-def patchify_mri(images, n_patches_h, n_patches_w):  # @@
+def patchify_mri(images, n_patches_hw):  # @@
     #print('@@ patchify_mri(): ^^ images.shape:', images.shape)  # e.g. torch.Size([1, 1, 320, 160])
 
     n, c, h, w = images.shape
 
+    n_patches_h, n_patches_w = n_patches_hw
     patches = torch.zeros(n, n_patches_h * n_patches_w, h * w * c // (n_patches_h * n_patches_w))
     patch_size_h = h // n_patches_h
     patch_size_w = w // n_patches_w
@@ -65,21 +66,20 @@ def patchify_mri(images, n_patches_h, n_patches_w):  # @@
     return patches
 
 
-#-------- ^^
-def patches_show(plt, patches, idx, n_patches_h, n_patches_w, img_h, img_w):
-    patches_plot(plt, patches, idx, n_patches_h, n_patches_w, img_h, img_w)
+#-------- ^^ @@
+def patches_show(plt, patches, idx, n_patches_hw, img_hw):
+    patches_plot(plt, patches, idx, n_patches_hw, img_hw)
     plt.show()
 
-def patches_savefig(plt, fpath, patches, idx, n_patches_h, n_patches_w, img_h, img_w):
-    patches_plot(plt, patches, idx, n_patches_h, n_patches_w, img_h, img_w)
+def patches_savefig(plt, fpath, patches, idx, n_patches_hw, img_hw):
+    patches_plot(plt, patches, idx, n_patches_hw, img_hw)
     plt.savefig(fpath, bbox_inches='tight')
 
-def patches_plot(plt, patches, idx, n_patches_h, n_patches_w, img_h, img_w):
+def patches_plot(plt, patches, idx, n_patches_hw, img_hw):
     fig = plt.figure()
-    rows = n_patches_h
-    cols = n_patches_w
-    patch_h = int(img_h / n_patches_h)
-    patch_w = int(img_w / n_patches_w)
+    rows, cols = n_patches_hw
+    patch_h = int(img_hw[0] / n_patches_hw[0])
+    patch_w = int(img_hw[1] / n_patches_hw[1])
 
     axes = []
     for patch in range(rows * cols):
@@ -89,7 +89,8 @@ def patches_plot(plt, patches, idx, n_patches_h, n_patches_w, img_h, img_w):
         img = torch.stack([torch.reshape(img, (patch_h, patch_w))], dim=0)
         plt.imshow(img.permute(1, 2, 0), cmap='gray')
 
-    fig.suptitle(f'# of patches: {rows*cols} (={rows}x{cols})\npatch size: {patch_h*patch_w}(={patch_h}x{patch_w})')
+    fig.suptitle(f'# of patches: {rows * cols} (={rows}x{cols})\n'
+                 f'patch size: {patch_h * patch_w}(={patch_h}x{patch_w})')
 
     plt.axis('off')
     plt.setp(axes, xticks=[], yticks=[])  # https://stackoverflow.com/questions/25124143/get-rid-of-tick-labels-for-all-subplots/25127092#25127092
@@ -327,14 +328,15 @@ def main():
                 images = torch.stack([t_crop_left], dim=0)  # -> torch.Size([1, 1, 320, 160])
                 ##images = torch.stack([t_crop_left, t_crop_right], dim=0)  # -> torch.Size([2, 1, 320, 160])
 
-                n_patches_h, n_patches_w = 8, 4
-                patches = patchify_mri(images, n_patches_h, n_patches_w)
+                n_patches_hw = (8, 4)
+                patches = patchify_mri(images, n_patches_hw)
                 print('@@ patches.shape:', patches.shape)  # torch.Size([1, 32, 1600])
 
                 if 1:
+                    img_hw = (r*2, r)
                     idx = 0  # !!!!
-                    patches_show(plt, patches, idx, n_patches_h, n_patches_w, r*2, r)
-                    patches_savefig(plt, 'patches_idx.png', patches, idx, n_patches_h, n_patches_w, r*2, r)
+                    patches_show(plt, patches, idx, n_patches_hw, img_hw)
+                    patches_savefig(plt, 'patches_idx0.png', patches, idx, n_patches_hw, img_hw)
 
                 exit()  # @@ !!!! !!!!
 
