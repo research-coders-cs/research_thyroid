@@ -33,7 +33,7 @@ def patchify(images, n_patches):
                     i * patch_size : (i + 1) * patch_size,
                     j * patch_size : (j + 1) * patch_size,
                 ]
-                if 1 and idx == 0 and i == 3:  # @@ for j in range(7)
+                if 0 and idx == 0 and i == 3:  # @@ for j in range(7)
                     print(f'idx={idx} i={i} j={j} patch.shape={patch.shape} patch:', patch)  # ... patch.shape=torch.Size([1, 4, 4]) ...
                     plt_imshow_tensor(plt, patch)  # @@
                 patches[idx, i * n_patches + j] = patch.flatten()
@@ -41,16 +41,17 @@ def patchify(images, n_patches):
 
 
 def patchify_mri(images, n_patches_h, n_patches_w):  # @@
-    print('@@ patchify_mri(): ^^ images.shape:', images.shape)
+    #print('@@ patchify_mri(): ^^ images.shape:', images.shape)  # e.g. torch.Size([1, 1, 320, 160])
 
     n, c, h, w = images.shape
 
     patches = torch.zeros(n, n_patches_h * n_patches_w, h * w * c // (n_patches_h * n_patches_w))
     patch_size_h = h // n_patches_h
     patch_size_w = w // n_patches_w
-    print('@@ patchify_mri(): patches.shape:', patches.shape)
-    print('@@ patchify_mri(): patch_size_h:', patch_size_h)
-    print('@@ patchify_mri(): patch_size_w:', patch_size_w)
+    if 0:
+        print('@@ patchify_mri(): patches.shape:', patches.shape)
+        print('@@ patchify_mri(): patch_size_h:', patch_size_h)
+        print('@@ patchify_mri(): patch_size_w:', patch_size_w)
 
     for idx, image in enumerate(images):
         for i in range(n_patches_h):
@@ -60,10 +61,6 @@ def patchify_mri(images, n_patches_h, n_patches_w):  # @@
                     i * patch_size_h : (i + 1) * patch_size_h,
                     j * patch_size_w : (j + 1) * patch_size_w,
                 ]
-#                if 1 and idx == 0 and i == 3:  # @@ for j in range(..)
-                if 1 and idx == 0:  # @@ for i,j in range(..) range(..)
-                    print(f'idx={idx} i={i} j={j} patch.shape={patch.shape} patch:', patch)  # ... patch.shape=torch.Size([1, 4, 4]) ...
-                    plt_imshow_tensor(plt, patch)  # @@
                 patches[idx, i * n_patches_w + j] = patch.flatten()
     return patches
 
@@ -293,12 +290,43 @@ def main():
                 t_crop_right = t_orig[:, ch-r:ch+r, cw:cw+r]  # torch.Size([1, r*2, r])
                 print('@@ t_crop_left.shape:', t_crop_left.shape)
 #                plt_imshow_tensor(plt, t_crop_left)
-                plt_imshow_tensor(plt, t_crop_right)
+#                plt_imshow_tensor(plt, t_crop_right)
 
                 # patchfy stuff
                 images = torch.stack([t_crop_left], dim=0)  # -> torch.Size([1, 1, 320, 160])
                 ##images = torch.stack([t_crop_left, t_crop_right], dim=0)  # -> torch.Size([2, 1, 320, 160])
-                patchify_mri(images, 8, 4)
+
+                n_patches_h, n_patches_w = 8, 4
+                patches = patchify_mri(images, n_patches_h, n_patches_w)
+                print('@@ patches.shape:', patches.shape)  # torch.Size([1, 32, 1600])
+
+                if 1:
+                    idx = 0  # !!!!
+
+                    fig = plt.figure()
+                    rows = n_patches_h
+                    cols = n_patches_w
+                    patch_h = int(r*2 / n_patches_h)
+                    patch_w = int(r / n_patches_w)
+
+                    axes = []
+                    for patch in range(rows * cols):
+                        axes.append(fig.add_subplot(rows, cols, patch + 1))
+
+                        img = patches[idx, patch]
+                        img = torch.stack([torch.reshape(img, (patch_h, patch_w))], dim=0)
+                        plt.imshow(img.permute(1, 2, 0), cmap='gray')
+
+                    fig.suptitle(f'# of patches: {rows*cols} (={rows}x{cols})\npatch size: {patch_h*patch_w}(={patch_h}x{patch_w})')
+
+                    plt.axis('off')
+                    plt.setp(axes, xticks=[], yticks=[])  # https://stackoverflow.com/questions/25124143/get-rid-of-tick-labels-for-all-subplots/25127092#25127092
+
+                    #fig.tight_layout()
+                    if 1:
+                        plt.show()
+                    else:
+                        plt.savefig('patches.png', bbox_inches='tight')
 
                 exit()  # @@ !!!! !!!!
 
