@@ -65,6 +65,37 @@ def patchify_mri(images, n_patches_h, n_patches_w):  # @@
     return patches
 
 
+#-------- ^^
+def patches_show(plt, patches, idx, n_patches_h, n_patches_w, img_h, img_w):
+    patches_plot(plt, patches, idx, n_patches_h, n_patches_w, img_h, img_w)
+    plt.show()
+
+def patches_savefig(plt, fpath, patches, idx, n_patches_h, n_patches_w, img_h, img_w):
+    patches_plot(plt, patches, idx, n_patches_h, n_patches_w, img_h, img_w)
+    plt.savefig(fpath, bbox_inches='tight')
+
+def patches_plot(plt, patches, idx, n_patches_h, n_patches_w, img_h, img_w):
+    fig = plt.figure()
+    rows = n_patches_h
+    cols = n_patches_w
+    patch_h = int(img_h / n_patches_h)
+    patch_w = int(img_w / n_patches_w)
+
+    axes = []
+    for patch in range(rows * cols):
+        axes.append(fig.add_subplot(rows, cols, patch + 1))
+
+        img = patches[idx, patch]
+        img = torch.stack([torch.reshape(img, (patch_h, patch_w))], dim=0)
+        plt.imshow(img.permute(1, 2, 0), cmap='gray')
+
+    fig.suptitle(f'# of patches: {rows*cols} (={rows}x{cols})\npatch size: {patch_h*patch_w}(={patch_h}x{patch_w})')
+
+    plt.axis('off')
+    plt.setp(axes, xticks=[], yticks=[])  # https://stackoverflow.com/questions/25124143/get-rid-of-tick-labels-for-all-subplots/25127092#25127092
+#-------- $$
+
+
 class MyMSA(nn.Module):
     def __init__(self, d, n_heads=2):
         super(MyMSA, self).__init__()
@@ -302,31 +333,8 @@ def main():
 
                 if 1:
                     idx = 0  # !!!!
-
-                    fig = plt.figure()
-                    rows = n_patches_h
-                    cols = n_patches_w
-                    patch_h = int(r*2 / n_patches_h)
-                    patch_w = int(r / n_patches_w)
-
-                    axes = []
-                    for patch in range(rows * cols):
-                        axes.append(fig.add_subplot(rows, cols, patch + 1))
-
-                        img = patches[idx, patch]
-                        img = torch.stack([torch.reshape(img, (patch_h, patch_w))], dim=0)
-                        plt.imshow(img.permute(1, 2, 0), cmap='gray')
-
-                    fig.suptitle(f'# of patches: {rows*cols} (={rows}x{cols})\npatch size: {patch_h*patch_w}(={patch_h}x{patch_w})')
-
-                    plt.axis('off')
-                    plt.setp(axes, xticks=[], yticks=[])  # https://stackoverflow.com/questions/25124143/get-rid-of-tick-labels-for-all-subplots/25127092#25127092
-
-                    #fig.tight_layout()
-                    if 1:
-                        plt.show()
-                    else:
-                        plt.savefig('patches.png', bbox_inches='tight')
+                    patches_show(plt, patches, idx, n_patches_h, n_patches_w, r*2, r)
+                    patches_savefig(plt, 'patches_idx.png', patches, idx, n_patches_h, n_patches_w, r*2, r)
 
                 exit()  # @@ !!!! !!!!
 
