@@ -67,6 +67,34 @@ def patchify_mri(images, n_patches_hw):  # @@
 
 
 #-------- ^^ @@
+def imread_as_tensor_mri(plt, fpath):
+    im = plt.imread(fpath)
+    print('@@ type(im):', type(im))  # <class 'numpy.ndarray'>
+    print('@@ im.shape:', im.shape)  # (480, 640, 4)
+
+    # !! im[:,:,0] == im[:,:,1] == im[:,:,2] (R=G=B), and im[:,:,3] (alpha) is all ones
+    print('@@ im[:,:,0].shape:', im[:,:,0].shape)  # (480, 640)
+    # print('@@ im[:,:,0]:', im[240:250, 320:330, 0])  # R
+    # print('@@ im[:,:,1]:', im[240:250, 320:330, 1])  # G
+    # print('@@ im[:,:,2]:', im[240:250, 320:330, 2])  # B
+    # print('@@ im[:,:,3]:', im[240:250, 320:330, 3])  # alpha
+
+    return torch.tensor([im[:,:,0]], dtype=torch.float32)  # extract R channel as tensor
+
+def crop_erica_tensor(et):
+    ch = 230
+    cw = 325
+    r = 160
+    erica_crop_left =  et[:, ch-r:ch+r, cw-r:cw]  # torch.Size([1, r*2, r])
+    erica_crop_right = et[:, ch-r:ch+r, cw:cw+r]  # torch.Size([1, r*2, r])
+    print('@@ erica_crop_left.shape:', erica_crop_left.shape)
+    print('@@ erica_crop_right.shape:', erica_crop_right.shape)
+
+    return erica_crop_left, erica_crop_right
+
+#-------- $$ @@
+
+#-------- ^^ @@
 def patches_show(plt, patches, idx, n_patches_hw, img_hw):
     patches_plot(plt, patches, idx, n_patches_hw, img_hw)
     plt.show()
@@ -297,43 +325,31 @@ def main():
 
             if 1:
                 fpath = 'datasets_mri/50-001/sub-ADNI002S0295_ses-M012/mta_erica_sub-ADNI002S0295_ses-M012_116.png'
-#                plt_imshow(plt, fpath)
+                #plt_imshow(plt, fpath)
 
-                im = plt.imread(fpath)
-                print('@@ type(im):', type(im))  # <class 'numpy.ndarray'>
-                print('@@ im.shape:', im.shape)  # (480, 640, 4)
+                #---- read & crop
+                erica_tensor = imread_as_tensor_mri(plt, fpath)
 
-                # !! im[:,:,0] == im[:,:,1] == im[:,:,2] (R=G=B), and im[:,:,3] (alpha) is all ones
-                print('@@ im[:,:,0].shape:', im[:,:,0].shape)  # (480, 640)
-                # print('@@ im[:,:,0]:', im[240:250, 320:330, 0])  # R
-                # print('@@ im[:,:,1]:', im[240:250, 320:330, 1])  # G
-                # print('@@ im[:,:,2]:', im[240:250, 320:330, 2])  # B
-                # print('@@ im[:,:,3]:', im[240:250, 320:330, 3])  # alpha
+                print('@@ erica_tensor.shape:', erica_tensor.shape)  # torch.Size([1, 480, 640])
+                #plt_imshow_tensor(plt, erica_tensor)
 
-                t_orig = torch.tensor([im[:,:,0]], dtype=torch.float32)  # extract R channel as tensor
-                print('@@ t_orig.shape:', t_orig.shape)  # torch.Size([1, 480, 640])
-#                plt_imshow_tensor(plt, t_orig)
+                erica_crops = crop_erica_tensor(erica_tensor)
+                _c, crop_h, crop_w = erica_crops[0].shape
+                #print(crop_h, crop_w)
+                #plt_imshow_tensor(plt, erica_crops[0])  # left
+                #plt_imshow_tensor(plt, erica_crops[1])  # right
 
-                # extract `t_crop_{left,right}`
-                ch = 230
-                cw = 325
-                r = 160
-                t_crop_left =  t_orig[:, ch-r:ch+r, cw-r:cw]  # torch.Size([1, r*2, r])
-                t_crop_right = t_orig[:, ch-r:ch+r, cw:cw+r]  # torch.Size([1, r*2, r])
-                print('@@ t_crop_left.shape:', t_crop_left.shape)
-#                plt_imshow_tensor(plt, t_crop_left)
-#                plt_imshow_tensor(plt, t_crop_right)
-
-                # patchfy stuff
-                images = torch.stack([t_crop_left], dim=0)  # -> torch.Size([1, 1, 320, 160])
-                ##images = torch.stack([t_crop_left, t_crop_right], dim=0)  # -> torch.Size([2, 1, 320, 160])
-
+                #---- patchfy
                 n_patches_hw = (8, 4)
-                patches = patchify_mri(images, n_patches_hw)
+
+                images_mri = torch.stack([erica_crops[0]], dim=0)  # -> torch.Size([1, 1, 320, 160])
+                ##images_mri = torch.stack([erica_crops[0], erica_crops[1]], dim=0)  # -> torch.Size([2, 1, 320, 160])
+
+                patches = patchify_mri(images_mri, n_patches_hw)
                 print('@@ patches.shape:', patches.shape)  # torch.Size([1, 32, 1600])
 
                 if 1:
-                    img_hw = (r*2, r)
+                    img_hw = (crop_h, crop_w)
                     idx = 0  # !!!!
                     patches_show(plt, patches, idx, n_patches_hw, img_hw)
                     patches_savefig(plt, 'patches_idx0.png', patches, idx, n_patches_hw, img_hw)
