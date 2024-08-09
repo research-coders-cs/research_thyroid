@@ -7,6 +7,7 @@ from torch.utils.data import DataLoader
 from torchvision.datasets.mnist import MNIST
 from torchvision.transforms import ToTensor
 from tqdm import tqdm, trange
+from tqdm.notebook import tqdm as tqdm_xx, trange as trange_xx  # @@
 
 np.random.seed(0)
 torch.manual_seed(0)
@@ -279,6 +280,10 @@ def main():
         root="./datasets_vit", train=False, download=True, transform=transform
     )
 
+    if 0:  # @@ TODO we need -- class MriDataset(Dataset): def __getitem__(self, index) -> T_co:
+        print('@@ type(train_set):', type(train_set))  # <class 'torchvision.datasets.mnist.MNIST'>
+        exit()
+
     train_loader = DataLoader(train_set, shuffle=True, batch_size=128)
     test_loader = DataLoader(test_set, shuffle=False, batch_size=128)
 
@@ -300,20 +305,34 @@ def main():
     criterion = CrossEntropyLoss()
     for epoch in trange(N_EPOCHS, desc="Training"):
         train_loss = 0.0
-        for batch in tqdm(
+#====
+#@@     for batch in tqdm(
+#@@         train_loader, desc=f"Epoch {epoch + 1} in training", leave=False
+#@@     ):
+#==== @@
+        for batch_idx, batch in enumerate(tqdm_xx(
             train_loader, desc=f"Epoch {epoch + 1} in training", leave=False
-        ):
+        )):
+            print('@@ batch_idx:', batch_idx)  # e.g. MNIST -> 0:469
+#====
             x, y = batch
             x, y = x.to(device), y.to(device)
             #==== ^^
-            if 0:
-                print('@@ type(x):', type(x))  #  <class 'torch.Tensor'>
-                print('@@ x.shape:', x.shape)  # torch.Size([128, 1, 28, 28])  (n: batch_size, c, h, w)
+            if 1:
+                # print('@@ type(batch):', type(batch))  # <class 'list'>
+                # print('@@ len(batch):', len(batch))  # 2
+                # print('@@ type(x):', type(x))  # <class 'torch.Tensor'>
+                # print('@@ type(y):', type(y))  # <class 'torch.Tensor'>
+                # print('@@ x.shape:', x.shape)  # torch.Size([128, 1, 28, 28])  (n: batch_size, c, h, w)
+                print('@@ y.shape:', y.shape)  # torch.Size([128])
+                print('@@ y:', y)
 
-                torch.save(x, 'x_aka_images.pt')  # !!!!
+                #torch.save(x, 'x_aka_images.pt')  # !!!!
                 #xx = torch.load('x_aka_images.pt')
                 #print('@@ xx.shape:', xx.shape)  # ok
-                exit()  # @@ !!!! !!!!
+
+                #exit()  # !!!! !!!!
+                continue  # !!!! !!!!
 
             if 0:
                 plt_imshow_tensor(plt, x[0])
@@ -323,7 +342,7 @@ def main():
                 print('@@ patches.shape:', patches.shape)  # torch.Size([128, 49, 16])
                 exit()  # @@ !!!! !!!!
 
-            if 1:
+            if 1:  # !!!! WIP batch pre-process erica data per '50-001_alisa.csv'
                 fpath = 'datasets_mri/50-001/sub-ADNI002S0295_ses-M012/mta_erica_sub-ADNI002S0295_ses-M012_116.png'
                 #plt_imshow(plt, fpath)
 
@@ -343,6 +362,7 @@ def main():
                 n_patches_hw = (8, 4)
 
                 images_mri = torch.stack([erica_crops[0]], dim=0)  # -> torch.Size([1, 1, 320, 160])
+                #images_mri = torch.stack([erica_crops[1]], dim=0)  # -> torch.Size([1, 1, 320, 160])
                 ##images_mri = torch.stack([erica_crops[0], erica_crops[1]], dim=0)  # -> torch.Size([2, 1, 320, 160])
 
                 patches = patchify_mri(images_mri, n_patches_hw)
@@ -367,6 +387,12 @@ def main():
             optimizer.step()
 
         print(f"Epoch {epoch + 1}/{N_EPOCHS} loss: {train_loss:.2f}")
+
+        #---- @@ !!!!
+        if epoch == 0:  # !!!! dumps first
+        #if epoch == 1:  # !!!! dump first and second; NOTE `shuffle=True` for `train_loader`
+            exit()
+        #---- @@
 
     # @@ TODO save weights !!!!!!!!
 
