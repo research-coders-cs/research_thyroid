@@ -148,20 +148,25 @@ class MriDataset(Dataset):
         # label, class_index, index = self.__get_partitioned_index(index)
         # path = self.dataset[label][index]
         #
-        # extra = {
-        #     'path': path,
-        #     'label': label,
-        #     'class_index': class_index,
-        #     'inclass_index': index
-        # }
+        extra = {
+            # 'path': path,
+            # 'label': label,
+            # 'class_index': class_index,
+            # 'inclass_index': index
+        }
+        #==== @@
+        class_index = index + 1000  # !!!! WIP
 
+        print(f'@@ __getitem__(): index: {index} class_index: {class_index}')
 
         #transformed_image = self.transform(image)
-        #==== !!!!
+        #==== !!!! WIP
         image = None
+        transformed_image = torch.zeros(1, 320, 160)  # erica_crops[0] or erica_crops[1]
 
         # return image and label
-        return transformed_image, class_index, extra
+        #return transformed_image, class_index, extra
+        return transformed_image, class_index  # @@
 
 
 def get_transform_mri(target_size, phase='train'):
@@ -186,6 +191,43 @@ def get_transform_mri(target_size, phase='train'):
         return transform_dict[phase]
     else:
         raise Exception("Unknown phase specified")
+
+
+def load_data_mri():
+    # './datasets_mri/50-001',
+    ds_paths = {
+        'train': {  # -> assert len(train_set) == 13
+            '1': ['a', 'b', 'c', 'd'],
+            '2': ['e', 'f', 'g'],
+            '3': ['h', 'i', 'j'],
+            '4': ['k', 'l', 'm'],
+        },
+        'test': {
+            '1': ['aa', 'bb'],
+            '2': ['p0', 'p1'],
+            '3': ['p0', 'p1'],
+            '4': ['p0', 'p1'],
+        },
+    }
+    for k, dsp in ds_paths.items():
+        if k in ['train', 'test']:
+            print(f"@@ lens of ds_paths['{k}']:", len(dsp['1']), len(dsp['2']))
+        else:
+            raise ValueError(f'unknown ds_paths key: {k}')
+
+
+    target_resize = (99, 99)  # dummy
+    train_set = MriDataset(
+        phase='train',
+        dataset=ds_paths['train'],
+        transform=get_transform_mri(target_resize, phase='train'))
+    test_set = MriDataset(
+        phase='test',
+        dataset=ds_paths['test'],
+        transform=get_transform_mri(target_resize, phase='test'))
+
+    return train_set, test_set
+
 #-------- $$
 
 
@@ -336,51 +378,25 @@ def main():
     # Loading data
     transform = ToTensor()
 
-    train_set = MNIST(
-        root="./datasets_vit", train=True, download=True, transform=transform
-    )
-    test_set = MNIST(
-        root="./datasets_vit", train=False, download=True, transform=transform
-    )
-
     if 1:  # @@
+        train_set, test_set = load_data_mri()
+
+        #train_loader = DataLoader(train_set, shuffle=True, batch_size=128)
+        #train_loader = DataLoader(train_set, shuffle=False, batch_size=128)  # debug ok
+        train_loader = DataLoader(train_set, shuffle=True, batch_size=4)  # debug ok
+
+        test_loader = DataLoader(test_set, shuffle=False, batch_size=128)
+    else:  # orig
+        train_set = MNIST(
+            root="./datasets_vit", train=True, download=True, transform=transform
+        )
+        test_set = MNIST(
+            root="./datasets_vit", train=False, download=True, transform=transform
+        )
         #print('@@ type(train_set):', type(train_set))  # <class 'torchvision.datasets.mnist.MNIST'>
-        #==== !!!!
-
-        # './datasets_mri/50-001',
-        ds_paths = {
-            'train': {  # -> assert len(train_set) == 13
-                '1': ['aa', 'bb', 'cc', 'dd'],
-                '2': ['p0', 'p1', 'p2'],
-                '3': ['p0', 'p1', 'p2'],
-                '4': ['p0', 'p1', 'p2'],
-            },
-            'test': {
-                '1': ['aa', 'bb'],
-                '2': ['p0', 'p1'],
-                '3': ['p0', 'p1'],
-                '4': ['p0', 'p1'],
-            },
-        }
-        for k, dsp in ds_paths.items():
-            if k in ['train', 'test']:
-                print(f"@@ lens of ds_paths['{k}']:", len(dsp['1']), len(dsp['2']))
-            else:
-                raise ValueError(f'unknown ds_paths key: {k}')
-
-
-        target_resize = (99, 99)  # dummy
-        train_set = MriDataset(
-            phase='train',
-            dataset=ds_paths['train'],
-            transform=get_transform_mri(target_resize, phase='train'))
 
         train_loader = DataLoader(train_set, shuffle=True, batch_size=128)
-
-        exit()  # !!!!
-
-    train_loader = DataLoader(train_set, shuffle=True, batch_size=128)
-    test_loader = DataLoader(test_set, shuffle=False, batch_size=128)
+        test_loader = DataLoader(test_set, shuffle=False, batch_size=128)
 
     # Defining model and training options
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -418,7 +434,7 @@ def main():
                 # print('@@ len(batch):', len(batch))  # 2
                 # print('@@ type(x):', type(x))  # <class 'torch.Tensor'>
                 # print('@@ type(y):', type(y))  # <class 'torch.Tensor'>
-                # print('@@ x.shape:', x.shape)  # torch.Size([128, 1, 28, 28])  (n: batch_size, c, h, w)
+                print('@@ x.shape:', x.shape)  # torch.Size([128, 1, 28, 28])  (n: batch_size, c, h, w)
                 print('@@ y.shape:', y.shape)  # torch.Size([128])
                 print('@@ y:', y)
 
