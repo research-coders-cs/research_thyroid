@@ -125,6 +125,69 @@ def patches_plot(plt, patches, idx, n_patches_hw, img_hw):
     plt.setp(axes, xticks=[], yticks=[])  # https://stackoverflow.com/questions/25124143/get-rid-of-tick-labels-for-all-subplots/25127092#25127092
 #-------- $$
 
+#-------- ^^ @@
+from torch.utils.data import Dataset
+from torch.utils.data.dataset import T_co
+from torchvision import transforms
+
+class MriDataset(Dataset):
+
+    def __init__(self, phase, dataset, transform):
+        assert phase is not None
+        assert dataset is not None
+        assert transform is not None
+        self.phase = phase
+        self.dataset = dataset
+        self.transform = transform
+
+    def __len__(self):
+        return len(sum(self.dataset.values(), []))
+
+    def __getitem__(self, index) -> T_co:
+
+        # label, class_index, index = self.__get_partitioned_index(index)
+        # path = self.dataset[label][index]
+        #
+        # extra = {
+        #     'path': path,
+        #     'label': label,
+        #     'class_index': class_index,
+        #     'inclass_index': index
+        # }
+
+
+        #transformed_image = self.transform(image)
+        #==== !!!!
+        image = None
+
+        # return image and label
+        return transformed_image, class_index, extra
+
+
+def get_transform_mri(target_size, phase='train'):
+    transform_dict = {
+        'basic':
+            transforms.Compose([
+                transforms.Resize(target_size),
+                transforms.ToTensor(),
+                #imagenet_normalize
+            ]),
+        'train':
+            transforms.Compose([
+                # !!!!
+            ]),
+        'test':
+            transforms.Compose([
+                # !!!!
+            ]),
+    }
+
+    if phase in transform_dict:
+        return transform_dict[phase]
+    else:
+        raise Exception("Unknown phase specified")
+#-------- $$
+
 
 class MyMSA(nn.Module):
     def __init__(self, d, n_heads=2):
@@ -280,9 +343,41 @@ def main():
         root="./datasets_vit", train=False, download=True, transform=transform
     )
 
-    if 0:  # @@ TODO we need -- class MriDataset(Dataset): def __getitem__(self, index) -> T_co:
-        print('@@ type(train_set):', type(train_set))  # <class 'torchvision.datasets.mnist.MNIST'>
-        exit()
+    if 1:  # @@
+        #print('@@ type(train_set):', type(train_set))  # <class 'torchvision.datasets.mnist.MNIST'>
+        #==== !!!!
+
+        # './datasets_mri/50-001',
+        ds_paths = {
+            'train': {  # -> assert len(train_set) == 13
+                '1': ['aa', 'bb', 'cc', 'dd'],
+                '2': ['p0', 'p1', 'p2'],
+                '3': ['p0', 'p1', 'p2'],
+                '4': ['p0', 'p1', 'p2'],
+            },
+            'test': {
+                '1': ['aa', 'bb'],
+                '2': ['p0', 'p1'],
+                '3': ['p0', 'p1'],
+                '4': ['p0', 'p1'],
+            },
+        }
+        for k, dsp in ds_paths.items():
+            if k in ['train', 'test']:
+                print(f"@@ lens of ds_paths['{k}']:", len(dsp['1']), len(dsp['2']))
+            else:
+                raise ValueError(f'unknown ds_paths key: {k}')
+
+
+        target_resize = (99, 99)  # dummy
+        train_set = MriDataset(
+            phase='train',
+            dataset=ds_paths['train'],
+            transform=get_transform_mri(target_resize, phase='train'))
+
+        train_loader = DataLoader(train_set, shuffle=True, batch_size=128)
+
+        exit()  # !!!!
 
     train_loader = DataLoader(train_set, shuffle=True, batch_size=128)
     test_loader = DataLoader(test_set, shuffle=False, batch_size=128)
