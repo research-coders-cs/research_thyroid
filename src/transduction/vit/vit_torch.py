@@ -138,26 +138,36 @@ class MriDataset(Dataset):
         assert transform is not None
         self.phase = phase
         self.dataset = dataset
+        self.partition = [(k, len(v)) for k, v in sorted(dataset.items())]
         self.transform = transform
 
     def __len__(self):
         return len(sum(self.dataset.values(), []))
 
+    def __get_partitioned_index(self, index):
+        if index < 0:
+            raise IndexError(f"Index must not be negative")
+
+        class_num = 0
+        for (k, v) in self.partition:
+            if index >= v:
+                index -= v
+                class_num += 1
+            else:
+                return k, class_num, index
+        raise IndexError(f"Index is out of range {index}")
+
     def __getitem__(self, index) -> T_co:
-
-        # label, class_index, index = self.__get_partitioned_index(index)
-        # path = self.dataset[label][index]
-        #
+        label, class_index, inclass_index = self.__get_partitioned_index(index)
+        path = self.dataset[label][inclass_index]
         extra = {
-            # 'path': path,
-            # 'label': label,
-            # 'class_index': class_index,
-            # 'inclass_index': index
+            'path': path,
+            'label': label,
+            'class_index': class_index,
+            'inclass_index': inclass_index
         }
-        #==== @@
-        class_index = index + 1000  # !!!! WIP
+        print(f'@@ __getitem__(): index: {index} extra: {extra}')
 
-        print(f'@@ __getitem__(): index: {index} class_index: {class_index}')
 
         #transformed_image = self.transform(image)
         #==== !!!! WIP
@@ -215,10 +225,10 @@ def load_data_mri():
         if phase in ['train', 'test']:
             total = 0
             details = []
-            for cls in dsp.keys():
-                ln = len(dsp[cls])
+            for label in dsp.keys():
+                ln = len(dsp[label])
                 total += ln
-                details.append(f'cls={cls} {ln}')
+                details.append(f'label={label} {ln}')
             print(f"@@ lens of ds_paths['{phase}']: total: {total} {details}")
         else:
             raise ValueError(f'unknown ds_paths key: {k}')
