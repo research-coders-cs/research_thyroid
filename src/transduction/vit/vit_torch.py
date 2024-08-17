@@ -209,12 +209,19 @@ def load_data_mri():
             '4': ['p0', 'p1'],
         },
     }
-    for k, dsp in ds_paths.items():
-        if k in ['train', 'test']:
-            print(f"@@ lens of ds_paths['{k}']:", len(dsp['1']), len(dsp['2']))
+
+    # dump `ds_paths` stat
+    for phase, dsp in ds_paths.items():
+        if phase in ['train', 'test']:
+            total = 0
+            details = []
+            for cls in dsp.keys():
+                ln = len(dsp[cls])
+                total += ln
+                details.append(f'cls={cls} {ln}')
+            print(f"@@ lens of ds_paths['{phase}']: total: {total} {details}")
         else:
             raise ValueError(f'unknown ds_paths key: {k}')
-
 
     target_resize = (99, 99)  # dummy
     train_set = MriDataset(
