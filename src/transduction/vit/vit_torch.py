@@ -168,15 +168,22 @@ class MriDataset(Dataset):
         }
         print(f'@@ __getitem__(): index: {index} extra: {extra}')
 
-
+        #==== ref
+        #image = Image.open(path).convert('RGB')
         #transformed_image = self.transform(image)
-        #==== !!!! WIP
-        image = None
-        transformed_image = torch.zeros(1, 320, 160)  # erica_crops[0] or erica_crops[1]
+        #==== @@ WIP
+        if path.startswith('datasets_mri/'):  # !!!!
+            erica_tensor = imread_as_tensor_mri(plt, path)
+            erica_crops = crop_erica_tensor(erica_tensor)
 
-        # return image and label
-        #return transformed_image, class_index, extra
-        return transformed_image, class_index  # @@
+            transformed_image = erica_crops[0]  # left
+            ##transformed_image = erica_crops[1]  # right
+        else:
+            transformed_image = torch.zeros(1, 320, 160)  # erica_crops[0] or erica_crops[1]
+        #====
+
+        ##return transformed_image, class_index, extra
+        return transformed_image, class_index
 
 
 def get_transform_mri(target_size, phase='train'):
@@ -207,18 +214,21 @@ def load_data_mri():
     # './datasets_mri/50-001',
     ds_paths = {
         'train': {  # -> assert len(train_set) == 13
-            '1': ['a', 'b', 'c', 'd'],
-            '2': ['e', 'f', 'g'],
-            '3': ['h', 'i', 'j'],
-            '4': ['k', 'l', 'm'],
+            'e1': ['a', 'b', 'c', 'd'],
+            'e2': ['e', 'f', 'g'],
+            'e3': ['h', 'i', 'j'],
+            'e4': ['k', 'l', 'm'],
         },
         'test': {
-            '1': ['aa', 'bb'],
-            '2': ['p0', 'p1'],
-            '3': ['p0', 'p1'],
-            '4': ['p0', 'p1'],
+            'e1': ['aa', 'bb'],
+            'e2': ['p0', 'p1'],
+            'e3': ['p0', 'p1'],
+            'e4': ['p0', 'p1'],
         },
     }
+
+    if 1:  # !!!!
+        ds_paths['train']['e1'][0] = 'datasets_mri/50-001/sub-ADNI002S0295_ses-M012/mta_erica_sub-ADNI002S0295_ses-M012_116.png'
 
     # dump `ds_paths` stat
     for phase, dsp in ds_paths.items():
