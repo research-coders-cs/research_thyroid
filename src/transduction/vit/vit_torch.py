@@ -178,6 +178,8 @@ class MriDataset(Dataset):
 
             transformed_image = erica_crops[0]  # left
             ##transformed_image = erica_crops[1]  # right
+        elif path.startswith('datasets_thyroid/'):  # !!!!
+            assert 0
         else:
             transformed_image = torch.zeros(1, 320, 160)  # erica_crops[0] or erica_crops[1]
         #====
@@ -210,6 +212,11 @@ def get_transform_mri(target_size, phase='train'):
         raise Exception("Unknown phase specified")
 
 
+#-------- ^^
+import os
+import glob
+from typing import Dict
+
 def build_dataset(datasource: Dict[str, str], root="", ext="*.png"):
     datasets = {}
     for key in datasource:
@@ -224,27 +231,9 @@ def build_dataset(datasource: Dict[str, str], root="", ext="*.png"):
     return datasets
 
 
-def load_mri_data():
-    # './datasets_mri/50-001',
-    ds_paths = {
-        'train': {  # -> assert len(train_set) == 13
-            'e1': ['a', 'b', 'c', 'd'],
-            'e2': ['e', 'f', 'g'],
-            'e3': ['h', 'i', 'j'],
-            'e4': ['k', 'l', 'm'],
-        },
-        'test': {
-            'e1': ['aa', 'bb'],
-            'e2': ['p0', 'p1'],
-            'e3': ['p0', 'p1'],
-            'e4': ['p0', 'p1'],
-        },
-    }
+def stat_ds_paths(ds_paths):
+    print("@@ stat_ds_paths(): ---- ^^")
 
-    if 1:  # !!!!
-        ds_paths['train']['e1'][0] = 'datasets_mri/50-001/sub-ADNI002S0295_ses-M012/mta_erica_sub-ADNI002S0295_ses-M012_116.png'
-
-    # dump `ds_paths` stat
     for phase, dsp in ds_paths.items():
         if phase in ['train', 'test']:
             total = 0
@@ -257,14 +246,66 @@ def load_mri_data():
         else:
             raise ValueError(f'unknown ds_paths key: {k}')
 
-    target_resize = (99, 99)  # dummy
+    print("@@ stat_ds_paths(): ---- $$")
+#-------- $$
+
+
+def load_mri_data():
+
+    if 0:  # !!!! debug ***
+        ds_paths = {
+            'train': {  # -> assert len(train_set) == 13
+                'e1': ['a', 'b', 'c', 'd'],
+                'e2': ['e', 'f', 'g'],
+                'e3': ['h', 'i', 'j'],
+                'e4': ['k', 'l', 'm'],
+            },
+            'test': {
+                'e1': ['aa', 'bb'],
+                'e2': ['p0', 'p1'],
+                'e3': ['p0', 'p1'],
+                'e4': ['p0', 'p1'],
+            },
+        }
+
+        ds_paths['train']['e1'][0] = 'datasets_mri/50-001/sub-ADNI002S0295_ses-M012/mta_erica_sub-ADNI002S0295_ses-M012_116.png'
+
+    if 0:  # !!!! './datasets_mri/50-001'
+        ds_paths = {
+            'train': build_dataset({
+                # !!!!
+            }, root='datasets_mri'),
+            'test': build_dataset({
+                # !!!!
+            }, root='datasets_mri'),
+        }
+
+    if 1:  # !!!! thyroid case
+        ds_paths = {
+            'train': build_dataset({
+                'benign': ['Train/Benign'],
+                'malignant': ['Train/Malignant'],
+            }, root='datasets_thyroid/Dataset_train_test_val'),  # 20 20
+            'test': build_dataset({
+                'benign': ['Test/Benign'],
+                'malignant': ['Test/Malignant'],
+            }, root='datasets_thyroid/Dataset_train_test_val'),  # 10 10
+        }
+
+    stat_ds_paths(ds_paths)
+    ds_path_train = ds_paths['train']
+    ds_path_test = ds_paths['test']
+
+    #
+
+    target_resize = (99, 99)  # dummy !!
     train_set = MriDataset(
         phase='train',
-        dataset=ds_paths['train'],
+        dataset=ds_path_train,
         transform=get_transform_mri(target_resize, phase='train'))
     test_set = MriDataset(
         phase='test',
-        dataset=ds_paths['test'],
+        dataset=ds_path_test,
         transform=get_transform_mri(target_resize, phase='test'))
 
     return train_set, test_set
@@ -507,7 +548,7 @@ def main():
         train_set, test_set = load_mri_data()
 
         #train_loader = DataLoader(train_set, shuffle=True, batch_size=128)
-        #train_loader = DataLoader(train_set, shuffle=False, batch_size=128)  # debug ok
+        #train_loader = DataLoader(train_set, shuffle=False, batch_size=128)  # *** debug ok
         train_loader = DataLoader(train_set, shuffle=True, batch_size=4)  # debug ok
         #train_loader = DataLoader(train_set, shuffle=False, batch_size=4)  # debug ok
 
