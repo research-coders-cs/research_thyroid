@@ -210,7 +210,21 @@ def get_transform_mri(target_size, phase='train'):
         raise Exception("Unknown phase specified")
 
 
-def load_data_mri():
+def build_dataset(datasource: Dict[str, str], root="", ext="*.png"):
+    datasets = {}
+    for key in datasource:
+        if isinstance(datasource[key], list):
+            files = []
+            for path in datasource[key]:
+                files += glob.glob(os.path.join(root, path, ext))
+            datasets[key] = files
+        else:
+            datasets[key] = glob.glob(os.path.join(root, datasource[key], ext))
+
+    return datasets
+
+
+def load_mri_data():
     # './datasets_mri/50-001',
     ds_paths = {
         'train': {  # -> assert len(train_set) == 13
@@ -401,18 +415,113 @@ def get_positional_embeddings(sequence_length, d):
     return result
 
 
+class MriViT(nn.Module):
+    #@@def __init__(self, chw, n_patches=7, n_blocks=2, hidden_d=8, n_heads=2, out_d=10):
+    def __init__(self, chw, n_patches_hw=(8, 4), n_blocks=2, hidden_d=8, n_heads=2, out_d=4):
+        # Super constructor
+        #@@super(MyViT, self).__init__()
+        super(MriViT, self).__init__()  # @@
+
+        # Attributes
+        self.chw = chw  # ( C , H , W )
+        #@@self.n_patches = n_patches
+        self.n_patches_hw = n_patches_hw  # @@
+        self.n_blocks = n_blocks
+        self.n_heads = n_heads
+        self.hidden_d = hidden_d
+
+        # Input and patches sizes
+        assert (
+            #@@chw[1] % n_patches == 0
+            chw[1] % n_patches_hw[0] == 0  # @@
+        ), "Input shape not entirely divisible by number of patches"
+        assert (
+            #@@chw[2] % n_patches == 0
+            chw[2] % n_patches_hw[1] == 0  # @@
+        ), "Input shape not entirely divisible by number of patches"
+        #@@self.patch_size = (chw[1] / n_patches, chw[2] / n_patches)
+        self.patch_size = (chw[1] / n_patches_hw[0], chw[2] / n_patches_hw[1])  # @@
+
+        # 1) Linear mapper
+        self.input_d = int(chw[0] * self.patch_size[0] * self.patch_size[1])
+        self.linear_mapper = nn.Linear(self.input_d, self.hidden_d)
+
+        # 2) Learnable classification token
+        self.class_token = nn.Parameter(torch.rand(1, self.hidden_d))
+
+        # 3) Positional embedding
+        self.register_buffer(
+            "positional_embeddings",
+            #@@get_positional_embeddings(n_patches**2 + 1, hidden_d),
+            get_positional_embeddings(n_patches_hw[0]*n_patches_hw[1] + 1, hidden_d),  # @@
+            persistent=False,
+        )
+
+        # 4) Transformer encoder blocks
+        self.blocks = nn.ModuleList(
+            [MyViTBlock(hidden_d, n_heads) for _ in range(n_blocks)]
+        )
+
+        # 5) Classification MLPk
+        self.mlp = nn.Sequential(nn.Linear(self.hidden_d, out_d), nn.Softmax(dim=-1))
+
+    def forward(self, images):
+        # Dividing images into patches
+        n, c, h, w = images.shape
+        #@@patches = patchify(images, self.n_patches).to(self.positional_embeddings.device)
+        patches = patchify_mri(images, self.n_patches_hw).to(self.positional_embeddings.device)  # @@
+
+        # Running linear layer tokenization
+        # Map the vector corresponding to each patch to the hidden size dimension
+        tokens = self.linear_mapper(patches)
+
+        # Adding classification token to the tokens
+        tokens = torch.cat((self.class_token.expand(n, 1, -1), tokens), dim=1)
+
+        # Adding positional embedding
+        out = tokens + self.positional_embeddings.repeat(n, 1, 1)
+
+        # Transformer Blocks
+        for block in self.blocks:
+            out = block(out)
+
+        # Getting the classification token only
+        out = out[:, 0]
+
+        return self.mlp(out)  # Map to output dimension, output category distribution
+
+
 def main():
+
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    print(
+        "Using device: ",
+        device,
+        f"({torch.cuda.get_device_name(device)})" if torch.cuda.is_available() else "",
+    )
+
     # Loading data
     transform = ToTensor()
 
     if 1:  # @@
-        train_set, test_set = load_data_mri()
+        train_set, test_set = load_mri_data()
 
         #train_loader = DataLoader(train_set, shuffle=True, batch_size=128)
         #train_loader = DataLoader(train_set, shuffle=False, batch_size=128)  # debug ok
         train_loader = DataLoader(train_set, shuffle=True, batch_size=4)  # debug ok
+        #train_loader = DataLoader(train_set, shuffle=False, batch_size=4)  # debug ok
 
         test_loader = DataLoader(test_set, shuffle=False, batch_size=128)
+
+        model = MriViT(  # !!
+            (1, 320, 160),  # !!
+            n_patches_hw=(8, 4),  # !!
+            n_blocks=2, hidden_d=8, n_heads=2,
+            out_d=4  # !!
+        ).to(device)
+        N_EPOCHS = 5
+        LR = 0.005
+
     else:  # orig
         train_set = MNIST(
             root="./datasets_vit", train=True, download=True, transform=transform
@@ -425,18 +534,12 @@ def main():
         train_loader = DataLoader(train_set, shuffle=True, batch_size=128)
         test_loader = DataLoader(test_set, shuffle=False, batch_size=128)
 
-    # Defining model and training options
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    print(
-        "Using device: ",
-        device,
-        f"({torch.cuda.get_device_name(device)})" if torch.cuda.is_available() else "",
-    )
-    model = MyViT(
-        (1, 28, 28), n_patches=7, n_blocks=2, hidden_d=8, n_heads=2, out_d=10
-    ).to(device)
-    N_EPOCHS = 5
-    LR = 0.005
+        # Defining model and training options
+        model = MyViT(
+            (1, 28, 28), n_patches=7, n_blocks=2, hidden_d=8, n_heads=2, out_d=10
+        ).to(device)
+        N_EPOCHS = 5
+        LR = 0.005
 
     # Training loop
     optimizer = Adam(model.parameters(), lr=LR)
@@ -470,7 +573,7 @@ def main():
                 #print('@@ xx.shape:', xx.shape)  # ok
 
                 #exit()  # !!!! !!!!
-                continue  # !!!! !!!!
+                #continue  # !!!! !!!!
 
             if 0:
                 plt_imshow_tensor(plt, x[0])
@@ -480,7 +583,7 @@ def main():
                 print('@@ patches.shape:', patches.shape)  # torch.Size([128, 49, 16])
                 exit()  # @@ !!!! !!!!
 
-            if 1:  # !!!! WIP batch pre-process erica data per '50-001_alisa.csv'
+            if 0:  # !!!! WIP batch pre-process erica data per '50-001_alisa.csv'
                 fpath = 'datasets_mri/50-001/sub-ADNI002S0295_ses-M012/mta_erica_sub-ADNI002S0295_ses-M012_116.png'
                 #plt_imshow(plt, fpath)
 
@@ -496,7 +599,7 @@ def main():
                 #plt_imshow_tensor(plt, erica_crops[0])  # left
                 #plt_imshow_tensor(plt, erica_crops[1])  # right
 
-                #---- patchfy
+                #---- patchify
                 n_patches_hw = (8, 4)
 
                 images_mri = torch.stack([erica_crops[0]], dim=0)  # -> torch.Size([1, 1, 320, 160])
@@ -527,8 +630,9 @@ def main():
         print(f"Epoch {epoch + 1}/{N_EPOCHS} loss: {train_loss:.2f}")
 
         #---- @@ !!!!
-        if epoch == 0:  # !!!! dumps first
+        #if epoch == 0:  # !!!! dumps first
         #if epoch == 1:  # !!!! dump first and second; NOTE `shuffle=True` for `train_loader`
+        if 1 and epoch == N_EPOCHS - 1:  # !!!! dump full
             exit()
         #---- @@
 
