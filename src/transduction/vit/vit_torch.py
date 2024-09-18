@@ -70,11 +70,13 @@ def patchify_mri(images, n_patches_hw):  # @@
 #-------- ^^ @@
 def imread_as_tensor_mri(plt, fpath):
     im = plt.imread(fpath)
-    print('@@ type(im):', type(im))  # <class 'numpy.ndarray'>
-    print('@@ im.shape:', im.shape)  # (480, 640, 4)
+    if 0:
+        print('@@ type(im):', type(im))  # <class 'numpy.ndarray'>
+        print('@@ im.shape:', im.shape)  # (480, 640, 4)
 
     # !! im[:,:,0] == im[:,:,1] == im[:,:,2] (R=G=B), and im[:,:,3] (alpha) is all ones
-    print('@@ im[:,:,0].shape:', im[:,:,0].shape)  # (480, 640)
+    if 0:
+        print('@@ im[:,:,0].shape:', im[:,:,0].shape)  # (480, 640)
     # print('@@ im[:,:,0]:', im[240:250, 320:330, 0])  # R
     # print('@@ im[:,:,1]:', im[240:250, 320:330, 1])  # G
     # print('@@ im[:,:,2]:', im[240:250, 320:330, 2])  # B
@@ -178,8 +180,10 @@ class MriDataset(Dataset):
 
             transformed_image = erica_crops[0]  # left
             ##transformed_image = erica_crops[1]  # right
-        elif path.startswith('datasets_thyroid/'):  # !!!!
-            assert 0
+        elif path.startswith('datasets_thyroid/'):
+            tens = imread_as_tensor_mri(plt, path)
+            transformed_image = self.transform(tens)
+            print(f'@@ [preprocessing for thyroid] {tens.shape} -> {transformed_image.shape}')
         else:
             transformed_image = torch.zeros(1, 320, 160)  # erica_crops[0] or erica_crops[1]
         #====
@@ -190,19 +194,19 @@ class MriDataset(Dataset):
 
 def get_transform_mri(target_size, phase='train'):
     transform_dict = {
-        'basic':
-            transforms.Compose([
-                transforms.Resize(target_size),
-                transforms.ToTensor(),
-                #imagenet_normalize
-            ]),
+        # 'basic':
+        #     transforms.Compose([
+        #         transforms.Resize(target_size),
+        #         transforms.ToTensor(),
+        #         #imagenet_normalize
+        #     ]),
         'train':
             transforms.Compose([
-                # !!!!
+                transforms.Resize(target_size),
             ]),
         'test':
             transforms.Compose([
-                # !!!!
+                transforms.Resize(target_size),
             ]),
     }
 
@@ -267,8 +271,8 @@ def load_mri_data():
                 'e4': ['p0', 'p1'],
             },
         }
-
         ds_paths['train']['e1'][0] = 'datasets_mri/50-001/sub-ADNI002S0295_ses-M012/mta_erica_sub-ADNI002S0295_ses-M012_116.png'
+        target_resize = (99, 99)  # !!!!
 
     if 0:  # !!!! './datasets_mri/50-001'
         ds_paths = {
@@ -279,18 +283,20 @@ def load_mri_data():
                 # !!!!
             }, root='datasets_mri'),
         }
+        target_resize = (99, 99)  # !!!!
 
     if 1:  # !!!! thyroid case
         ds_paths = {
             'train': build_dataset({
-                'benign': ['Train/Benign'],
-                'malignant': ['Train/Malignant'],
-            }, root='datasets_thyroid/Dataset_train_test_val'),  # 20 20
+                'benign': ['Train/Benign', 'Val/Benign'],
+                'malignant': ['Train/Malignant', 'Val/Malignant'],
+            }, root='datasets_thyroid/Dataset_train_test_val'),  # 30 30
             'test': build_dataset({
                 'benign': ['Test/Benign'],
                 'malignant': ['Test/Malignant'],
             }, root='datasets_thyroid/Dataset_train_test_val'),  # 10 10
         }
+        target_resize = (250, 250)  # per `def _train(` in 'src/wsdan/demo/__init__.py'
 
     stat_ds_paths(ds_paths)
     ds_path_train = ds_paths['train']
@@ -298,7 +304,6 @@ def load_mri_data():
 
     #
 
-    target_resize = (99, 99)  # dummy !!
     train_set = MriDataset(
         phase='train',
         dataset=ds_path_train,
