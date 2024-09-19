@@ -168,7 +168,7 @@ class MriDataset(Dataset):
             'class_index': class_index,
             'inclass_index': inclass_index
         }
-        print(f'@@ __getitem__(): index: {index} extra: {extra}')
+        #print(f'@@ __getitem__(): index: {index} extra: {extra}')
 
         #==== ref
         #image = Image.open(path).convert('RGB')
@@ -183,7 +183,7 @@ class MriDataset(Dataset):
         elif path.startswith('datasets_thyroid/'):
             tens = imread_as_tensor_mri(plt, path)
             transformed_image = self.transform(tens)
-            print(f'@@ [preprocessing for thyroid] {tens.shape} -> {transformed_image.shape}')
+            #print(f'@@ [preprocessing for thyroid] {tens.shape} -> {transformed_image.shape}')
         else:
             transformed_image = torch.zeros(1, 320, 160)  # erica_crops[0] or erica_crops[1]
         #====
@@ -301,6 +301,7 @@ def load_mri_data():
     stat_ds_paths(ds_paths)
     ds_path_train = ds_paths['train']
     ds_path_test = ds_paths['test']
+    print('@@ target_resize:', target_resize)
 
     #
 
@@ -313,7 +314,7 @@ def load_mri_data():
         dataset=ds_path_test,
         transform=get_transform_mri(target_resize, phase='test'))
 
-    return train_set, test_set
+    return train_set, test_set, target_resize
 
 #-------- $$
 
@@ -550,21 +551,37 @@ def main():
     transform = ToTensor()
 
     if 1:  # @@
-        train_set, test_set = load_mri_data()
+        train_set, test_set, target_resize = load_mri_data()
 
+        #====
         #train_loader = DataLoader(train_set, shuffle=True, batch_size=128)
+        #test_loader = DataLoader(test_set, shuffle=False, batch_size=128)
+        #====
         #train_loader = DataLoader(train_set, shuffle=False, batch_size=128)  # *** debug ok
-        train_loader = DataLoader(train_set, shuffle=True, batch_size=4)  # debug ok
+        #train_loader = DataLoader(train_set, shuffle=True, batch_size=4)  # debug ok
         #train_loader = DataLoader(train_set, shuffle=False, batch_size=4)  # debug ok
 
-        test_loader = DataLoader(test_set, shuffle=False, batch_size=128)
+        # train_loader = DataLoader(train_set, shuffle=True, batch_size=8)
+        # test_loader = DataLoader(test_set, shuffle=False, batch_size=8)
 
-        model = MriViT(  # !!
-            (1, 320, 160),  # !!
-            n_patches_hw=(8, 4),  # !!
-            n_blocks=2, hidden_d=8, n_heads=2,
-            out_d=4  # !!
-        ).to(device)
+        train_loader = DataLoader(train_set, shuffle=True, batch_size=128)
+        test_loader = DataLoader(test_set, shuffle=False, batch_size=128)
+        #====
+
+        if 0:  # case MRI
+            model = MriViT(  # !!
+                (1, 320, 160),  # !!
+                n_patches_hw=(8, 4),  # !!
+                n_blocks=2, hidden_d=8, n_heads=2,
+                out_d=4  # !!
+            ).to(device)
+        else:  # case thyroid
+            model = MriViT(  # !!
+                (1, target_resize[0], target_resize[1]),  # !!
+                n_patches_hw=(25, 25),  # !!
+                n_blocks=2, hidden_d=8, n_heads=2,
+                out_d=2  # !!
+            ).to(device)
         N_EPOCHS = 5
         LR = 0.005
 
@@ -678,7 +695,7 @@ def main():
         #---- @@ !!!!
         #if epoch == 0:  # !!!! dumps first
         #if epoch == 1:  # !!!! dump first and second; NOTE `shuffle=True` for `train_loader`
-        if 1 and epoch == N_EPOCHS - 1:  # !!!! dump full
+        if 0 and epoch == N_EPOCHS - 1:  # !!!! dump full
             exit()
         #---- @@
 
