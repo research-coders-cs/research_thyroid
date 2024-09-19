@@ -173,20 +173,18 @@ class MriDataset(Dataset):
         #==== ref
         #image = Image.open(path).convert('RGB')
         #transformed_image = self.transform(image)
-        #==== @@ WIP
+        #==== @@
         if path.startswith('datasets_mri/'):  # !!!!
             erica_tensor = imread_as_tensor_mri(plt, path)
             erica_crops = crop_erica_tensor(erica_tensor)
 
             transformed_image = erica_crops[0]  # left
             ##transformed_image = erica_crops[1]  # right
-        elif path.startswith('datasets_thyroid/'):
+            ##transformed_image = torch.zeros(1, 320, 160)  # erica_crops[0] or erica_crops[1]
+        else:
             tens = imread_as_tensor_mri(plt, path)
             transformed_image = self.transform(tens)
-            #print(f'@@ [preprocessing for thyroid] {tens.shape} -> {transformed_image.shape}')
-        else:
-            transformed_image = torch.zeros(1, 320, 160)  # erica_crops[0] or erica_crops[1]
-        #====
+            #print(f'@@ [preprocessing] {tens.shape} -> {transformed_image.shape}')
 
         ##return transformed_image, class_index, extra
         return transformed_image, class_index
