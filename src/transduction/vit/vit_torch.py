@@ -285,7 +285,7 @@ def load_mri_data():
         }
         target_resize = (99, 99)  # !!!!
 
-    if 1:  # !!!! thyroid case
+    if 0:  # !!!! thyroid case 1
         ds_paths = {
             'train': build_dataset({
                 'benign': ['Train/Benign', 'Val/Benign'],
@@ -295,6 +295,25 @@ def load_mri_data():
                 'benign': ['Test/Benign'],
                 'malignant': ['Test/Malignant'],
             }, root='datasets_thyroid/Dataset_train_test_val'),  # 10 10
+        }
+        target_resize = (250, 250)  # per `def _train(` in 'src/wsdan/demo/__init__.py'
+
+    if 1:  # !!!! thyroid case 2
+        ds_paths = {
+            'train': build_dataset({
+                'benign': ['Markers_Train_Remove_Markers/Benign_Remove/train', 'Markers_Train_Remove_Markers/Benign_Remove/validate'],
+                'malignant': ['Markers_Train_Remove_Markers/Malignant_Remove/train', 'Markers_Train_Remove_Markers/Malignant_Remove/validate'],
+            }, root='Dataset_doppler_100g'),
+
+            'test': build_dataset({
+                'benign': ['Markers_Train_Remove_Markers/Benign_Remove/test'],
+                'malignant': ['Markers_Train_Remove_Markers/Malignant_Remove/test'],
+            }, root='Dataset_doppler_100g'),  # 20 20
+            #====
+            # 'test': build_dataset({
+            #     'benign': ['test26/Benign'],
+            #     'malignant': ['test26/Malignant'],
+            # }, root='siriraj_original_Testset_26'),
         }
         target_resize = (250, 250)  # per `def _train(` in 'src/wsdan/demo/__init__.py'
 
