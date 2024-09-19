@@ -71,8 +71,9 @@ def patchify_mri(images, n_patches_hw):  # @@
 def imread_as_tensor_mri(plt, fpath):
     im = plt.imread(fpath)
     if 0:
-        print('@@ type(im):', type(im))  # <class 'numpy.ndarray'>
+        #print('@@ type(im):', type(im))  # <class 'numpy.ndarray'>
         print('@@ im.shape:', im.shape)  # (480, 640, 4)
+        print('@@ fpath:', fpath)
 
     # !! im[:,:,0] == im[:,:,1] == im[:,:,2] (R=G=B), and im[:,:,3] (alpha) is all ones
     if 0:
@@ -82,7 +83,10 @@ def imread_as_tensor_mri(plt, fpath):
     # print('@@ im[:,:,2]:', im[240:250, 320:330, 2])  # B
     # print('@@ im[:,:,3]:', im[240:250, 320:330, 3])  # alpha
 
-    return torch.tensor([im[:,:,0]], dtype=torch.float32)  # extract R channel as tensor
+    if len(im.shape) == 2:
+        return torch.tensor([im[:,:]], dtype=torch.float32)  # grayscale
+    else:
+        return torch.tensor([im[:,:,0]], dtype=torch.float32)  # extract R channel as tensor
 
 def crop_erica_tensor(et):
     ch = 230
