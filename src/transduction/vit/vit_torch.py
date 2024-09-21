@@ -582,11 +582,11 @@ def main():
         #train_loader = DataLoader(train_set, shuffle=True, batch_size=4)  # debug ok
         #train_loader = DataLoader(train_set, shuffle=False, batch_size=4)  # debug ok
 
-        # train_loader = DataLoader(train_set, shuffle=True, batch_size=8)
-        # test_loader = DataLoader(test_set, shuffle=False, batch_size=8)
+        train_loader = DataLoader(train_set, shuffle=True, batch_size=8)
+        test_loader = DataLoader(test_set, shuffle=False, batch_size=8)
 
-        train_loader = DataLoader(train_set, shuffle=True, batch_size=128)
-        test_loader = DataLoader(test_set, shuffle=False, batch_size=128)
+        # train_loader = DataLoader(train_set, shuffle=True, batch_size=128)
+        # test_loader = DataLoader(test_set, shuffle=False, batch_size=128)
         #====
 
         if 0:  # case MRI
@@ -619,9 +619,18 @@ def main():
         test_loader = DataLoader(test_set, shuffle=False, batch_size=128)
 
         # Defining model and training options
-        model = MyViT(
-            (1, 28, 28), n_patches=7, n_blocks=2, hidden_d=8, n_heads=2, out_d=10
+        #==== log.txt--mnist-MyViT
+        # model = MyViT(
+        #     (1, 28, 28), n_patches=7, n_blocks=2, hidden_d=8, n_heads=2, out_d=10
+        # ).to(device)
+        #==== lgtm; log.txt--mnist-MriViT
+        model = MriViT(  # !!
+            (1, 28, 28),  # !!
+            n_patches_hw=(7, 7),  # !!
+            n_blocks=2, hidden_d=8, n_heads=2,
+            out_d=10  # !!
         ).to(device)
+        #====
         N_EPOCHS = 5
         LR = 0.005
 
