@@ -539,6 +539,13 @@ class MriViT(nn.Module):
         #@@patches = patchify(images, self.n_patches).to(self.positional_embeddings.device)
         patches = patchify_mri(images, self.n_patches_hw).to(self.positional_embeddings.device)  # @@
 
+        if 0:
+            img_hw = (h, w)
+            idx = 0  # !!!!
+            patches_show(plt, patches, idx, self.n_patches_hw, img_hw)
+            patches_savefig(plt, 'patches_idx0.png', patches, idx, self.n_patches_hw, img_hw)
+            exit()  # @@ !!!! !!!!
+
         # Running linear layer tokenization
         # Map the vector corresponding to each patch to the hidden size dimension
         tokens = self.linear_mapper(patches)
@@ -599,7 +606,8 @@ def main():
         else:  # case thyroid
             model = MriViT(  # !!
                 (1, target_resize[0], target_resize[1]),  # !!
-                n_patches_hw=(25, 25),  # !!
+#                n_patches_hw=(25, 25),  # !!
+                n_patches_hw=(10, 10),  # !!
                 n_blocks=2, hidden_d=8, n_heads=2,
                 out_d=2  # !!
             ).to(device)
