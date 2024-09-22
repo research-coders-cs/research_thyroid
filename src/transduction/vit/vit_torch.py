@@ -68,6 +68,12 @@ def patchify_mri(images, n_patches_hw):  # @@
 
 
 #-------- ^^ @@
+from torchvision.transforms import ToPILImage
+transform_pil = ToPILImage()
+
+def save_tensor_as_png(fname, ten):
+    transform_pil(ten).save(fname, format='PNG')
+
 def imread_as_tensor_mri(plt, fpath):
     im = plt.imread(fpath)
     if 0:
@@ -578,7 +584,7 @@ def main():
     # Loading data
     transform = ToTensor()
 
-    if 1:  # @@
+    if 0:  # @@
         train_set, test_set, target_resize = load_mri_data()
 
         #====
@@ -676,13 +682,20 @@ def main():
                 #exit()  # !!!! !!!!
                 #continue  # !!!! !!!!
 
+            if 1:
+                for idx, img in enumerate(x):
+                    fname = f'x_batch_{batch_idx}_idx_{idx}_y_{y[idx]}.png'
+                    print('@@ saving:', fname)
+                    save_tensor_as_png(f'./datasets_vit/pngs/train/{fname}', img)
+                #exit()  # !!!!
+
             if 0:
                 plt_imshow_tensor(plt, x[0])
                 #plt_imshow_tensor(plt, x[1])
 
                 patches = patchify(x, model.n_patches)
                 print('@@ patches.shape:', patches.shape)  # torch.Size([128, 49, 16])
-                exit()  # @@ !!!! !!!!
+                exit()  # !!!!
 
             if 0:  # !!!! WIP batch pre-process erica data per '50-001_alisa.csv'
                 fpath = 'datasets_mri/50-001/sub-ADNI002S0295_ses-M012/mta_erica_sub-ADNI002S0295_ses-M012_116.png'
@@ -731,9 +744,9 @@ def main():
         print(f"Epoch {epoch + 1}/{N_EPOCHS} loss: {train_loss:.2f}")
 
         #---- @@ !!!!
-        #if epoch == 0:  # !!!! dumps first
+        if epoch == 0:  # !!!! dumps first
         #if epoch == 1:  # !!!! dump first and second; NOTE `shuffle=True` for `train_loader`
-        if 0 and epoch == N_EPOCHS - 1:  # !!!! dump full
+        #if 0 and epoch == N_EPOCHS - 1:  # !!!! dump full
             exit()
         #---- @@
 
