@@ -585,7 +585,9 @@ def main():
     transform = ToTensor()
 
     if 0:  # @@
-        train_set, test_set, target_resize = load_mri_data()
+        #train_set, test_set, target_resize = load_mri_data()
+        #====
+        train_set, test_set, target_resize = load_mnist_data()  # !!!! !!!!
 
         #====
         #train_loader = DataLoader(train_set, shuffle=True, batch_size=128)
@@ -686,7 +688,8 @@ def main():
                 for idx, img in enumerate(x):
                     fname = f'x_batch_{batch_idx}_idx_{idx}_y_{y[idx]}.png'
                     print('@@ saving:', fname)
-                    save_tensor_as_png(f'./datasets_vit/pngs/train/{fname}', img)
+                    # datasets_vit/pngs (transduction)$ mkdir train/y_{0,1,2,3,4,5,6,7,8,9}
+                    save_tensor_as_png(f'./datasets_vit/pngs/train/y_{y[idx]}/{fname}', img)
                 #exit()  # !!!!
 
             if 0:
