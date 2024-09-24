@@ -585,9 +585,7 @@ def main():
     transform = ToTensor()
 
     if 0:  # @@
-        #train_set, test_set, target_resize = load_mri_data()
-        #====
-        train_set, test_set, target_resize = load_mnist_data()  # !!!! !!!!
+        train_set, test_set, target_resize = load_mri_data()
 
         #====
         #train_loader = DataLoader(train_set, shuffle=True, batch_size=128)
@@ -611,7 +609,8 @@ def main():
                 n_blocks=2, hidden_d=8, n_heads=2,
                 out_d=4  # !!
             ).to(device)
-        else:  # case thyroid
+
+        if 1:  # case thyroid
             model = MriViT(  # !!
                 (1, target_resize[0], target_resize[1]),  # !!
 #                n_patches_hw=(25, 25),  # !!
@@ -619,20 +618,28 @@ def main():
                 n_blocks=2, hidden_d=8, n_heads=2,
                 out_d=2  # !!
             ).to(device)
+
         N_EPOCHS = 5
         LR = 0.005
 
     else:  # orig
-        train_set = MNIST(
-            root="./datasets_vit", train=True, download=True, transform=transform
-        )
-        test_set = MNIST(
-            root="./datasets_vit", train=False, download=True, transform=transform
-        )
-        #print('@@ type(train_set):', type(train_set))  # <class 'torchvision.datasets.mnist.MNIST'>
+        if 0:
+            train_set = MNIST(root="./datasets_vit", train=True, download=True, transform=transform)
+            test_set = MNIST(root="./datasets_vit", train=False, download=True, transform=transform)
+            #print('@@ type(train_set):', type(train_set))  # <class 'torchvision.datasets.mnist.MNIST'>
+        else:
+            class_dir_map = { f'class_{y}': f'y_{y}' for y in range(10) }
+            train_set = MriDataset(
+                phase='train',
+                dataset=build_dataset(class_dir_map, root='datasets_vit/pngs/train'),
+                transform=get_transform_mri((28, 28), phase='train'))
+            # test_set = MriDataset(
+            #     phase='test',
+            #     dataset=build_dataset(class_dir_map, root='datasets_vit/pngs/test'),
+            #     transform=get_transform_mri((28, 28), phase='test'))
 
         train_loader = DataLoader(train_set, shuffle=True, batch_size=128)
-        test_loader = DataLoader(test_set, shuffle=False, batch_size=128)
+        #test_loader = DataLoader(test_set, shuffle=False, batch_size=128)
 
         # Defining model and training options
         #==== log.txt--mnist-MyViT
@@ -684,7 +691,7 @@ def main():
                 #exit()  # !!!! !!!!
                 #continue  # !!!! !!!!
 
-            if 1:
+            if 0:
                 for idx, img in enumerate(x):
                     fname = f'x_batch_{batch_idx}_idx_{idx}_y_{y[idx]}.png'
                     print('@@ saving:', fname)
@@ -747,9 +754,9 @@ def main():
         print(f"Epoch {epoch + 1}/{N_EPOCHS} loss: {train_loss:.2f}")
 
         #---- @@ !!!!
-        if epoch == 0:  # !!!! dumps first
+        #if epoch == 0:  # !!!! dumps first
         #if epoch == 1:  # !!!! dump first and second; NOTE `shuffle=True` for `train_loader`
-        #if 0 and epoch == N_EPOCHS - 1:  # !!!! dump full
+        if 1 and epoch == N_EPOCHS - 1:  # !!!! dump full
             exit()
         #---- @@
 
