@@ -323,7 +323,8 @@ def load_mri_data():
             #     'malignant': ['test26/Malignant'],
             # }, root='siriraj_original_Testset_26'),
         }
-        target_resize = (250, 250)  # per `def _train(` in 'src/wsdan/demo/__init__.py'
+#        target_resize = (250, 250)  # per `def _train(` in 'src/wsdan/demo/__init__.py'
+        target_resize = (280, 280)  # per `def _train(` in 'src/wsdan/demo/__init__.py'
 
     stat_ds_paths(ds_paths)
     ds_path_train = ds_paths['train']
@@ -614,7 +615,8 @@ def main():
             model = MriViT(  # !!
                 (1, target_resize[0], target_resize[1]),  # !!
 #                n_patches_hw=(25, 25),  # !!
-                n_patches_hw=(10, 10),  # !!
+#                n_patches_hw=(10, 10),  # !!
+                n_patches_hw=(7, 7),  # !!
                 n_blocks=2, hidden_d=8, n_heads=2,
                 out_d=2  # !!
             ).to(device)
@@ -627,33 +629,33 @@ def main():
             train_set = MNIST(root="./datasets_vit", train=True, download=True, transform=transform)
             test_set = MNIST(root="./datasets_vit", train=False, download=True, transform=transform)
             #print('@@ type(train_set):', type(train_set))  # <class 'torchvision.datasets.mnist.MNIST'>
+
+            # Defining model and training options
+            #==== log.txt--mnist-MyViT
+            model = MyViT(
+                (1, 28, 28), n_patches=7, n_blocks=2, hidden_d=8, n_heads=2, out_d=10
+            ).to(device)
         else:
             class_dir_map = { f'class_{y}': f'y_{y}' for y in range(10) }
+            #==== lgtm; log.txt--mnist-MriViT-MriDataset
             train_set = MriDataset(
                 phase='train',
                 dataset=build_dataset(class_dir_map, root='datasets_vit/pngs/train'),
                 transform=get_transform_mri((28, 28), phase='train'))
-            # test_set = MriDataset(
-            #     phase='test',
-            #     dataset=build_dataset(class_dir_map, root='datasets_vit/pngs/test'),
-            #     transform=get_transform_mri((28, 28), phase='test'))
+            test_set = MriDataset(
+                phase='test',
+                dataset=build_dataset(class_dir_map, root='datasets_vit/pngs/test'),
+                transform=get_transform_mri((28, 28), phase='test'))
+            model = MriViT(  # !!
+                (1, 28, 28),  # !!
+                n_patches_hw=(7, 7),  # !!
+                n_blocks=2, hidden_d=8, n_heads=2,
+                out_d=10  # !!
+            ).to(device)
 
         train_loader = DataLoader(train_set, shuffle=True, batch_size=128)
-        #test_loader = DataLoader(test_set, shuffle=False, batch_size=128)
+        test_loader = DataLoader(test_set, shuffle=False, batch_size=128)
 
-        # Defining model and training options
-        #==== log.txt--mnist-MyViT
-        # model = MyViT(
-        #     (1, 28, 28), n_patches=7, n_blocks=2, hidden_d=8, n_heads=2, out_d=10
-        # ).to(device)
-        #==== lgtm; log.txt--mnist-MriViT
-        model = MriViT(  # !!
-            (1, 28, 28),  # !!
-            n_patches_hw=(7, 7),  # !!
-            n_blocks=2, hidden_d=8, n_heads=2,
-            out_d=10  # !!
-        ).to(device)
-        #====
         N_EPOCHS = 5
         LR = 0.005
 
@@ -694,10 +696,9 @@ def main():
             if 0:
                 for idx, img in enumerate(x):
                     fname = f'x_batch_{batch_idx}_idx_{idx}_y_{y[idx]}.png'
-                    print('@@ saving:', fname)
+                    print('@@ saving png for train:', fname)
                     # datasets_vit/pngs (transduction)$ mkdir train/y_{0,1,2,3,4,5,6,7,8,9}
                     save_tensor_as_png(f'./datasets_vit/pngs/train/y_{y[idx]}/{fname}', img)
-                #exit()  # !!!!
 
             if 0:
                 plt_imshow_tensor(plt, x[0])
@@ -756,7 +757,7 @@ def main():
         #---- @@ !!!!
         #if epoch == 0:  # !!!! dumps first
         #if epoch == 1:  # !!!! dump first and second; NOTE `shuffle=True` for `train_loader`
-        if 1 and epoch == N_EPOCHS - 1:  # !!!! dump full
+        if 0 and epoch == N_EPOCHS - 1:  # !!!! dump full
             exit()
         #---- @@
 
@@ -769,6 +770,14 @@ def main():
         for batch in tqdm(test_loader, desc="Testing"):
             x, y = batch
             x, y = x.to(device), y.to(device)
+            #==== ^^
+            if 0:
+                for idx, img in enumerate(x):
+                    fname = f'x_batch_{batch_idx}_idx_{idx}_y_{y[idx]}.png'
+                    print('@@ saving png for test:', fname)
+                    # datasets_vit/pngs (transduction)$ mkdir test/y_{0,1,2,3,4,5,6,7,8,9}
+                    save_tensor_as_png(f'./datasets_vit/pngs/test/y_{y[idx]}/{fname}', img)
+            #==== $$
             y_hat = model(x)
             loss = criterion(y_hat, y)
             test_loss += loss.detach().cpu().item() / len(test_loader)
