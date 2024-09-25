@@ -263,7 +263,6 @@ def stat_ds_paths(ds_paths):
 
 
 def load_mri_data():
-
     if 0:  # !!!! debug ***
         ds_paths = {
             'train': {  # -> assert len(train_set) == 13
@@ -293,7 +292,11 @@ def load_mri_data():
         }
         target_resize = (99, 99)  # !!!!
 
-    if 0:  # !!!! thyroid case Dataset_train_test_val
+    return create_mri_data(ds_paths, target_resize)
+
+
+def load_thyroid_data():
+    if 0:  # case thyroid 'Dataset_train_test_val'
         ds_paths = {
             'train': build_dataset({
                 'benign': ['Train/Benign', 'Val/Benign'],
@@ -306,7 +309,7 @@ def load_mri_data():
         }
         target_resize = (250, 250)  # per `def _train(` in 'src/wsdan/demo/__init__.py'
 
-    if 1:  # !!!! thyroid case 100g
+    if 1:  # case thyroid 100g
         ds_paths = {
             'train': build_dataset({
                 'benign': ['Markers_Train_Remove_Markers/Benign_Remove/train', 'Markers_Train_Remove_Markers/Benign_Remove/validate'],
@@ -316,7 +319,7 @@ def load_mri_data():
             'test': build_dataset({
                 'benign': ['Markers_Train_Remove_Markers/Benign_Remove/test'],
                 'malignant': ['Markers_Train_Remove_Markers/Malignant_Remove/test'],
-            }, root='Dataset_doppler_100g'),  # 20 20
+            }, root='Dataset_doppler_100g'),
             #====
             # 'test': build_dataset({
             #     'benign': ['test26/Benign'],
@@ -326,20 +329,20 @@ def load_mri_data():
 #        target_resize = (250, 250)  # per `def _train(` in 'src/wsdan/demo/__init__.py'
         target_resize = (280, 280)  # per `def _train(` in 'src/wsdan/demo/__init__.py'
 
-    stat_ds_paths(ds_paths)
-    ds_path_train = ds_paths['train']
-    ds_path_test = ds_paths['test']
-    print('@@ target_resize:', target_resize)
+    return create_mri_data(ds_paths, target_resize)
 
-    #
+
+def create_mri_data(ds_paths, target_resize):
+    stat_ds_paths(ds_paths)
+    print('@@ target_resize:', target_resize)
 
     train_set = MriDataset(
         phase='train',
-        dataset=ds_path_train,
+        dataset=ds_paths['train'],
         transform=get_transform_mri(target_resize, phase='train'))
     test_set = MriDataset(
         phase='test',
-        dataset=ds_path_test,
+        dataset=ds_paths['test'],
         transform=get_transform_mri(target_resize, phase='test'))
 
     return train_set, test_set, target_resize
@@ -585,7 +588,7 @@ def main():
     # Loading data
     transform = ToTensor()
 
-    if 0:  # orig
+    if 0:  # case mnist orig
         train_set = MNIST(root="./datasets_vit", train=True, download=True, transform=transform)
         test_set = MNIST(root="./datasets_vit", train=False, download=True, transform=transform)
         #print('@@ type(train_set):', type(train_set))  # <class 'torchvision.datasets.mnist.MNIST'>
@@ -599,9 +602,9 @@ def main():
         train_loader = DataLoader(train_set, shuffle=True, batch_size=128)
         test_loader = DataLoader(test_set, shuffle=False, batch_size=128)
 
-    if 0:  # case mnist-MriViT-MriDataset
+    if 0:  # case mnist-MriViT-MriDataset, LGTM
         class_dir_map = { f'class_{y}': f'y_{y}' for y in range(10) }
-        #==== lgtm; log.txt--mnist-MriViT-MriDataset
+        #==== log.txt--mnist-MriViT-MriDataset
         train_set = MriDataset(
             phase='train',
             dataset=build_dataset(class_dir_map, root='datasets_vit/pngs/train'),
@@ -621,7 +624,7 @@ def main():
         train_loader = DataLoader(train_set, shuffle=True, batch_size=128)
         test_loader = DataLoader(test_set, shuffle=False, batch_size=128)
 
-    if 1:  # case mri/thyroid
+    if 0:  # case mri
         train_set, test_set, target_resize = load_mri_data()
 
         #====
@@ -629,33 +632,31 @@ def main():
         #test_loader = DataLoader(test_set, shuffle=False, batch_size=128)
         #====
         #train_loader = DataLoader(train_set, shuffle=False, batch_size=128)  # *** debug ok
-        #train_loader = DataLoader(train_set, shuffle=True, batch_size=4)  # debug ok
-        #train_loader = DataLoader(train_set, shuffle=False, batch_size=4)  # debug ok
+        train_loader = DataLoader(train_set, shuffle=True, batch_size=4)  # debug ok
+        train_loader = DataLoader(train_set, shuffle=False, batch_size=4)  # debug ok
+        #====
+
+        model = MriViT(  # !!
+            (1, 320, 160),  # !!
+            n_patches_hw=(8, 4),  # !!
+            n_blocks=2, hidden_d=8, n_heads=2,
+            out_d=4  # !!
+        ).to(device)
+
+    if 1:  # case thyroid
+        train_set, test_set, target_resize = load_thyroid_data()
 
         train_loader = DataLoader(train_set, shuffle=True, batch_size=8)
         test_loader = DataLoader(test_set, shuffle=False, batch_size=8)
 
-        # train_loader = DataLoader(train_set, shuffle=True, batch_size=128)
-        # test_loader = DataLoader(test_set, shuffle=False, batch_size=128)
-        #====
-
-        if 0:  # case MRI
-            model = MriViT(  # !!
-                (1, 320, 160),  # !!
-                n_patches_hw=(8, 4),  # !!
-                n_blocks=2, hidden_d=8, n_heads=2,
-                out_d=4  # !!
-            ).to(device)
-
-        if 1:  # case thyroid
-            model = MriViT(  # !!
-                (1, target_resize[0], target_resize[1]),  # !!
-                # n_patches_hw=(25, 25),  # !!
-                # n_patches_hw=(10, 10),  # !!
-                n_patches_hw=(7, 7),  # !!
-                n_blocks=2, hidden_d=8, n_heads=2,
-                out_d=2  # !!
-            ).to(device)
+        model = MriViT(  # !!
+            (1, target_resize[0], target_resize[1]),  # !!
+            # n_patches_hw=(25, 25),  # !!
+            # n_patches_hw=(10, 10),  # !!
+            n_patches_hw=(7, 7),  # !!
+            n_blocks=2, hidden_d=8, n_heads=2,
+            out_d=2  # !!
+        ).to(device)
 
     N_EPOCHS = 5
     LR = 0.005
