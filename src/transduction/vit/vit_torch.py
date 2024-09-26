@@ -347,8 +347,6 @@ def create_mri_data(ds_paths, target_resize):
 
     return train_set, test_set, target_resize
 
-#-------- $$
-
 
 class MyMSA(nn.Module):
     def __init__(self, d, n_heads=2):
@@ -588,7 +586,7 @@ def main():
     # Loading data
     transform = ToTensor()
 
-    if 0:  # case mnist orig
+    if 1:  # case mnist orig
         train_set = MNIST(root="./datasets_vit", train=True, download=True, transform=transform)
         test_set = MNIST(root="./datasets_vit", train=False, download=True, transform=transform)
         #print('@@ type(train_set):', type(train_set))  # <class 'torchvision.datasets.mnist.MNIST'>
@@ -643,7 +641,7 @@ def main():
             out_d=4  # !!
         ).to(device)
 
-    if 1:  # case thyroid
+    if 0:  # case thyroid
         train_set, test_set, target_resize = load_thyroid_data()
 
         train_loader = DataLoader(train_set, shuffle=True, batch_size=8)
@@ -695,9 +693,9 @@ def main():
                 #exit()  # !!!! !!!!
                 #continue  # !!!! !!!!
 
-            if 0:
+            if 1 and epoch == 0:
                 for idx, img in enumerate(x):
-                    fname = f'x_batch_{batch_idx}_idx_{idx}_y_{y[idx]}.png'
+                    fname = f'x_ep_{epoch}_batch_{batch_idx}_idx_{idx}_y_{y[idx]}.png'
                     print('@@ saving png for train:', fname)
                     # datasets_vit/pngs (transduction)$ mkdir train/y_{0,1,2,3,4,5,6,7,8,9}
                     save_tensor_as_png(f'./datasets_vit/pngs/train/y_{y[idx]}/{fname}', img)
@@ -756,11 +754,11 @@ def main():
 
         print(f"Epoch {epoch + 1}/{N_EPOCHS} loss: {train_loss:.2f}")
 
-        #---- @@ !!!!
-        #if epoch == 0:  # !!!! dumps first
-        #if epoch == 1:  # !!!! dump first and second; NOTE `shuffle=True` for `train_loader`
-        if 0 and epoch == N_EPOCHS - 1:  # !!!! dump full
-            exit()
+        #---- @@
+        if epoch == 0:  # dumps first
+        #if epoch == 1:  # dump first and second; NOTE `shuffle=True` for `train_loader`
+        #if 0 and epoch == N_EPOCHS - 1:  # dump full
+            exit()  # !!!!
         #---- @@
 
     # @@ TODO save weights !!!!!!!!
