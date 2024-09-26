@@ -586,7 +586,7 @@ def main():
     # Loading data
     transform = ToTensor()
 
-    if 1:  # case mnist orig
+    if 0:  # case mnist orig
         train_set = MNIST(root="./datasets_vit", train=True, download=True, transform=transform)
         test_set = MNIST(root="./datasets_vit", train=False, download=True, transform=transform)
         #print('@@ type(train_set):', type(train_set))  # <class 'torchvision.datasets.mnist.MNIST'>
@@ -600,18 +600,24 @@ def main():
         train_loader = DataLoader(train_set, shuffle=True, batch_size=128)
         test_loader = DataLoader(test_set, shuffle=False, batch_size=128)
 
-    if 0:  # case mnist-MriViT-MriDataset, LGTM
+    if 1:  # case mnist-MriViT-MriDataset, LGTM
         class_dir_map = { f'class_{y}': f'y_{y}' for y in range(10) }
-        #==== log.txt--mnist-MriViT-MriDataset
+        ds_paths = {
+            'train': build_dataset(class_dir_map, root='datasets_vit/pngs/train'),
+            'test': build_dataset(class_dir_map, root='datasets_vit/pngs/test'),
+        }
+        stat_ds_paths(ds_paths)
+
         train_set = MriDataset(
             phase='train',
-            dataset=build_dataset(class_dir_map, root='datasets_vit/pngs/train'),
+            dataset=ds_paths['train'],
             transform=get_transform_mri((28, 28), phase='train'))
         test_set = MriDataset(
             phase='test',
-            dataset=build_dataset(class_dir_map, root='datasets_vit/pngs/test'),
+            dataset=ds_paths['test'],
             transform=get_transform_mri((28, 28), phase='test'))
 
+        #==== log.txt--mnist-MriViT-MriDataset
         model = MriViT(  # !!
             (1, 28, 28),  # !!
             n_patches_hw=(7, 7),  # !!
@@ -693,7 +699,7 @@ def main():
                 #exit()  # !!!! !!!!
                 #continue  # !!!! !!!!
 
-            if 1 and epoch == 0:
+            if 0 and epoch == 0:
                 for idx, img in enumerate(x):
                     fname = f'x_ep_{epoch}_batch_{batch_idx}_idx_{idx}_y_{y[idx]}.png'
                     print('@@ saving png for train:', fname)
@@ -755,9 +761,9 @@ def main():
         print(f"Epoch {epoch + 1}/{N_EPOCHS} loss: {train_loss:.2f}")
 
         #---- @@
-        if epoch == 0:  # dumps first
+        #if epoch == 0:  # dumps first
         #if epoch == 1:  # dump first and second; NOTE `shuffle=True` for `train_loader`
-        #if 0 and epoch == N_EPOCHS - 1:  # dump full
+        if 0 and epoch == N_EPOCHS - 1:  # dump full
             exit()  # !!!!
         #---- @@
 
