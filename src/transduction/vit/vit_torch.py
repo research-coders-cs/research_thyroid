@@ -631,6 +631,10 @@ def main():
         train_loader = DataLoader(train_set, shuffle=True, batch_size=128)
         test_loader = DataLoader(test_set, shuffle=False, batch_size=128)
 
+        train_loop(model, train_loader, device)
+        test_loop(model, test_loader, device)
+        exit()  # @@ !!!! !!!!
+
     if 1:  # case mnist-MriViT-MriDataset, LGTM
         class_dir_map = { f'class_{y}': f'y_{y}' for y in range(10) }
         ds_paths = {
@@ -693,13 +697,27 @@ def main():
             out_d=2  # !!
         ).to(device)
 
-    N_EPOCHS = 5
+    #
+
+    if 1:
+        n_epochs = 5
+        train_loop(model, train_loader, device, n_epochs)
+        model.save_ckpt(f'vit_patch_NN_resize_MMM_epochs_{n_epochs}.ckpt')
+    else:
+        #model.load_ckpt('vit_patch_NN_resize_MMM_eps1.ckpt')
+        model.load_ckpt('vit_patch_NN_resize_MMM_eps5.ckpt')
+
+    test_loop(model, test_loader, device)
+
+
+def train_loop(model, train_loader, device, n_epochs=5):
+
     LR = 0.005
 
     # Training loop
     optimizer = Adam(model.parameters(), lr=LR)
     criterion = CrossEntropyLoss()
-    for epoch in trange(N_EPOCHS, desc="Training"):
+    for epoch in trange(n_epochs, desc="Training"):
         train_loss = 0.0
 #====
 #@@     for batch in tqdm(
@@ -789,16 +807,20 @@ def main():
             loss.backward()
             optimizer.step()
 
-        print(f"Epoch {epoch + 1}/{N_EPOCHS} loss: {train_loss:.2f}")
+        print(f"Epoch {epoch + 1}/{n_epochs} loss: {train_loss:.2f}")
 
         #---- @@
         #if epoch == 0:  # dumps first
         #if epoch == 1:  # dump first and second; NOTE `shuffle=True` for `train_loader`
-        if 0 and epoch == N_EPOCHS - 1:  # dump full
+        if 0 and epoch == n_epochs - 1:  # dump full
             exit()  # !!!!
         #---- @@
 
-    model.save_ckpt('vit_patch_NN_resize_MMM.ckpt')
+
+
+def test_loop(model, test_loader, device):
+
+    criterion = CrossEntropyLoss()  # @@
 
     # Test loop
     with torch.no_grad():
