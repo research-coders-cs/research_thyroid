@@ -411,6 +411,42 @@ class MyViTBlock(nn.Module):
         return out
 
 
+#-------- ^^
+def _save_ckpt(model, ckpt):
+    state_dict = model.state_dict()
+
+    for key in state_dict.keys():
+        state_dict[key] = state_dict[key].cpu()
+
+    torch.save({
+        #'logs': logs,
+        'state_dict': state_dict}, ckpt)
+    print(f'@@ saved: {ckpt}')
+
+
+def _load_ckpt(model, ckpt):
+    ckpt_state_dict = torch.load(ckpt)['state_dict']
+
+    model_dict = model.state_dict()
+    pretrained_dict = {k: v for k, v in ckpt_state_dict.items()
+                       if k in model_dict and model_dict[k].size() == v.size()}
+
+    if len(pretrained_dict) == len(ckpt_state_dict):
+        print('%s: ✨ All params loaded' % type(model).__name__)
+    else:
+        msg = '⚠️ Some params were not loaded'
+        print(f'%s: {msg}:' % type(model).__name__)
+
+        not_loaded_keys = [k for k in ckpt_state_dict.keys() if k not in pretrained_dict.keys()]
+        print(('  %s, ' * (len(not_loaded_keys) - 1) + '%s') % tuple(not_loaded_keys))
+        raise ValueError(msg)
+
+    model_dict.update(pretrained_dict)
+
+    return model_dict
+#-------- $$
+
+
 class MyViT(nn.Module):
     def __init__(self, chw, n_patches=7, n_blocks=2, hidden_d=8, n_heads=2, out_d=10):
         # Super constructor
@@ -477,6 +513,13 @@ class MyViT(nn.Module):
         out = out[:, 0]
 
         return self.mlp(out)  # Map to output dimension, output category distribution
+
+    def save_ckpt(self, ckpt):  # @@
+        _save_ckpt(self, ckpt)
+
+    def load_ckpt(self, ckpt):  # @@
+        model_dict = _load_ckpt(self, ckpt)
+        super(MyViT, self).load_state_dict(model_dict)
 
 
 def get_positional_embeddings(sequence_length, d):
@@ -574,34 +617,10 @@ class MriViT(nn.Module):
         return self.mlp(out)  # Map to output dimension, output category distribution
 
     def save_ckpt(self, ckpt):  # @@
-        state_dict = self.state_dict()
-
-        for key in state_dict.keys():
-            state_dict[key] = state_dict[key].cpu()
-
-        torch.save({
-            #'logs': logs,
-            'state_dict': state_dict}, ckpt)
-        print(f'@@ saved: {ckpt}')
+        _save_ckpt(self, ckpt)
 
     def load_ckpt(self, ckpt):  # @@
-        ckpt_state_dict = torch.load(ckpt)['state_dict']
-
-        model_dict = self.state_dict()
-        pretrained_dict = {k: v for k, v in ckpt_state_dict.items()
-                           if k in model_dict and model_dict[k].size() == v.size()}
-
-        if len(pretrained_dict) == len(ckpt_state_dict):
-            print('%s: ✨ All params loaded' % type(self).__name__)
-        else:
-            msg = '⚠️ Some params were not loaded'
-            print(f'%s: {msg}:' % type(self).__name__)
-
-            not_loaded_keys = [k for k in ckpt_state_dict.keys() if k not in pretrained_dict.keys()]
-            print(('  %s, ' * (len(not_loaded_keys) - 1) + '%s') % tuple(not_loaded_keys))
-            raise ValueError(msg)
-
-        model_dict.update(pretrained_dict)
+        model_dict = _load_ckpt(self, ckpt)
         super(MriViT, self).load_state_dict(model_dict)
 
 
