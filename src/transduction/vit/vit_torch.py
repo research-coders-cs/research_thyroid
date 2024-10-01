@@ -419,7 +419,15 @@ def _save_ckpt(model, ckpt):
         state_dict[key] = state_dict[key].cpu()
 
     torch.save({
+        #---- TODO
         #'logs': logs,
+        #-- e.g. log.txt--mnist-MriViT-MriDataset--ckpt_epochs_5
+        # 4229:Epoch 1/5 loss: 2.08
+        # 8450:Epoch 2/5 loss: 1.86
+        # 12671:Epoch 3/5 loss: 1.78
+        # 16892:Epoch 4/5 loss: 1.77
+        # 21114:Epoch 5/5 loss: 1.75
+        #----
         'state_dict': state_dict}, ckpt)
     print(f'@@ saved: {ckpt}')
 
@@ -719,12 +727,12 @@ def main():
 
     #
 
-    if 1:
+    if 0:
         train_loop(model, train_loader, device, n_epochs)
         model.save_ckpt(f'vit_patch_NN_resize_MMM_epochs_{n_epochs}.ckpt')
     else:
         #model.load_ckpt('vit_patch_NN_resize_MMM_eps1.ckpt')
-        model.load_ckpt('vit_patch_NN_resize_MMM_eps5.ckpt')
+        model.load_ckpt('vit_patch_NN_resize_MMM_epochs_5--mnist-MriViT-MriDataset.ckpt')
 
     test_loop(model, test_loader, device)
 
