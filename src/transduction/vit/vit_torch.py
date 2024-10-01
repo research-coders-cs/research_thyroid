@@ -573,6 +573,37 @@ class MriViT(nn.Module):
 
         return self.mlp(out)  # Map to output dimension, output category distribution
 
+    def save_ckpt(self, ckpt):  # @@
+        state_dict = self.state_dict()
+
+        for key in state_dict.keys():
+            state_dict[key] = state_dict[key].cpu()
+
+        torch.save({
+            #'logs': logs,
+            'state_dict': state_dict}, ckpt)
+        print(f'@@ saved: {ckpt}')
+
+    def load_ckpt(self, ckpt):  # @@
+        ckpt_state_dict = torch.load(ckpt)['state_dict']
+
+        model_dict = self.state_dict()
+        pretrained_dict = {k: v for k, v in ckpt_state_dict.items()
+                           if k in model_dict and model_dict[k].size() == v.size()}
+
+        if len(pretrained_dict) == len(ckpt_state_dict):
+            print('%s: ✨ All params loaded' % type(self).__name__)
+        else:
+            msg = '⚠️ Some params were not loaded'
+            print(f'%s: {msg}:' % type(self).__name__)
+
+            not_loaded_keys = [k for k in ckpt_state_dict.keys() if k not in pretrained_dict.keys()]
+            print(('  %s, ' * (len(not_loaded_keys) - 1) + '%s') % tuple(not_loaded_keys))
+            raise ValueError(msg)
+
+        model_dict.update(pretrained_dict)
+        super(MriViT, self).load_state_dict(model_dict)
+
 
 def main():
 
@@ -767,7 +798,7 @@ def main():
             exit()  # !!!!
         #---- @@
 
-    # @@ TODO save weights !!!!!!!!
+    model.save_ckpt('vit_patch_NN_resize_MMM.ckpt')
 
     # Test loop
     with torch.no_grad():
