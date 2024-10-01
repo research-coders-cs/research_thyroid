@@ -649,10 +649,7 @@ def main():
 
         train_loader = DataLoader(train_set, shuffle=True, batch_size=128)
         test_loader = DataLoader(test_set, shuffle=False, batch_size=128)
-
-        train_loop(model, train_loader, device)
-        test_loop(model, test_loader, device)
-        exit()  # @@ !!!! !!!!
+        n_epochs = 5
 
     if 1:  # case mnist-MriViT-MriDataset, LGTM
         class_dir_map = { f'class_{y}': f'y_{y}' for y in range(10) }
@@ -681,6 +678,7 @@ def main():
 
         train_loader = DataLoader(train_set, shuffle=True, batch_size=128)
         test_loader = DataLoader(test_set, shuffle=False, batch_size=128)
+        n_epochs = 5
 
     if 0:  # case mri
         train_set, test_set, target_resize = load_mri_data()
@@ -694,6 +692,8 @@ def main():
         train_loader = DataLoader(train_set, shuffle=False, batch_size=4)  # debug ok
         #====
 
+        n_epochs = 5
+
         model = MriViT(  # !!
             (1, 320, 160),  # !!
             n_patches_hw=(8, 4),  # !!
@@ -706,6 +706,7 @@ def main():
 
         train_loader = DataLoader(train_set, shuffle=True, batch_size=8)
         test_loader = DataLoader(test_set, shuffle=False, batch_size=8)
+        n_epochs = 5
 
         model = MriViT(  # !!
             (1, target_resize[0], target_resize[1]),  # !!
@@ -719,7 +720,6 @@ def main():
     #
 
     if 1:
-        n_epochs = 5
         train_loop(model, train_loader, device, n_epochs)
         model.save_ckpt(f'vit_patch_NN_resize_MMM_epochs_{n_epochs}.ckpt')
     else:
