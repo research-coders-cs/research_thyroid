@@ -1,0 +1,97 @@
+"""
+adapted from -- research_mri/transduction/finetune/try_vision_transformers_hugging_face_fine_tuning_cifar10_pytorch.py
+"""
+
+# https://huggingface.co/docs/transformers/en/installation
+# For CPU-support only, you can conveniently install 🤗 Transformers and a deep learning library in one line. For example, install 🤗 Transformers and PyTorch with:
+# pip install 'transformers[torch]'
+
+"""@@
+$ pipenv run python3 -m pip install 'transformers[torch]'
+Successfully installed accelerate-1.0.0 filelock-3.16.1 fsspec-2024.9.0 huggingface-hub-0.25.1 regex-2024.9.11 safetensors-0.4.5 tokenizers-0.20.0 transformers-4.45.2
+
+$ pipenv run python3 -m pip install datasets
+Successfully installed datasets-3.0.1 dill-0.3.8 fsspec-2024.6.1 multiprocess-0.70.16 pyarrow-17.0.0 xxhash-3.5.0
+
+$ pipenv run python3 -m pip install scikit-learn
+Successfully installed joblib-1.4.2 scikit-learn-1.5.2 scipy-1.14.1 threadpoolctl-3.5.0
+"""
+
+
+import torch
+import torchvision
+from torchvision.transforms import Normalize, Resize, ToTensor, Compose
+from PIL import Image
+from torchvision.transforms import ToPILImage
+import matplotlib.pyplot as plt
+
+from transformers import ViTImageProcessor, ViTForImageClassification
+from transformers import TrainingArguments, Trainer
+from datasets import load_dataset
+import numpy as np
+from sklearn.metrics import accuracy_score
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
+
+#----
+from ..plot_if import get_plt, plt_imshow, plt_imshow_tensor  # @@
+plt = get_plt()
+
+from torchvision.transforms import ToPILImage, PILToTensor
+transform_to_pil = ToPILImage()
+transform_to_tensor = PILToTensor()
+#----
+
+def load_data():
+    print('@@ load_data(): ^^')
+
+    """### Loading the Data"""
+
+    trainds, testds = load_dataset("cifar10", split=["train[:5000]","test[:1000]"])
+
+    splits = trainds.train_test_split(test_size=0.1)
+    trainds = splits['train']
+    valds = splits['test']
+
+    ##print(trainds, valds, testds)
+    # Dataset({
+    #     features: ['img', 'label'],
+    #     num_rows: 4500
+    # }) Dataset({
+    #     features: ['img', 'label'],
+    #     num_rows: 500
+    # }) Dataset({
+    #     features: ['img', 'label'],
+    #     num_rows: 1000
+    # })
+
+    ##print(trainds.features, trainds.num_rows, trainds[0])
+    # {'img': Image(mode=None, decode=True, id=None), 'label': ClassLabel(names=['airplane', 'automobile', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck'], id=None)} 4500 {'img': <PIL.PngImagePlugin.PngImageFile image mode=RGB size=32x32 at 0x14AE707F0>, 'label': 7}
+    # horse
+
+    itos = dict((k,v) for k,v in enumerate(trainds.features['label'].names))
+    stoi = dict((v,k) for k,v in enumerate(trainds.features['label'].names))
+    ##print(itos, stoi)
+    # {0: 'airplane', 1: 'automobile', 2: 'bird', 3: 'cat', 4: 'deer', 5: 'dog', 6: 'frog', 7: 'horse', 8: 'ship', 9: 'truck'} {'airplane': 0, 'automobile': 1, 'bird': 2, 'cat': 3, 'deer': 4, 'dog': 5, 'frog': 6, 'horse': 7, 'ship': 8, 'truck': 9}
+
+    if 0:
+        img, lab = trainds[0]['img'], itos[trainds[0]['label']]
+        ##print(lab)  # truck
+        ##print(img.size)  # (32, 32)
+
+        #img  # colab only
+        #print(type(img))  # <class 'PIL.PngImagePlugin.PngImageFile'>
+        plt_imshow_tensor(plt, transform_to_tensor(img))
+
+    return trainds, valds, testds, itos, stoi
+
+
+def main():
+    load_data()
+
+
+
+
+
+
+if __name__ == "__main__":
+    main()

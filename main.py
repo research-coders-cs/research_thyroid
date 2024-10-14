@@ -59,10 +59,14 @@ if __name__ == '__main__':
         # TODO ........
 
 
-    if 1:  # https://medium.com/@brianpulfer/vision-transformers-from-scratch-pytorch-a-step-by-step-guide-96c3313c2e0c
+    if 0:  # https://medium.com/@brianpulfer/vision-transformers-from-scratch-pytorch-a-step-by-step-guide-96c3313c2e0c
         #==== mt; slow, needs building the pkg
         #from transduction.vit.vit_torch import main as vit_main
         #==== mr; quick, direct
         from src.transduction.vit.vit_torch import main as vit_main
 
         vit_main()
+
+    if 1:  # finetune
+        from src.transduction.vit_finetune.main_supersjgk import main as supersjgk_main
+        supersjgk_main()
