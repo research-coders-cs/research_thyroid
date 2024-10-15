@@ -14,23 +14,23 @@ import matplotlib.pyplot as plt
 def get_plt():
     return plt
 
-def plt_show(plt):
+def plt_show(_plt):
     if not is_colab():
         print('@@ plt_show(): \'q\' to close interactively')
-    plt.show()
+    _plt.show()
 
-def plt_imshow_im(plt, im):
-    plt.figure()
-    plt.imshow(im)
-    plt_show(plt)
+def plt_imshow_im(_plt, im):
+    _plt.figure()
+    _plt.imshow(im)
+    plt_show(_plt)
 
-def plt_imshow(plt, x):
+def plt_imshow(_plt, x):
     if isinstance(x, str):
-        plt_imshow_im(plt, plt.imread(x))
+        plt_imshow_im(_plt, _plt.imread(x))
     else:
-        plt_imshow_im(plt, x)
+        plt_imshow_im(_plt, x)
 
-def plt_imshow_tensor(plt, ten, cmap='gray'):
+def plt_imshow_tensor(_plt, ten, cmap='gray'):
     img = ten.permute(1, 2, 0)  # <c, h, w> -> <h, w, c>
-    plt.imshow(img, cmap=cmap)
-    plt_show(plt)
+    _plt.imshow(img, cmap=cmap)
+    plt_show(_plt)
