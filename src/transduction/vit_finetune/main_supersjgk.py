@@ -85,11 +85,10 @@ def load_data():
     return trainds, valds, testds, itos, stoi
 
 
-def preprocess_data(trainds, valds, testds):
+def preprocess_data(model_name, trainds, valds, testds):
 
     """### Preprocessing Data"""
 
-    model_name = "google/vit-base-patch16-224"
     processor = ViTImageProcessor.from_pretrained(model_name)
 
     size = processor.size
@@ -122,20 +121,20 @@ def preprocess_data(trainds, valds, testds):
         plt_imshow_tensor(plt, ex)  # ok
         plt_imshow(plt, transform_to_pil(ex))  # ok
 
-    return model_name, processor
+    return processor
 
 
-def finetune(model_name, itos, stoi):
-    print('@@ finetune(): ^^')
+def get_finetuned(model_name, itos, stoi):
+    print('@@ get_finetuned(): ^^')
 
     """### Model - Fine Tuning"""
 
-    model = ViTForImageClassification.from_pretrained(model_name)
-    print('finetune(): [before] ', model.classifier)
+    model_orig = ViTForImageClassification.from_pretrained(model_name)
+    print('get_finetuned(): [before] ', model_orig.classifier)
     # The google/vit-base-patch16-224 model is originally fine tuned on imagenet-1K with 1000 output classes
 
     if 0:
-        print(model.config)
+        print(model_orig.config)
         """
         { ...
             "yurt": 915,
@@ -159,7 +158,7 @@ def finetune(model_name, itos, stoi):
         ignore_mismatched_sizes=True,
         id2label=itos,
         label2id=stoi)
-    print('finetune(): [after] ', model.classifier)
+    print('get_finetuned(): [after] ', model.classifier)
 
     return model
 
@@ -167,9 +166,10 @@ def finetune(model_name, itos, stoi):
 def main():
     trainds, valds, testds, itos, stoi = load_data()
 
-    model_name, processor = preprocess_data(trainds, valds, testds)
+    model_name = "google/vit-base-patch16-224"
 
-    model = finetune(model_name, itos, stoi)
+    processor = preprocess_data(model_name, trainds, valds, testds)
+    model = get_finetuned(model_name, itos, stoi)
 
 
 if __name__ == "__main__":
