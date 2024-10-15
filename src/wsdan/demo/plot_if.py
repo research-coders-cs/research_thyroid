@@ -19,10 +19,16 @@ def plt_show(plt):
         print('@@ plt_show(): \'q\' to close interactively')
     plt.show()
 
-def plt_imshow(plt, fpath):
+def plt_imshow_im(plt, im):
     plt.figure()
-    plt.imshow(plt.imread(fpath))
+    plt.imshow(im)
     plt_show(plt)
+
+def plt_imshow(plt, x):
+    if isinstance(x, str):
+        plt_imshow_im(plt, plt.imread(x))
+    else:
+        plt_imshow_im(plt, x)
 
 def plt_imshow_tensor(plt, ten, cmap='gray'):
     img = ten.permute(1, 2, 0)  # <c, h, w> -> <h, w, c>
