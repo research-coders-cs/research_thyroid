@@ -85,10 +85,51 @@ def load_data():
     return trainds, valds, testds, itos, stoi
 
 
+def preprocess_data(trainds, valds, testds):
+
+    """### Preprocessing Data"""
+
+    model_name = "google/vit-base-patch16-224"
+    processor = ViTImageProcessor.from_pretrained(model_name)
+
+    size = processor.size
+    print(size)  # {'height': 224, 'width': 224}
+    norm = Normalize(mean=processor.image_mean, std=processor.image_std)
+
+    _transf = Compose([
+        Resize(size['height']),
+        ToTensor(),
+        norm
+    ])
+
+    def transf(arg):
+        arg['pixels'] = [_transf(image.convert('RGB')) for image in arg['img']]
+        return arg
+
+    trainds.set_transform(transf)
+    valds.set_transform(transf)
+    testds.set_transform(transf)
+
+    print(trainds[0].keys())  # dict_keys(['img', 'label', 'pixels'])
+
+    ex = trainds[0]['pixels']
+    print(ex.shape)  # torch.Size([3, 224, 224])
+    print(torch.min(ex), torch.max(ex))  # tensor(-0.8745) tensor(1.)
+    ex = (ex+1)/2
+    print(torch.min(ex), torch.max(ex))  # tensor(0.0627) tensor(1.)
+
+    plt_imshow_tensor(plt, ex)
+    plt_imshow(plt, transform_to_pil(ex))
+    # !!!!
+
+
+    return model_name, processor
+
+
 def main():
-    load_data()
+    trainds, valds, testds, itos, stoi = load_data()
 
-
+    preprocess_data(trainds, valds, testds)
 
 
 
