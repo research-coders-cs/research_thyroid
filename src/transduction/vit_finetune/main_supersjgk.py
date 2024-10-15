@@ -110,28 +110,66 @@ def preprocess_data(trainds, valds, testds):
     valds.set_transform(transf)
     testds.set_transform(transf)
 
-    print(trainds[0].keys())  # dict_keys(['img', 'label', 'pixels'])
+    if 0:
+        print(trainds[0].keys())  # dict_keys(['img', 'label', 'pixels'])
+        ex = trainds[0]['pixels']
+        print(ex.shape)  # torch.Size([3, 224, 224])
 
-    ex = trainds[0]['pixels']
-    print(ex.shape)  # torch.Size([3, 224, 224])
-    print(torch.min(ex), torch.max(ex))  # tensor(-0.8745) tensor(1.)
-    ex = (ex+1)/2
-    print(torch.min(ex), torch.max(ex))  # tensor(0.0627) tensor(1.)
+        print(torch.min(ex), torch.max(ex))  # tensor(-0.8745) tensor(1.)
+        ex = (ex+1)/2
+        print(torch.min(ex), torch.max(ex))  # tensor(0.0627) tensor(1.)
 
-    plt_imshow_tensor(plt, ex)
-    plt_imshow(plt, transform_to_pil(ex))
-    # !!!!
-
+        plt_imshow_tensor(plt, ex)  # ok
+        plt_imshow(plt, transform_to_pil(ex))  # ok
 
     return model_name, processor
+
+
+def finetune(model_name, itos, stoi):
+    print('@@ finetune(): ^^')
+
+    """### Model - Fine Tuning"""
+
+    model = ViTForImageClassification.from_pretrained(model_name)
+    print('finetune(): [before] ', model.classifier)
+    # The google/vit-base-patch16-224 model is originally fine tuned on imagenet-1K with 1000 output classes
+
+    if 0:
+        print(model.config)
+        """
+        { ...
+            "yurt": 915,
+            "zebra": 340,
+            "zucchini, courgette": 939
+          },
+          "layer_norm_eps": 1e-12,
+          "model_type": "vit",
+          "num_attention_heads": 12,
+          "num_channels": 3,
+          "num_hidden_layers": 12,
+          "patch_size": 16,
+          "qkv_bias": true,
+          "transformers_version": "4.45.2"
+        }
+        """
+
+    # To use Cifar-10, it needs to be fine tuned again with 10 output classes
+    model = ViTForImageClassification.from_pretrained(model_name,
+        num_labels=10,
+        ignore_mismatched_sizes=True,
+        id2label=itos,
+        label2id=stoi)
+    print('finetune(): [after] ', model.classifier)
+
+    return model
 
 
 def main():
     trainds, valds, testds, itos, stoi = load_data()
 
-    preprocess_data(trainds, valds, testds)
+    model_name, processor = preprocess_data(trainds, valds, testds)
 
-
+    model = finetune(model_name, itos, stoi)
 
 
 if __name__ == "__main__":
