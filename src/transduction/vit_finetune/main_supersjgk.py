@@ -44,26 +44,11 @@ transform_to_tensor = PILToTensor()
 def load_data(train_size=5000, test_size=1000):
     print('@@ load_data(): ^^')
 
-    """### Loading the Data"""
-
     trainds, testds = load_dataset("cifar10", split=[f"train[:{train_size}]", f"test[:{test_size}]"])
 
     splits = trainds.train_test_split(test_size=0.1)
     trainds = splits['train']  # 90%
     valds = splits['test']  # 10%
-
-    if 0:
-        print(trainds, valds, testds)
-        # Dataset({
-        #     features: ['img', 'label'],
-        #     num_rows: 4500
-        # }) Dataset({
-        #     features: ['img', 'label'],
-        #     num_rows: 500
-        # }) Dataset({
-        #     features: ['img', 'label'],
-        #     num_rows: 1000
-        # })
 
     ##print(trainds.features, trainds.num_rows, trainds[0])
     # {'img': Image(mode=None, decode=True, id=None), 'label': ClassLabel(names=['airplane', 'automobile', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck'], id=None)} 4500 {'img': <PIL.PngImagePlugin.PngImageFile image mode=RGB size=32x32 at 0x14AE707F0>, 'label': 7}
@@ -166,24 +151,11 @@ You should probably TRAIN this model on a down-stream task to be able to use it 
     return model
 
 
-def get_trainer(model, processor, trainds, valds):
+def get_trainer(model, args, processor, trainds, valds):
 
-    args = TrainingArguments(
-        f"test-cifar-10",
-        save_strategy="epoch",
-        evaluation_strategy="epoch",
-        learning_rate=2e-5,
-        per_device_train_batch_size=10,
-        per_device_eval_batch_size=4,
-        num_train_epochs=3,
-        weight_decay=0.01,
-        load_best_model_at_end=True,
-        metric_for_best_model="accuracy",
-        logging_dir='logs',
-        remove_unused_columns=False,
-    )
     print(f'@@ get_trainer(): args.per_device_train_batch_size={args.per_device_train_batch_size}')
     print(f'@@ get_trainer(): args.per_device_eval_batch_size={args.per_device_eval_batch_size}')
+    print(f'@@ get_trainer(): args.num_train_epochs={args.num_train_epochs}')
 
     def collate_fn(examples):
         pixels = torch.stack([example["pixels"] for example in examples])
@@ -209,8 +181,27 @@ def get_trainer(model, processor, trainds, valds):
 
 
 def main():
-    #trainds, valds, testds, itos, stoi = load_data()
-    trainds, valds, testds, itos, stoi = load_data(train_size=5000, test_size=20)
+
+    if 0:  # orig
+        trainds, valds, testds, itos, stoi = load_data()
+        num_train_epochs = 3
+
+        ##print(trainds, valds, testds)
+        # Dataset({
+        #     features: ['img', 'label'],
+        #     num_rows: 4500
+        # }) Dataset({
+        #     features: ['img', 'label'],
+        #     num_rows: 500
+        # }) Dataset({
+        #     features: ['img', 'label'],
+        #     num_rows: 1000
+        # })
+    #==== @@
+    if 1:  # debug
+        trainds, valds, testds, itos, stoi = load_data(train_size=10, test_size=20)
+        num_train_epochs = 1  # !!
+        debug_skip_training = 0  # !!
 
     model_name = "google/vit-base-patch16-224"
     model = get_finetuned(model_name, itos, stoi)
@@ -221,7 +212,22 @@ def main():
     #@@ ??
     #!pip show accelerate
 
-    trainer = get_trainer(model, processor, trainds, valds)
+    args = TrainingArguments(
+        f"test-cifar-10",
+        save_strategy="epoch",
+        evaluation_strategy="epoch",
+        learning_rate=2e-5,
+        per_device_train_batch_size=10,
+        per_device_eval_batch_size=4,
+        num_train_epochs=num_train_epochs,
+        weight_decay=0.01,
+        load_best_model_at_end=True,
+        metric_for_best_model="accuracy",
+        logging_dir='logs',
+        remove_unused_columns=False,
+    )
+
+    trainer = get_trainer(model, args, processor, trainds, valds)
 
     """### Training the model for fine tuning"""
 
@@ -231,10 +237,13 @@ def main():
         # %load_ext tensorboard
         # %tensorboard --logdir logs/
 
-##    trainer.train()
+    if not debug_skip_training:
+        print('@@ calling `trainer.train()`')
+        trainer.train()
 
     """### Evaluation"""
 
+    print('@@ calling `trainer.predict(testds)`')
     outputs = trainer.predict(testds)
     print(outputs.metrics)
     """ 250 <-- 1000 / 4 (test_size / args.per_device_eval_batch_size)
@@ -242,16 +251,16 @@ def main():
 {'test_loss': 2.4680304527282715, 'test_model_preparation_time': 0.0091, 'test_accuracy': 0.075, 'test_runtime': 914.5631, 'test_samples_per_second': 1.093, 'test_steps_per_second': 0.273}
     """
 
+    if 0:  # !!!!
+        itos[np.argmax(outputs.predictions[0])], itos[outputs.label_ids[0]]
 
-    itos[np.argmax(outputs.predictions[0])], itos[outputs.label_ids[0]]
+        y_true = outputs.label_ids
+        y_pred = outputs.predictions.argmax(1)
 
-    y_true = outputs.label_ids
-    y_pred = outputs.predictions.argmax(1)
-
-    labels = trainds.features['label'].names
-    cm = confusion_matrix(y_true, y_pred)
-    disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=labels)
-    disp.plot(xticks_rotation=45)
+        labels = trainds.features['label'].names
+        cm = confusion_matrix(y_true, y_pred)
+        disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=labels)
+        disp.plot(xticks_rotation=45)
 
 
 
