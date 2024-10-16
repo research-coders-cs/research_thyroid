@@ -41,28 +41,29 @@ transform_to_pil = ToPILImage()
 transform_to_tensor = PILToTensor()
 #----
 
-def load_data():
+def load_data(train_size=5000, test_size=1000):
     print('@@ load_data(): ^^')
 
     """### Loading the Data"""
 
-    trainds, testds = load_dataset("cifar10", split=["train[:5000]","test[:1000]"])
+    trainds, testds = load_dataset("cifar10", split=[f"train[:{train_size}]", f"test[:{test_size}]"])
 
     splits = trainds.train_test_split(test_size=0.1)
-    trainds = splits['train']
-    valds = splits['test']
+    trainds = splits['train']  # 90%
+    valds = splits['test']  # 10%
 
-    ##print(trainds, valds, testds)
-    # Dataset({
-    #     features: ['img', 'label'],
-    #     num_rows: 4500
-    # }) Dataset({
-    #     features: ['img', 'label'],
-    #     num_rows: 500
-    # }) Dataset({
-    #     features: ['img', 'label'],
-    #     num_rows: 1000
-    # })
+    if 0:
+        print(trainds, valds, testds)
+        # Dataset({
+        #     features: ['img', 'label'],
+        #     num_rows: 4500
+        # }) Dataset({
+        #     features: ['img', 'label'],
+        #     num_rows: 500
+        # }) Dataset({
+        #     features: ['img', 'label'],
+        #     num_rows: 1000
+        # })
 
     ##print(trainds.features, trainds.num_rows, trainds[0])
     # {'img': Image(mode=None, decode=True, id=None), 'label': ClassLabel(names=['airplane', 'automobile', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck'], id=None)} 4500 {'img': <PIL.PngImagePlugin.PngImageFile image mode=RGB size=32x32 at 0x14AE707F0>, 'label': 7}
@@ -85,11 +86,9 @@ def load_data():
     return trainds, valds, testds, itos, stoi
 
 
-def preprocess_data(model_name, trainds, valds, testds):
+def preprocess_data(processor, trainds, valds, testds):
 
     """### Preprocessing Data"""
-
-    processor = ViTImageProcessor.from_pretrained(model_name)
 
     size = processor.size
     print(size)  # {'height': 224, 'width': 224}
@@ -120,8 +119,6 @@ def preprocess_data(model_name, trainds, valds, testds):
 
         plt_imshow_tensor(plt, ex)  # ok
         plt_imshow(plt, transform_to_pil(ex))  # ok
-
-    return processor
 
 
 def get_finetuned(model_name, itos, stoi):
@@ -158,18 +155,104 @@ def get_finetuned(model_name, itos, stoi):
         ignore_mismatched_sizes=True,
         id2label=itos,
         label2id=stoi)
+    """
+Some weights of ViTForImageClassification were not initialized from the model checkpoint at google/vit-base-patch16-224 and are newly initialized because the shapes did not match:
+- classifier.bias: found shape torch.Size([1000]) in the checkpoint and torch.Size([10]) in the model instantiated
+- classifier.weight: found shape torch.Size([1000, 768]) in the checkpoint and torch.Size([10, 768]) in the model instantiated
+You should probably TRAIN this model on a down-stream task to be able to use it for predictions and inference.
+    """
     print('get_finetuned(): [after] ', model.classifier)
 
     return model
 
 
+def get_trainer(model, processor, trainds, valds):
+
+    args = TrainingArguments(
+        f"test-cifar-10",
+        save_strategy="epoch",
+        evaluation_strategy="epoch",
+        learning_rate=2e-5,
+        per_device_train_batch_size=10,
+        per_device_eval_batch_size=4,
+        num_train_epochs=3,
+        weight_decay=0.01,
+        load_best_model_at_end=True,
+        metric_for_best_model="accuracy",
+        logging_dir='logs',
+        remove_unused_columns=False,
+    )
+    print(f'@@ get_trainer(): args.per_device_train_batch_size={args.per_device_train_batch_size}')
+    print(f'@@ get_trainer(): args.per_device_eval_batch_size={args.per_device_eval_batch_size}')
+
+    def collate_fn(examples):
+        pixels = torch.stack([example["pixels"] for example in examples])
+        labels = torch.tensor([example["label"] for example in examples])
+        return {"pixel_values": pixels, "labels": labels}
+
+    def compute_metrics(eval_pred):
+        predictions, labels = eval_pred
+        predictions = np.argmax(predictions, axis=1)
+        return dict(accuracy=accuracy_score(predictions, labels))
+
+    trainer = Trainer(
+        model,
+        args,
+        train_dataset=trainds,
+        eval_dataset=valds,
+        data_collator=collate_fn,
+        compute_metrics=compute_metrics,
+        tokenizer=processor,
+    )
+
+    return trainer
+
+
 def main():
-    trainds, valds, testds, itos, stoi = load_data()
+    #trainds, valds, testds, itos, stoi = load_data()
+    trainds, valds, testds, itos, stoi = load_data(train_size=5000, test_size=20)
 
     model_name = "google/vit-base-patch16-224"
-
-    processor = preprocess_data(model_name, trainds, valds, testds)
     model = get_finetuned(model_name, itos, stoi)
+    processor = ViTImageProcessor.from_pretrained(model_name)
+
+    preprocess_data(processor, trainds, valds, testds)
+
+    #@@ ??
+    #!pip show accelerate
+
+    trainer = get_trainer(model, processor, trainds, valds)
+
+    """### Training the model for fine tuning"""
+
+    if 0:  #@@
+        pass
+        # Commented out IPython magic to ensure Python compatibility.
+        # %load_ext tensorboard
+        # %tensorboard --logdir logs/
+
+##    trainer.train()
+
+    """### Evaluation"""
+
+    outputs = trainer.predict(testds)
+    print(outputs.metrics)
+    """ 250 <-- 1000 / 4 (test_size / args.per_device_eval_batch_size)
+100%|██████████| 250/250 [15:11<00:00,  3.65s/it]
+{'test_loss': 2.4680304527282715, 'test_model_preparation_time': 0.0091, 'test_accuracy': 0.075, 'test_runtime': 914.5631, 'test_samples_per_second': 1.093, 'test_steps_per_second': 0.273}
+    """
+
+
+    itos[np.argmax(outputs.predictions[0])], itos[outputs.label_ids[0]]
+
+    y_true = outputs.label_ids
+    y_pred = outputs.predictions.argmax(1)
+
+    labels = trainds.features['label'].names
+    cm = confusion_matrix(y_true, y_pred)
+    disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=labels)
+    disp.plot(xticks_rotation=45)
+
 
 
 if __name__ == "__main__":
