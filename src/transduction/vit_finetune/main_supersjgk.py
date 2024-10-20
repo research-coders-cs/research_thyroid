@@ -32,8 +32,8 @@ import numpy as np
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 
-#----
-from ..plot_if import get_plt, plt_imshow, plt_imshow_tensor  # @@
+#---- @@
+from ..plot_if import get_plt, plt_imshow, plt_imshow_tensor, is_colab
 plt = get_plt()
 
 from torchvision.transforms import ToPILImage, PILToTensor
@@ -201,7 +201,7 @@ def main():
     if 1:  # debug
         trainds, valds, testds, itos, stoi = load_data(train_size=10, test_size=20)
         num_train_epochs = 1  # !!
-        debug_skip_training = 0  # !!
+        debug_skip_training = 1  # !!!!
 
     model_name = "google/vit-base-patch16-224"
     model = get_finetuned(model_name, itos, stoi)
@@ -251,7 +251,7 @@ def main():
 {'test_loss': 2.4680304527282715, 'test_model_preparation_time': 0.0091, 'test_accuracy': 0.075, 'test_runtime': 914.5631, 'test_samples_per_second': 1.093, 'test_steps_per_second': 0.273}
     """
 
-    if 0:  # !!!!
+    if 1:  # confusion matrix
         itos[np.argmax(outputs.predictions[0])], itos[outputs.label_ids[0]]
 
         y_true = outputs.label_ids
@@ -259,9 +259,14 @@ def main():
 
         labels = trainds.features['label'].names
         cm = confusion_matrix(y_true, y_pred)
-        disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=labels)
-        disp.plot(xticks_rotation=45)
 
+        fname = 'confusion_matrix.png'
+        disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=labels)
+
+        print(f'@@ saving {fname}')
+        disp.plot(xticks_rotation=45).figure_.savefig(fname)
+        if is_colab():
+            plt_imshow(plt, fname)
 
 
 if __name__ == "__main__":
