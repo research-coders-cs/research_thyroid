@@ -50,7 +50,8 @@ def load_data(train_size=5000, test_size=1000):
     trainds = splits['train']  # 90%
     valds = splits['test']  # 10%
 
-    ##print(trainds.features, trainds.num_rows, trainds[0])
+    #print(type(trainds))  # <class 'datasets.arrow_dataset.Dataset'>
+    #print(trainds.features, trainds.num_rows, trainds[0])
     # {  'img': Image(mode=None, decode=True, id=None),
     #    'label': ClassLabel(names=['airplane', 'automobile', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck'], id=None)
     # }
@@ -98,7 +99,7 @@ def preprocess_data(processor, trainds, valds, testds):
     valds.set_transform(transf)
     testds.set_transform(transf)
 
-    if 1:
+    if 1:  # !!
         print(trainds[0].keys())  # dict_keys(['img', 'label', 'pixels'])
 
         img = trainds[0]['img']
@@ -115,7 +116,7 @@ def preprocess_data(processor, trainds, valds, testds):
         plt_imshow_tensor(plt, px)  # preprocessed
         #plt_imshow(plt, transform_to_pil(px))  # preprocessed, the same
 
-        exit()  # !!!!
+        exit()  # !!
 
 
 def get_finetuned(model_name, itos, stoi):
@@ -192,7 +193,10 @@ def get_trainer(model, args, processor, trainds, valds):
     return trainer
 
 
-def main():
+def main(train_set, test_set):
+
+    print(train_set, test_set)
+    exit()  # !!!!
 
     if 0:  # orig
         trainds, valds, testds, itos, stoi = load_data()
@@ -282,4 +286,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    main(train_set, test_set)
