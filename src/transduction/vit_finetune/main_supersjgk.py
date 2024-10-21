@@ -77,22 +77,20 @@ def load_data(train_size=5000, test_size=1000):
     return trainds, valds, testds, itos, stoi
 
 
-def preprocess_data(processor, trainds, valds, testds):
+def get_transf_inner(height, mean, std):
+    return Compose([
+        Resize(height),
+        ToTensor(),
+        Normalize(mean=mean, std=std),
+    ])
+
+
+def preprocess_data(transf_inner, trainds, valds, testds):
 
     """### Preprocessing Data"""
 
-    size = processor.size
-    print(size)  # {'height': 224, 'width': 224}
-    norm = Normalize(mean=processor.image_mean, std=processor.image_std)
-
-    _transf = Compose([
-        Resize(size['height']),
-        ToTensor(),
-        norm
-    ])
-
     def transf(arg):
-        arg['pixels'] = [_transf(image.convert('RGB')) for image in arg['img']]
+        arg['pixels'] = [transf_inner(image.convert('RGB')) for image in arg['img']]
         return arg
 
     trainds.set_transform(transf)
@@ -223,7 +221,9 @@ def main(train_set, test_set):
     model = get_finetuned(model_name, itos, stoi)
     processor = ViTImageProcessor.from_pretrained(model_name)
 
-    preprocess_data(processor, trainds, valds, testds)
+    transf_inner = get_transf_inner(
+        processor.size['height'], processor.image_mean, processor.image_std)
+    preprocess_data(transf_inner, trainds, valds, testds)
 
     #@@ ??
     #!pip show accelerate
