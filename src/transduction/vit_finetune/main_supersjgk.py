@@ -51,8 +51,13 @@ def load_data(train_size=5000, test_size=1000):
     valds = splits['test']  # 10%
 
     ##print(trainds.features, trainds.num_rows, trainds[0])
-    # {'img': Image(mode=None, decode=True, id=None), 'label': ClassLabel(names=['airplane', 'automobile', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck'], id=None)} 4500 {'img': <PIL.PngImagePlugin.PngImageFile image mode=RGB size=32x32 at 0x14AE707F0>, 'label': 7}
-    # horse
+    # {  'img': Image(mode=None, decode=True, id=None),
+    #    'label': ClassLabel(names=['airplane', 'automobile', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck'], id=None)
+    # }
+    # 9
+    # {  'img': <PIL.PngImagePlugin.PngImageFile image mode=RGB size=32x32 at 0x1489A9900>,
+    #    'label': 6
+    # }
 
     itos = dict((k,v) for k,v in enumerate(trainds.features['label'].names))
     stoi = dict((v,k) for k,v in enumerate(trainds.features['label'].names))
@@ -93,17 +98,24 @@ def preprocess_data(processor, trainds, valds, testds):
     valds.set_transform(transf)
     testds.set_transform(transf)
 
-    if 0:
+    if 1:
         print(trainds[0].keys())  # dict_keys(['img', 'label', 'pixels'])
-        ex = trainds[0]['pixels']
-        print(ex.shape)  # torch.Size([3, 224, 224])
 
-        print(torch.min(ex), torch.max(ex))  # tensor(-0.8745) tensor(1.)
-        ex = (ex+1)/2
-        print(torch.min(ex), torch.max(ex))  # tensor(0.0627) tensor(1.)
+        img = trainds[0]['img']
+        print(img)  # <PIL.PngImagePlugin.PngImageFile image mode=RGB size=32x32 at 0x14A383070>
 
-        plt_imshow_tensor(plt, ex)  # ok
-        plt_imshow(plt, transform_to_pil(ex))  # ok
+        px = trainds[0]['pixels']
+        print(px.shape)  # torch.Size([3, 224, 224])
+
+        print(torch.min(px), torch.max(px))  # tensor(-0.8745) tensor(1.)
+        px = (px+1)/2
+        print(torch.min(px), torch.max(px))  # tensor(0.0627) tensor(1.)
+
+        plt_imshow(plt, img)  # orig
+        plt_imshow_tensor(plt, px)  # preprocessed
+        #plt_imshow(plt, transform_to_pil(px))  # preprocessed, the same
+
+        exit()  # !!!!
 
 
 def get_finetuned(model_name, itos, stoi):
@@ -201,7 +213,7 @@ def main():
     if 1:  # debug
         trainds, valds, testds, itos, stoi = load_data(train_size=10, test_size=20)
         num_train_epochs = 1  # !!
-        debug_skip_training = 1  # !!!!
+        #debug_skip_training = 1  # !!!!
 
     model_name = "google/vit-base-patch16-224"
     model = get_finetuned(model_name, itos, stoi)
