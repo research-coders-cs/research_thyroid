@@ -191,6 +191,11 @@ class MriDataset(Dataset):
             transformed_image = erica_crops[0]  # left
             ##transformed_image = erica_crops[1]  # right
             ##transformed_image = torch.zeros(1, 320, 160)  # erica_crops[0] or erica_crops[1]
+        elif self.phase.startswith('finetune_'):
+            from PIL import Image
+            img = Image.open(path)
+            print('[orig] type(img):', type(img))
+            transformed_image = self.transform(img)
         else:
             tens = imread_as_tensor_mri(plt, path)
             transformed_image = self.transform(tens)
