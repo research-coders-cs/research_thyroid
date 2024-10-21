@@ -77,11 +77,14 @@ def load_data(train_size=5000, test_size=1000):
     return trainds, valds, testds, itos, stoi
 
 
-def get_transf_inner(height, mean, std):
+def get_transf_inner(processor=None):
+    if processor is None:
+        processor = ViTImageProcessor.from_pretrained("google/vit-base-patch16-224")
+
     return Compose([
-        Resize(height),
+        Resize(processor.size['height']),
         ToTensor(),
-        Normalize(mean=mean, std=std),
+        Normalize(mean=processor.image_mean, std=processor.image_std),
     ])
 
 
@@ -221,8 +224,7 @@ def main(train_set, test_set):
     model = get_finetuned(model_name, itos, stoi)
     processor = ViTImageProcessor.from_pretrained(model_name)
 
-    transf_inner = get_transf_inner(
-        processor.size['height'], processor.image_mean, processor.image_std)
+    transf_inner = get_transf_inner(processor)
     preprocess_data(transf_inner, trainds, valds, testds)
 
     #@@ ??
