@@ -68,5 +68,35 @@ if __name__ == '__main__':
         vit_main()
 
     if 1:  # finetune
-        from src.transduction.vit_finetune.main_supersjgk import main as supersjgk_main
-        supersjgk_main()
+        from src.transduction.vit_finetune.main_supersjgk import main as supersjgk_main, get_transf_inner
+
+        #---- ^^
+        from src.transduction.vit.vit_torch import build_dataset, stat_ds_paths, MriDataset
+        class_dir_map = { f'class_{y}': f'y_{y}' for y in range(10) }
+        ds_paths = {
+            'train': build_dataset(class_dir_map, root='datasets_vit/pngs/train'),
+            'test': build_dataset(class_dir_map, root='datasets_vit/pngs/test'),
+        }
+        stat_ds_paths(ds_paths)
+
+        transf_inner = get_transf_inner()
+
+        def transf(pil_img):
+            return transf_inner(pil_img.convert('RGB'))
+
+        train_set = MriDataset(
+            phase='finetune_train',
+            dataset=ds_paths['train'],
+            transform=transf)
+        test_set = MriDataset(
+            phase='finetune_test',
+            dataset=ds_paths['test'],
+            transform=transf)
+
+        if 1:  # debug
+            px, class_index = train_set[0]
+            print(px.shape, class_index)  # torch.Size([3, 224, 224]) 0
+
+        #---- $$
+
+        supersjgk_main(train_set, test_set)
