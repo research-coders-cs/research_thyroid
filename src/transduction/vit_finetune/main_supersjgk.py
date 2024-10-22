@@ -194,11 +194,9 @@ def get_trainer(model, args, processor, trainds, valds):
     return trainer
 
 
-def main(train_set, test_set):
+def main():
 
-    print(train_set, test_set)
-    exit()  # !!!!
-
+    #==== orig
     if 0:  # orig
         trainds, valds, testds, itos, stoi = load_data()
         num_train_epochs = 3
@@ -215,10 +213,37 @@ def main(train_set, test_set):
         #     num_rows: 1000
         # })
     #==== @@
-    if 1:  # debug
+    if 0:  # debug
         trainds, valds, testds, itos, stoi = load_data(train_size=10, test_size=20)
         num_train_epochs = 1  # !!
         #debug_skip_training = 1  # !!!!
+    #==== @@ MRI: mnist/thyroid
+    if 1:  #
+        from ..vit.vit_torch import get_mnist_ds_paths, MriDataset
+
+        ds_paths = get_mnist_ds_paths(debug=True)
+
+        transf_inner = get_transf_inner()
+
+        def transf(pil_img):
+            return transf_inner(pil_img.convert('RGB'))
+
+        train_set = MriDataset(
+            phase='finetune_train',
+            dataset=ds_paths['train'],
+            transform=transf)
+        test_set = MriDataset(
+            phase='finetune_test',
+            dataset=ds_paths['test'],
+            transform=transf)
+
+        #itos, stoi = xxxxxxxxx
+
+        if 1:  # debug
+            px, class_index = train_set[0]
+            print(px.shape, class_index)  # torch.Size([3, 224, 224]) 0
+
+        exit()  # !!!!
 
     model_name = "google/vit-base-patch16-224"
     model = get_finetuned(model_name, itos, stoi)
