@@ -71,13 +71,8 @@ if __name__ == '__main__':
         from src.transduction.vit_finetune.main_supersjgk import main as supersjgk_main, get_transf_inner
 
         #---- ^^
-        from src.transduction.vit.vit_torch import build_dataset, stat_ds_paths, MriDataset
-        class_dir_map = { f'class_{y}': f'y_{y}' for y in range(10) }
-        ds_paths = {
-            'train': build_dataset(class_dir_map, root='datasets_vit/pngs/train'),
-            'test': build_dataset(class_dir_map, root='datasets_vit/pngs/test'),
-        }
-        stat_ds_paths(ds_paths)
+        from src.transduction.vit.vit_torch import get_mnist_ds_paths, MriDataset
+        ds_paths = get_mnist_ds_paths(debug=True)
 
         transf_inner = get_transf_inner()
 

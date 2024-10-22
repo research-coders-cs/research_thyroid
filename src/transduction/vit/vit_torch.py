@@ -637,6 +637,19 @@ class MriViT(nn.Module):
         super(MriViT, self).load_state_dict(model_dict)
 
 
+def get_mnist_ds_paths(debug=False):
+    class_dir_map = { f'class_{y}': f'y_{y}' for y in range(10) }
+    ds_paths = {
+        'train': build_dataset(class_dir_map, root='datasets_vit/pngs/train'),
+        'test': build_dataset(class_dir_map, root='datasets_vit/pngs/test'),
+    }
+
+    if debug:
+        stat_ds_paths(ds_paths)
+
+    return ds_paths
+
+
 def main():
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -665,11 +678,7 @@ def main():
         n_epochs = 5
 
     if 1:  # case mnist-MriViT-MriDataset, LGTM
-        class_dir_map = { f'class_{y}': f'y_{y}' for y in range(10) }
-        ds_paths = {
-            'train': build_dataset(class_dir_map, root='datasets_vit/pngs/train'),
-            'test': build_dataset(class_dir_map, root='datasets_vit/pngs/test'),
-        }
+        ds_paths = get_mnist_ds_paths()
         stat_ds_paths(ds_paths)
 
         train_set = MriDataset(
