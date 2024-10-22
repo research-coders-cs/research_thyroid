@@ -194,7 +194,7 @@ class MriDataset(Dataset):
         elif self.phase.startswith('finetune_'):
             from PIL import Image
             img = Image.open(path)
-            print('[orig] type(img):', type(img))
+            #print('[orig] type(img):', type(img))
             transformed_image = self.transform(img)
         else:
             tens = imread_as_tensor_mri(plt, path)
@@ -647,7 +647,7 @@ def get_mnist_ds_paths(debug=False):
     if debug:
         stat_ds_paths(ds_paths)
 
-    return ds_paths
+    return ds_paths, class_dir_map
 
 
 def main():

@@ -184,6 +184,21 @@ def get_trainer(model, args, processor, trainds, valds):
     return trainer
 
 
+from torch.utils.data import Dataset
+from torch.utils.data.dataset import T_co
+class MriDatasetAdapter(Dataset):
+
+    def __init__(self, dataset):
+        self.dataset = dataset
+
+    def __len__(self):
+        return len(self.dataset)
+
+    def __getitem__(self, index) -> T_co:
+        px, class_index = self.dataset[index]
+        return {'img': None, 'label': class_index, 'pixels': px }
+
+
 def main():
 
     model_name = "google/vit-base-patch16-224"
@@ -214,7 +229,7 @@ def main():
 
         preprocess_data(transf_inner, trainds, valds, testds)
     #==== @@
-    if 1:  # debug
+    if 0:  # debug
         trainds, valds, testds, itos, stoi = load_data(train_size=10, test_size=20)
         num_train_epochs = 1  # !!
         #debug_skip_training = 1  # !!!!
@@ -224,12 +239,17 @@ def main():
         #print(trainds[0]['img'])  # <PIL.PngImagePlugin.PngImageFile image mode=RGB size=32x32 at 0x154163190>
         #print(trainds[0]['label'])  # 4
         #print(trainds[0]['pixels'].shape)  # torch.Size([3, 224, 224])
+
+        exit()  # !!
     #==== @@ MRI: mnist/thyroid
     if 1:  #
         from ..vit.vit_torch import get_mnist_ds_paths, MriDataset
 
-        ds_paths = get_mnist_ds_paths(debug=True)
-        #ds_paths = get_thyroid_ds_paths(debug=True)  # todo
+        ds_paths, class_dir_map = get_mnist_ds_paths(debug=True)
+        #ds_paths, class_dir_map = get_thyroid_ds_paths(debug=True)  # todo
+
+        itos = dict((i, v) for i, (k, v) in enumerate(sorted(class_dir_map.items())))
+        stoi = dict((v, i) for i, (k, v) in enumerate(sorted(class_dir_map.items())))
 
         transf = lambda pil_img : transf_inner(pil_img.convert('RGB'))
         train_set = MriDataset(
@@ -241,15 +261,30 @@ def main():
             dataset=ds_paths['test'],
             transform=transf)
 
-        # [ ] itos, stoi = ....
-        # [ ] {train,test}_set --> {train,val,test}ds
         if 1:  # debug
             px, class_index = train_set[0]
             print(px.shape, class_index)  # torch.Size([3, 224, 224]) 0
+            px, class_index = train_set[5922]
+            print(px.shape, class_index)  # torch.Size([3, 224, 224]) 0
+            px, class_index = train_set[5923]
+            print(px.shape, class_index)  # torch.Size([3, 224, 224]) 1
 
+        # [ ] {train,test}_set --> {train,val,test}ds
+        #====
+        trainds = MriDatasetAdapter(train_set)
+        print(len(trainds))  # 60000
 
+        for i in range(5923-4, 5923+4):
+            x = trainds[i]
+            print(i, x['img'], x['label'], x['pixels'].shape)
 
-    exit()  # !!!!
+        valds = trainds  # !!!!
+        testds = trainds  # !!!!
+        num_train_epochs = 1  # !!!!
+        debug_skip_training = 0  # !!!!
+
+        #exit()  # !!!!
+
 
     #@@ ??
     #!pip show accelerate
