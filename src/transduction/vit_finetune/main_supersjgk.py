@@ -63,7 +63,8 @@ def load_data(train_size=5000, test_size=1000):
     itos = dict((k,v) for k,v in enumerate(trainds.features['label'].names))
     stoi = dict((v,k) for k,v in enumerate(trainds.features['label'].names))
     ##print(itos, stoi)
-    # {0: 'airplane', 1: 'automobile', 2: 'bird', 3: 'cat', 4: 'deer', 5: 'dog', 6: 'frog', 7: 'horse', 8: 'ship', 9: 'truck'} {'airplane': 0, 'automobile': 1, 'bird': 2, 'cat': 3, 'deer': 4, 'dog': 5, 'frog': 6, 'horse': 7, 'ship': 8, 'truck': 9}
+    # {0: 'airplane', 1: 'automobile', 2: 'bird', 3: 'cat', 4: 'deer', 5: 'dog', 6: 'frog', 7: 'horse', 8: 'ship', 9: 'truck'}
+    # {'airplane': 0, 'automobile': 1, 'bird': 2, 'cat': 3, 'deer': 4, 'dog': 5, 'frog': 6, 'horse': 7, 'ship': 8, 'truck': 9}
 
     if 0:
         img, lab = trainds[0]['img'], itos[trainds[0]['label']]
@@ -106,7 +107,7 @@ def preprocess_data(transf_inner, trainds, valds, testds):
         plt_imshow_tensor(plt, px)  # preprocessed
         #plt_imshow(plt, transform_to_pil(px))  # preprocessed, the same
 
-        exit()  # !!
+        #exit()  # !!
 
 
 def get_finetuned(model_name, itos, stoi):
@@ -213,12 +214,16 @@ def main():
 
         preprocess_data(transf_inner, trainds, valds, testds)
     #==== @@
-    if 0:  # debug
+    if 1:  # debug
         trainds, valds, testds, itos, stoi = load_data(train_size=10, test_size=20)
         num_train_epochs = 1  # !!
         #debug_skip_training = 1  # !!!!
 
         preprocess_data(transf_inner, trainds, valds, testds)
+
+        #print(trainds[0]['img'])  # <PIL.PngImagePlugin.PngImageFile image mode=RGB size=32x32 at 0x154163190>
+        #print(trainds[0]['label'])  # 4
+        #print(trainds[0]['pixels'].shape)  # torch.Size([3, 224, 224])
     #==== @@ MRI: mnist/thyroid
     if 1:  #
         from ..vit.vit_torch import get_mnist_ds_paths, MriDataset
@@ -236,13 +241,15 @@ def main():
             dataset=ds_paths['test'],
             transform=transf)
 
-        #itos, stoi = xxxxxxxxx
-
+        # [ ] itos, stoi = ....
+        # [ ] {train,test}_set --> {train,val,test}ds
         if 1:  # debug
             px, class_index = train_set[0]
             print(px.shape, class_index)  # torch.Size([3, 224, 224]) 0
 
-        exit()  # !!!!
+
+
+    exit()  # !!!!
 
     #@@ ??
     #!pip show accelerate
