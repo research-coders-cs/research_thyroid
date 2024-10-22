@@ -77,10 +77,7 @@ def load_data(train_size=5000, test_size=1000):
     return trainds, valds, testds, itos, stoi
 
 
-def get_transf_inner(processor=None):
-    if processor is None:
-        processor = ViTImageProcessor.from_pretrained("google/vit-base-patch16-224")
-
+def get_transf_inner(processor):
     return Compose([
         Resize(processor.size['height']),
         ToTensor(),
@@ -196,6 +193,11 @@ def get_trainer(model, args, processor, trainds, valds):
 
 def main():
 
+    model_name = "google/vit-base-patch16-224"
+    processor = ViTImageProcessor.from_pretrained(model_name)
+
+    transf_inner = get_transf_inner(processor)
+
     #==== orig
     if 0:  # orig
         trainds, valds, testds, itos, stoi = load_data()
@@ -212,18 +214,21 @@ def main():
         #     features: ['img', 'label'],
         #     num_rows: 1000
         # })
+
+        preprocess_data(transf_inner, trainds, valds, testds)
     #==== @@
     if 0:  # debug
         trainds, valds, testds, itos, stoi = load_data(train_size=10, test_size=20)
         num_train_epochs = 1  # !!
         #debug_skip_training = 1  # !!!!
+
+        preprocess_data(transf_inner, trainds, valds, testds)
     #==== @@ MRI: mnist/thyroid
     if 1:  #
         from ..vit.vit_torch import get_mnist_ds_paths, MriDataset
 
         ds_paths = get_mnist_ds_paths(debug=True)
 
-        transf_inner = get_transf_inner()
 
         def transf(pil_img):
             return transf_inner(pil_img.convert('RGB'))
@@ -245,32 +250,26 @@ def main():
 
         exit()  # !!!!
 
-    model_name = "google/vit-base-patch16-224"
-    model = get_finetuned(model_name, itos, stoi)
-    processor = ViTImageProcessor.from_pretrained(model_name)
-
-    transf_inner = get_transf_inner(processor)
-    preprocess_data(transf_inner, trainds, valds, testds)
-
     #@@ ??
     #!pip show accelerate
 
-    args = TrainingArguments(
-        f"test-cifar-10",
-        save_strategy="epoch",
-        evaluation_strategy="epoch",
-        learning_rate=2e-5,
-        per_device_train_batch_size=10,
-        per_device_eval_batch_size=4,
-        num_train_epochs=num_train_epochs,
-        weight_decay=0.01,
-        load_best_model_at_end=True,
-        metric_for_best_model="accuracy",
-        logging_dir='logs',
-        remove_unused_columns=False,
-    )
-
-    trainer = get_trainer(model, args, processor, trainds, valds)
+    trainer = get_trainer(
+        get_finetuned(model_name, itos, stoi),
+        TrainingArguments(
+            f"test-cifar-10",
+            save_strategy="epoch",
+            evaluation_strategy="epoch",
+            learning_rate=2e-5,
+            per_device_train_batch_size=10,
+            per_device_eval_batch_size=4,
+            num_train_epochs=num_train_epochs,
+            weight_decay=0.01,
+            load_best_model_at_end=True,
+            metric_for_best_model="accuracy",
+            logging_dir='logs',
+            remove_unused_columns=False,
+        ),
+        processor, trainds, valds)
 
     """### Training the model for fine tuning"""
 
