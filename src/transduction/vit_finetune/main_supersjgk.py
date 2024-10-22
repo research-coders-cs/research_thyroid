@@ -77,14 +77,6 @@ def load_data(train_size=5000, test_size=1000):
     return trainds, valds, testds, itos, stoi
 
 
-def get_transf_inner(processor):
-    return Compose([
-        Resize(processor.size['height']),
-        ToTensor(),
-        Normalize(mean=processor.image_mean, std=processor.image_std),
-    ])
-
-
 def preprocess_data(transf_inner, trainds, valds, testds):
 
     """### Preprocessing Data"""
@@ -196,7 +188,11 @@ def main():
     model_name = "google/vit-base-patch16-224"
     processor = ViTImageProcessor.from_pretrained(model_name)
 
-    transf_inner = get_transf_inner(processor)
+    transf_inner = Compose([
+        Resize(processor.size['height']),
+        ToTensor(),
+        Normalize(mean=processor.image_mean, std=processor.image_std),
+    ])
 
     #==== orig
     if 0:  # orig
@@ -228,11 +224,9 @@ def main():
         from ..vit.vit_torch import get_mnist_ds_paths, MriDataset
 
         ds_paths = get_mnist_ds_paths(debug=True)
+        #ds_paths = get_thyroid_ds_paths(debug=True)  # todo
 
-
-        def transf(pil_img):
-            return transf_inner(pil_img.convert('RGB'))
-
+        transf = lambda pil_img : transf_inner(pil_img.convert('RGB'))
         train_set = MriDataset(
             phase='finetune_train',
             dataset=ds_paths['train'],
