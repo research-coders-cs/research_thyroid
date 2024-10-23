@@ -140,7 +140,8 @@ def get_finetuned(model_name, itos, stoi):
 
     # To use Cifar-10, it needs to be fine tuned again with 10 output classes
     model = ViTForImageClassification.from_pretrained(model_name,
-        num_labels=10,
+        #@@num_labels=10,
+        num_labels=len(itos.keys()),  # @@
         ignore_mismatched_sizes=True,
         id2label=itos,
         label2id=stoi)
@@ -293,7 +294,6 @@ def main():
     trainer = get_trainer(
         get_finetuned(model_name, itos, stoi),
         TrainingArguments(
-            report_to="none",  # @@ https://discuss.huggingface.co/t/how-to-turn-wandb-off-in-trainer/6237/3
             f"test-cifar-10",  # !!!! ????
             save_strategy="epoch",
             evaluation_strategy="epoch",
@@ -306,6 +306,7 @@ def main():
             metric_for_best_model="accuracy",
             logging_dir='logs',
             remove_unused_columns=False,
+            report_to="none",  # @@ https://discuss.huggingface.co/t/how-to-turn-wandb-off-in-trainer/6237/3
         ),
         processor, trainds, valds)
 
