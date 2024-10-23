@@ -280,7 +280,8 @@ def main():
                 x = trainds[i]
                 print(i, x['img'], x['label'], x['pixels'].shape)
 
-        num_train_epochs = 1  # !!!! orig -> 3
+#        num_train_epochs = 1  # !!!! orig -> 3
+        num_train_epochs = 3  # !!!! orig -> 3
         debug_skip_training = 0  # !!!!
 
         #exit()  # !!!!
@@ -292,7 +293,7 @@ def main():
     trainer = get_trainer(
         get_finetuned(model_name, itos, stoi),
         TrainingArguments(
-            f"test-cifar-10",
+            f"test-cifar-10",  # !!!! ????
             save_strategy="epoch",
             evaluation_strategy="epoch",
             learning_rate=2e-5,
