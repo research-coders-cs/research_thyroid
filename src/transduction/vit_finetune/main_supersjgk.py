@@ -293,6 +293,7 @@ def main():
     trainer = get_trainer(
         get_finetuned(model_name, itos, stoi),
         TrainingArguments(
+            report_to="none",  # @@ https://discuss.huggingface.co/t/how-to-turn-wandb-off-in-trainer/6237/3
             f"test-cifar-10",  # !!!! ????
             save_strategy="epoch",
             evaluation_strategy="epoch",
