@@ -281,8 +281,8 @@ def main():
                 x = trainds[i]
                 print(i, x['img'], x['label'], x['pixels'].shape)
 
-#        num_train_epochs = 1  # !!!! orig -> 3
-        num_train_epochs = 3  # !!!! orig -> 3
+        num_train_epochs = 1  # !!!! orig -> 3
+#        num_train_epochs = 3  # !!!! orig -> 3
         debug_skip_training = 0  # !!!!
 
         #exit()  # !!!!
