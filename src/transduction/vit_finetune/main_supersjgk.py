@@ -184,7 +184,7 @@ def get_trainer(model, args, processor, trainds, valds):
     return trainer
 
 
-from torch.utils.data import Dataset
+from torch.utils.data import Dataset, random_split
 from torch.utils.data.dataset import T_co
 class MriDatasetAdapter(Dataset):
 
@@ -242,7 +242,7 @@ def main():
 
         exit()  # !!
     #==== @@ MRI: mnist/thyroid
-    if 1:  #
+    if 1:  # !!
         from ..vit.vit_torch import get_mnist_ds_paths, MriDataset
 
         ds_paths, class_dir_map = get_mnist_ds_paths(debug=True)
@@ -250,6 +250,8 @@ def main():
 
         itos = dict((i, v) for i, (k, v) in enumerate(sorted(class_dir_map.items())))
         stoi = dict((v, i) for i, (k, v) in enumerate(sorted(class_dir_map.items())))
+
+        # Build: {train,test}_set
 
         transf = lambda pil_img : transf_inner(pil_img.convert('RGB'))
         train_set = MriDataset(
@@ -261,26 +263,24 @@ def main():
             dataset=ds_paths['test'],
             transform=transf)
 
-        if 1:  # debug
-            px, class_index = train_set[0]
-            print(px.shape, class_index)  # torch.Size([3, 224, 224]) 0
-            px, class_index = train_set[5922]
-            print(px.shape, class_index)  # torch.Size([3, 224, 224]) 0
-            px, class_index = train_set[5923]
-            print(px.shape, class_index)  # torch.Size([3, 224, 224]) 1
+        # Convert: {train,test}_set --> {train,val,test}ds
 
-        # [ ] {train,test}_set --> {train,val,test}ds
-        #====
-        trainds = MriDatasetAdapter(train_set)
-        print(len(trainds))  # 60000
+        len_val = 6000  # ~10%
+        len_train = len(train_set) - len_val  # ~90%
+        train_set_train, train_set_val = random_split(train_set, [len_train, len_val])
 
-        for i in range(5923-4, 5923+4):
-            x = trainds[i]
-            print(i, x['img'], x['label'], x['pixels'].shape)
+        trainds = MriDatasetAdapter(train_set_train)
+        valds = MriDatasetAdapter(train_set_val)
+        testds = MriDatasetAdapter(test_set)
 
-        valds = trainds  # !!!!
-        testds = trainds  # !!!!
-        num_train_epochs = 1  # !!!!
+        print('len({train,val,test}ds):', len(trainds), len(valds), len(testds))  # 54000 6000 1280
+
+        if 0:  # debug, LGTM (randomised)
+            for i in range(0, 8):
+                x = trainds[i]
+                print(i, x['img'], x['label'], x['pixels'].shape)
+
+        num_train_epochs = 1  # !!!! orig -> 3
         debug_skip_training = 0  # !!!!
 
         #exit()  # !!!!
