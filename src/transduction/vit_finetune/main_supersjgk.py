@@ -249,8 +249,10 @@ def main():
         ds_paths, class_dir_map = get_mnist_ds_paths(debug=True)
         #ds_paths, class_dir_map = get_thyroid_ds_paths(debug=True)  # todo
 
-        itos = dict((i, v) for i, (k, v) in enumerate(sorted(class_dir_map.items())))
-        stoi = dict((v, i) for i, (k, v) in enumerate(sorted(class_dir_map.items())))
+        ks = sorted(class_dir_map.keys())
+        itos = dict((i, k) for i, k in enumerate(ks))
+        stoi = dict((k, i) for i, k in enumerate(ks))
+        labels = [ itos[i] for i in range(len(itos)) ]
 
         # Build: {train,test}_set
 
@@ -269,6 +271,12 @@ def main():
         len_val = 6000  # ~10%
         len_train = len(train_set) - len_val  # ~90%
         train_set_train, train_set_val = random_split(train_set, [len_train, len_val])
+
+        if 1:  # !! CPU experiments
+            #train_set_train, train_set_val, _ = random_split(train_set, [90, 10, len(train_set)-100])  # cpu ~3 min
+            train_set_train, train_set_val, _ = random_split(train_set, [180, 20, len(train_set)-200])  # cpu ~6 min
+
+            test_set, _ = random_split(test_set, [40, len(test_set) - 40])
 
         trainds = MriDatasetAdapter(train_set_train)
         valds = MriDatasetAdapter(train_set_val)
@@ -294,7 +302,7 @@ def main():
     trainer = get_trainer(
         get_finetuned(model_name, itos, stoi),
         TrainingArguments(
-            f"test-cifar-10",  # !!!! ????
+            f"output_trainer_finetune",  # @@
             save_strategy="epoch",
             evaluation_strategy="epoch",
             learning_rate=2e-5,
@@ -333,13 +341,12 @@ def main():
     """
 
     if 1:  # confusion matrix
-        itos[np.argmax(outputs.predictions[0])], itos[outputs.label_ids[0]]
+        print(itos[np.argmax(outputs.predictions[0])], itos[outputs.label_ids[0]])  # e.g. ('cat', 'cat')
 
         y_true = outputs.label_ids
         y_pred = outputs.predictions.argmax(1)
-
-        labels = trainds.features['label'].names
         cm = confusion_matrix(y_true, y_pred)
+        labels = [ itos[i] for i in range(len(itos)) ]
 
         fname = 'confusion_matrix.png'
         disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=labels)

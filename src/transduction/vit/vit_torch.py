@@ -638,7 +638,7 @@ class MriViT(nn.Module):
 
 
 def get_mnist_ds_paths(debug=False):
-    class_dir_map = { f'class_{y}': f'y_{y}' for y in range(10) }
+    class_dir_map = { f'mnist_{y}': f'y_{y}' for y in range(10) }
     ds_paths = {
         'train': build_dataset(class_dir_map, root='datasets_vit/pngs/train'),
         'test': build_dataset(class_dir_map, root='datasets_vit/pngs/test'),
