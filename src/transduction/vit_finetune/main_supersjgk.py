@@ -200,6 +200,23 @@ class MriDatasetAdapter(Dataset):
         return {'img': None, 'label': class_index, 'pixels': px }
 
 
+def get_confusion_matrix(outputs, itos):
+    print(itos[np.argmax(outputs.predictions[0])], itos[outputs.label_ids[0]])  # e.g. ('cat', 'cat')
+
+    y_true = outputs.label_ids
+    y_pred = outputs.predictions.argmax(1)
+    cm = confusion_matrix(y_true, y_pred)
+    labels = [ itos[i] for i in range(len(itos)) ]
+
+    fname = 'confusion_matrix.png'
+    disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=labels)
+
+    print(f'@@ saving {fname}')
+    disp.plot(xticks_rotation=45).figure_.savefig(fname)
+    if is_colab():
+        plt_imshow(plt, fname)
+
+
 def main():
 
     model_name = "google/vit-base-patch16-224"
@@ -289,15 +306,8 @@ def main():
                 x = trainds[i]
                 print(i, x['img'], x['label'], x['pixels'].shape)
 
-        num_train_epochs = 1  # !!!! orig -> 3
-#        num_train_epochs = 3  # !!!! orig -> 3
+        num_train_epochs = 1  # !! orig -> 3
         debug_skip_training = 0  # !!!!
-
-        #exit()  # !!!!
-
-
-    #@@ ??
-    #!pip show accelerate
 
     trainer = get_trainer(
         get_finetuned(model_name, itos, stoi),
@@ -318,43 +328,17 @@ def main():
         ),
         processor, trainds, valds)
 
-    """### Training the model for fine tuning"""
-
-    if 0:  #@@
-        pass
-        # Commented out IPython magic to ensure Python compatibility.
-        # %load_ext tensorboard
-        # %tensorboard --logdir logs/
-
     if not debug_skip_training:
         print('@@ calling `trainer.train()`')
         trainer.train()
 
-    """### Evaluation"""
+    #
 
     print('@@ calling `trainer.predict(testds)`')
     outputs = trainer.predict(testds)
+
     print(outputs.metrics)
-    """ 250 <-- 1000 / 4 (test_size / args.per_device_eval_batch_size)
-100%|██████████| 250/250 [15:11<00:00,  3.65s/it]
-{'test_loss': 2.4680304527282715, 'test_model_preparation_time': 0.0091, 'test_accuracy': 0.075, 'test_runtime': 914.5631, 'test_samples_per_second': 1.093, 'test_steps_per_second': 0.273}
-    """
-
-    if 1:  # confusion matrix
-        print(itos[np.argmax(outputs.predictions[0])], itos[outputs.label_ids[0]])  # e.g. ('cat', 'cat')
-
-        y_true = outputs.label_ids
-        y_pred = outputs.predictions.argmax(1)
-        cm = confusion_matrix(y_true, y_pred)
-        labels = [ itos[i] for i in range(len(itos)) ]
-
-        fname = 'confusion_matrix.png'
-        disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=labels)
-
-        print(f'@@ saving {fname}')
-        disp.plot(xticks_rotation=45).figure_.savefig(fname)
-        if is_colab():
-            plt_imshow(plt, fname)
+    get_confusion matrix(outputs, itos)
 
 
 if __name__ == "__main__":
