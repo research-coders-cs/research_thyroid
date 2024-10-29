@@ -110,7 +110,7 @@ def preprocess_data(transf_inner, trainds, valds, testds):
         #exit()  # !!
 
 
-def get_finetuned(model_name, itos, stoi):
+def get_finetuned(model_name, class_names_sorted):
     print('@@ get_finetuned(): ^^')
 
     """### Model - Fine Tuning"""
@@ -137,6 +137,9 @@ def get_finetuned(model_name, itos, stoi):
           "transformers_version": "4.45.2"
         }
         """
+
+    itos = dict((i, k) for i, k in enumerate(class_names_sorted))
+    stoi = dict((k, i) for i, k in enumerate(class_names_sorted))
 
     # To use Cifar-10, it needs to be fine tuned again with 10 output classes
     model = ViTForImageClassification.from_pretrained(model_name,
@@ -250,7 +253,6 @@ def main():
     if 0:  # debug
         trainds, valds, testds, itos, stoi = load_data(train_size=10, test_size=20)
         num_train_epochs = 1  # !!
-        #debug_skip_training = 1  # !!!!
 
         preprocess_data(transf_inner, trainds, valds, testds)
 
@@ -266,10 +268,6 @@ def main():
         #ds_paths, class_names_sorted = get_mnist_ds_paths(debug=True)
         #ds_paths, class_names_sorted = get_thyroid_ds_paths('ttv', debug=True)  # !!!! !!!!
         ds_paths, class_names_sorted = get_thyroid_ds_paths('100g', debug=True)  # !!!! !!!!
-
-        itos = dict((i, k) for i, k in enumerate(class_names_sorted))
-        stoi = dict((k, i) for i, k in enumerate(class_names_sorted))
-        labels = [ itos[i] for i in range(len(itos)) ]
 
         # Build: {train,test}_set
 
@@ -313,13 +311,12 @@ def main():
 
         #num_train_epochs = 1  # !! cifar10 orig -> 3
         num_train_epochs = 10  # !! try: thyroid 100g
-        debug_skip_training = 0  # !!!!
         #exit()  # !!!!
 
     #
 
     trainer = get_trainer(
-        get_finetuned(model_name, itos, stoi),
+        get_finetuned(model_name, class_names_sorted),
         TrainingArguments(
             f"output_trainer_finetune",  # @@
             save_strategy="epoch",
@@ -337,9 +334,10 @@ def main():
         ),
         processor, trainds, valds)
 
-    if not debug_skip_training:
-        print('@@ calling `trainer.train()`')
-        trainer.train()
+    #
+
+    print('@@ calling `trainer.train()`')
+    trainer.train()
 
     #
 
@@ -347,7 +345,7 @@ def main():
     outputs = trainer.predict(testds)
 
     print(outputs.metrics)
-    get_confusion_matrix(outputs, itos)
+    get_confusion_matrix(outputs, class_names_sorted)
 
 
 if __name__ == "__main__":

@@ -664,7 +664,9 @@ def get_thyroid_ds_paths(variant, debug=False):
     if debug:
         stat_ds_paths(ds_paths)
 
-    return ds_paths, ['benign', 'malignant']
+    class_names_sorted = ['benign', 'malignant']
+
+    return ds_paths, class_names_sorted
 
 
 def main():
