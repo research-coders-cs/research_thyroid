@@ -223,7 +223,7 @@ def main():
     processor = ViTImageProcessor.from_pretrained(model_name)
 
     transf_inner = Compose([
-        Resize(processor.size['height']),
+        Resize((processor.size['height'], processor.size['width'])),
         ToTensor(),
         Normalize(mean=processor.image_mean, std=processor.image_std),
     ])
@@ -261,10 +261,11 @@ def main():
         exit()  # !!
     #==== @@ MRI: mnist/thyroid
     if 1:  # !!
-        from ..vit.vit_torch import get_mnist_ds_paths, MriDataset
+        from ..vit.vit_torch import MriDataset, get_mnist_ds_paths, get_thyroid_ds_paths
 
-        ds_paths, class_names_sorted = get_mnist_ds_paths(debug=True)
-        #ds_paths, class_names_sorted = get_thyroid_ds_paths(debug=True)  # todo
+        #ds_paths, class_names_sorted = get_mnist_ds_paths(debug=True)
+        #ds_paths, class_names_sorted = get_thyroid_ds_paths('ttv', debug=True)  # !!!! !!!!
+        ds_paths, class_names_sorted = get_thyroid_ds_paths('100g', debug=True)  # !!!! !!!!
 
         itos = dict((i, k) for i, k in enumerate(class_names_sorted))
         stoi = dict((k, i) for i, k in enumerate(class_names_sorted))
@@ -284,21 +285,26 @@ def main():
 
         # Convert: {train,test}_set --> {train,val,test}ds
 
-        len_val = 6000  # ~10%
-        len_train = len(train_set) - len_val  # ~90%
-        train_set_train, train_set_val = random_split(train_set, [len_train, len_val])
-
-        if 1:  # !! CPU experiments
+        if 0:
+            len_val = 6000  # ~10%
+            len_train = len(train_set) - len_val  # ~90%
+            train_set_train, train_set_val = random_split(train_set, [len_train, len_val])
+        elif 0:  # !! mnist; CPU experiments
             #train_set_train, train_set_val, _ = random_split(train_set, [90, 10, len(train_set)-100])  # cpu ~3 min
             train_set_train, train_set_val, _ = random_split(train_set, [180, 20, len(train_set)-200])  # cpu ~6 min
 
             test_set, _ = random_split(test_set, [40, len(test_set) - 40])
+        elif 1:  # !!!!
+            #train_set_train, train_set_val = random_split(train_set, [55, 5])  # for 'ttv'
+            train_set_train, train_set_val = random_split(train_set, [700, 50])  # for '100g'
+        else:
+            pass
 
         trainds = MriDatasetAdapter(train_set_train)
         valds = MriDatasetAdapter(train_set_val)
         testds = MriDatasetAdapter(test_set)
 
-        print('len({train,val,test}ds):', len(trainds), len(valds), len(testds))  # 54000 6000 1280
+        print('len({train,val,test}ds):', len(trainds), len(valds), len(testds))  # eg. mnist: 54000 6000 1280
 
         if 0:  # debug, LGTM (randomised)
             for i in range(0, 8):
@@ -307,6 +313,9 @@ def main():
 
         num_train_epochs = 1  # !! orig -> 3
         debug_skip_training = 0  # !!!!
+        #exit()  # !!!!
+
+    #
 
     trainer = get_trainer(
         get_finetuned(model_name, itos, stoi),
@@ -337,7 +346,7 @@ def main():
     outputs = trainer.predict(testds)
 
     print(outputs.metrics)
-    get_confusion matrix(outputs, itos)
+    get_confusion_matrix(outputs, itos)
 
 
 if __name__ == "__main__":
