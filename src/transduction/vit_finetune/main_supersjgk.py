@@ -27,7 +27,6 @@ import matplotlib.pyplot as plt
 
 from transformers import ViTImageProcessor, ViTForImageClassification
 from transformers import TrainingArguments, Trainer
-from datasets import load_dataset
 import numpy as np
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
@@ -44,6 +43,7 @@ transform_to_tensor = PILToTensor()
 def load_data(train_size=5000, test_size=1000):
     print('@@ load_data(): ^^')
 
+    from datasets import load_dataset  # cifar10
     trainds, testds = load_dataset("cifar10", split=[f"train[:{train_size}]", f"test[:{test_size}]"])
 
     splits = trainds.train_test_split(test_size=0.1)
@@ -311,7 +311,8 @@ def main():
                 x = trainds[i]
                 print(i, x['img'], x['label'], x['pixels'].shape)
 
-        num_train_epochs = 1  # !! orig -> 3
+        #num_train_epochs = 1  # !! cifar10 orig -> 3
+        num_train_epochs = 10  # !! try: thyroid 100g
         debug_skip_training = 0  # !!!!
         #exit()  # !!!!
 
