@@ -263,12 +263,11 @@ def main():
     if 1:  # !!
         from ..vit.vit_torch import get_mnist_ds_paths, MriDataset
 
-        ds_paths, class_dir_map = get_mnist_ds_paths(debug=True)
-        #ds_paths, class_dir_map = get_thyroid_ds_paths(debug=True)  # todo
+        ds_paths, class_names_sorted = get_mnist_ds_paths(debug=True)
+        #ds_paths, class_names_sorted = get_thyroid_ds_paths(debug=True)  # todo
 
-        ks = sorted(class_dir_map.keys())
-        itos = dict((i, k) for i, k in enumerate(ks))
-        stoi = dict((k, i) for i, k in enumerate(ks))
+        itos = dict((i, k) for i, k in enumerate(class_names_sorted))
+        stoi = dict((k, i) for i, k in enumerate(class_names_sorted))
         labels = [ itos[i] for i in range(len(itos)) ]
 
         # Build: {train,test}_set
@@ -342,4 +341,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main(train_set, test_set)
+    main()

@@ -302,35 +302,13 @@ def load_mri_data():
 
 def load_thyroid_data():
     if 0:  # case thyroid 'Dataset_train_test_val'
-        ds_paths = {
-            'train': build_dataset({
-                'benign': ['Train/Benign', 'Val/Benign'],
-                'malignant': ['Train/Malignant', 'Val/Malignant'],
-            }, root='datasets_thyroid/Dataset_train_test_val'),  # 30 30
-            'test': build_dataset({
-                'benign': ['Test/Benign'],
-                'malignant': ['Test/Malignant'],
-            }, root='datasets_thyroid/Dataset_train_test_val'),  # 10 10
-        }
+        ds_paths, _ = get_thyroid_ds_paths('ttv', debug=False)
+
         target_resize = (250, 250)  # per `def _train(` in 'src/wsdan/demo/__init__.py'
 
     if 1:  # case thyroid 100g
-        ds_paths = {
-            'train': build_dataset({
-                'benign': ['Markers_Train_Remove_Markers/Benign_Remove/train', 'Markers_Train_Remove_Markers/Benign_Remove/validate'],
-                'malignant': ['Markers_Train_Remove_Markers/Malignant_Remove/train', 'Markers_Train_Remove_Markers/Malignant_Remove/validate'],
-            }, root='Dataset_doppler_100g'),
+        ds_paths, _ = get_thyroid_ds_paths('100g', debug=False)
 
-            'test': build_dataset({
-                'benign': ['Markers_Train_Remove_Markers/Benign_Remove/test'],
-                'malignant': ['Markers_Train_Remove_Markers/Malignant_Remove/test'],
-            }, root='Dataset_doppler_100g'),
-            #====
-            # 'test': build_dataset({
-            #     'benign': ['test26/Benign'],
-            #     'malignant': ['test26/Malignant'],
-            # }, root='siriraj_original_Testset_26'),
-        }
 #        target_resize = (250, 250)  # per `def _train(` in 'src/wsdan/demo/__init__.py'
         target_resize = (280, 280)  # per `def _train(` in 'src/wsdan/demo/__init__.py'
 
@@ -647,7 +625,46 @@ def get_mnist_ds_paths(debug=False):
     if debug:
         stat_ds_paths(ds_paths)
 
-    return ds_paths, class_dir_map
+    return ds_paths, sorted(class_dir_map.keys())
+
+
+def get_thyroid_ds_paths(variant, debug=False):
+
+    if variant == 'ttv':
+        ds_paths = {
+            'train': build_dataset({
+                'benign': ['Train/Benign', 'Val/Benign'],
+                'malignant': ['Train/Malignant', 'Val/Malignant'],
+            }, root='datasets_thyroid/Dataset_train_test_val'),  # 30 30
+            'test': build_dataset({
+                'benign': ['Test/Benign'],
+                'malignant': ['Test/Malignant'],
+            }, root='datasets_thyroid/Dataset_train_test_val'),  # 10 10
+        }
+    elif variant == '100g':
+        ds_paths = {
+            'train': build_dataset({
+                'benign': ['Markers_Train_Remove_Markers/Benign_Remove/train', 'Markers_Train_Remove_Markers/Benign_Remove/validate'],
+                'malignant': ['Markers_Train_Remove_Markers/Malignant_Remove/train', 'Markers_Train_Remove_Markers/Malignant_Remove/validate'],
+            }, root='Dataset_doppler_100g'),
+
+            'test': build_dataset({
+                'benign': ['Markers_Train_Remove_Markers/Benign_Remove/test'],
+                'malignant': ['Markers_Train_Remove_Markers/Malignant_Remove/test'],
+            }, root='Dataset_doppler_100g'),
+            #====
+            # 'test': build_dataset({
+            #     'benign': ['test26/Benign'],
+            #     'malignant': ['test26/Malignant'],
+            # }, root='siriraj_original_Testset_26'),
+        }
+    else:
+        raise ValueError(f'unknown ds_paths variant: {variant}')
+
+    if debug:
+        stat_ds_paths(ds_paths)
+
+    return ds_paths, ['benign', 'malignant']
 
 
 def main():
