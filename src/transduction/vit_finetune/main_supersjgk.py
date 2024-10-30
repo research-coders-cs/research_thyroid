@@ -312,7 +312,8 @@ def main():
                 print(i, x['img'], x['label'], x['pixels'].shape)
 
         #num_train_epochs = 1  # !! cifar10 orig -> 3
-        num_train_epochs = 10  # !! try: thyroid 100g
+        num_train_epochs = 1  # !! try: mnist full
+        #num_train_epochs = 10  # !! try: thyroid 100g
         #exit()  # !!!!
 
     #
