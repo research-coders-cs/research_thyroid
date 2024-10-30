@@ -267,9 +267,9 @@ def main():
     if 1:  # !!
         from ..vit.vit_torch import MriDataset, get_mnist_ds_paths, get_thyroid_ds_paths
 
-        #ds_paths, class_names_sorted = get_mnist_ds_paths(debug=True)
+        ds_paths, class_names_sorted = get_mnist_ds_paths(debug=True)
         #ds_paths, class_names_sorted = get_thyroid_ds_paths('ttv', debug=True)  # !!!! !!!!
-        ds_paths, class_names_sorted = get_thyroid_ds_paths('100g', debug=True)  # !!!! !!!!
+        #ds_paths, class_names_sorted = get_thyroid_ds_paths('100g', debug=True)  # !!!! !!!!
 
         # Build: {train,test}_set
 
