@@ -285,15 +285,16 @@ def main():
 
         # Convert: {train,test}_set --> {train,val,test}ds
 
-        if 1:
+        if 0:
             len_val = 6000  # ~10%
             len_train = len(train_set) - len_val  # ~90%
             train_set_train, train_set_val = random_split(train_set, [len_train, len_val])
-        elif 0:  # !! mnist; CPU experiments
+        elif 1:  # !! mnist; CPU experiments
             #train_set_train, train_set_val, _ = random_split(train_set, [90, 10, len(train_set)-100])  # cpu ~3 min
             train_set_train, train_set_val, _ = random_split(train_set, [180, 20, len(train_set)-200])  # cpu ~6 min
 
-            test_set, _ = random_split(test_set, [40, len(test_set) - 40])
+            #test_set, _ = random_split(test_set, [40, len(test_set) - 40])
+            test_set, _ = random_split(test_set, [10, len(test_set) - 10])
         elif 0:  # !!!!
             #train_set_train, train_set_val = random_split(train_set, [55, 5])  # for 'ttv'
             train_set_train, train_set_val = random_split(train_set, [700, 50])  # for '100g'
@@ -312,7 +313,7 @@ def main():
                 print(i, x['img'], x['label'], x['pixels'].shape)
 
         #num_train_epochs = 1  # !! cifar10 orig -> 3
-        num_train_epochs = 1  # !! try: mnist full
+        num_train_epochs = 1  # !! try: mnist full; ~ 30 mins with T4
         #num_train_epochs = 10  # !! try: thyroid 100g
         #exit()  # !!!!
 
@@ -346,7 +347,7 @@ def main():
     #ckpt_saved = 'foo_debug_eps1.ckpt'
     ckpt_saved = 'mnist_trained_full.ckpt'
 
-    if 0:
+    if 1:
         print('@@ using `ckpt_saved`:', ckpt_saved)
         model_dict = _load_ckpt(model, ckpt_saved)
 
