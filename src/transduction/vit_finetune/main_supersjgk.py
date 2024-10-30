@@ -251,7 +251,7 @@ def main():
 
         preprocess_data(transf_inner, trainds, valds, testds)
     #==== @@
-    if 1:  # debug
+    if 0:  # debug
         trainds, valds, testds, itos, stoi = load_data(train_size=10, test_size=20)
         num_train_epochs = 1  # !!
         class_names_sorted = sorted(stoi.keys())
@@ -264,7 +264,7 @@ def main():
 
         #exit()  # !!
     #==== @@ MRI: mnist/thyroid
-    if 0:  # !!
+    if 1:  # !!
         from ..vit.vit_torch import MriDataset, get_mnist_ds_paths, get_thyroid_ds_paths
 
         #ds_paths, class_names_sorted = get_mnist_ds_paths(debug=True)
@@ -285,7 +285,7 @@ def main():
 
         # Convert: {train,test}_set --> {train,val,test}ds
 
-        if 0:
+        if 1:
             len_val = 6000  # ~10%
             len_train = len(train_set) - len_val  # ~90%
             train_set_train, train_set_val = random_split(train_set, [len_train, len_val])
@@ -294,7 +294,7 @@ def main():
             train_set_train, train_set_val, _ = random_split(train_set, [180, 20, len(train_set)-200])  # cpu ~6 min
 
             test_set, _ = random_split(test_set, [40, len(test_set) - 40])
-        elif 1:  # !!!!
+        elif 0:  # !!!!
             #train_set_train, train_set_val = random_split(train_set, [55, 5])  # for 'ttv'
             train_set_train, train_set_val = random_split(train_set, [700, 50])  # for '100g'
         else:
@@ -342,7 +342,8 @@ def main():
 
     from ..vit.vit_torch import _save_ckpt, _load_ckpt
     #ckpt_saved = 'foo.ckpt'
-    ckpt_saved = 'foo_debug_eps1.ckpt'
+    #ckpt_saved = 'foo_debug_eps1.ckpt'
+    ckpt_saved = 'mnist_trained_full.ckpt'
 
     if 0:
         print('@@ using `ckpt_saved`:', ckpt_saved)
