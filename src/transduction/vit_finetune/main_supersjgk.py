@@ -235,6 +235,7 @@ def main():
     if 0:  # orig
         trainds, valds, testds, itos, stoi = load_data()
         num_train_epochs = 3
+        class_names_sorted = sorted(stoi.keys())
 
         ##print(trainds, valds, testds)
         # Dataset({
@@ -250,9 +251,10 @@ def main():
 
         preprocess_data(transf_inner, trainds, valds, testds)
     #==== @@
-    if 0:  # debug
+    if 1:  # debug
         trainds, valds, testds, itos, stoi = load_data(train_size=10, test_size=20)
         num_train_epochs = 1  # !!
+        class_names_sorted = sorted(stoi.keys())
 
         preprocess_data(transf_inner, trainds, valds, testds)
 
@@ -260,9 +262,9 @@ def main():
         #print(trainds[0]['label'])  # 4
         #print(trainds[0]['pixels'].shape)  # torch.Size([3, 224, 224])
 
-        exit()  # !!
+        #exit()  # !!
     #==== @@ MRI: mnist/thyroid
-    if 1:  # !!
+    if 0:  # !!
         from ..vit.vit_torch import MriDataset, get_mnist_ds_paths, get_thyroid_ds_paths
 
         #ds_paths, class_names_sorted = get_mnist_ds_paths(debug=True)
@@ -315,8 +317,10 @@ def main():
 
     #
 
+    model = get_finetuned(model_name, class_names_sorted)
+
     trainer = get_trainer(
-        get_finetuned(model_name, class_names_sorted),
+        model,
         TrainingArguments(
             f"output_trainer_finetune",  # @@
             save_strategy="epoch",
@@ -336,8 +340,19 @@ def main():
 
     #
 
-    print('@@ calling `trainer.train()`')
-    trainer.train()
+    from ..vit.vit_torch import _save_ckpt, _load_ckpt
+    #ckpt_saved = 'foo.ckpt'
+    ckpt_saved = 'foo_debug_eps1.ckpt'
+
+    if 0:
+        print('@@ using `ckpt_saved`:', ckpt_saved)
+        model_dict = _load_ckpt(model, ckpt_saved)
+
+        model.load_state_dict(model_dict)
+    else:
+        print('@@ calling `trainer.train()`')
+        trainer.train()
+        _save_ckpt(model, ckpt_saved)
 
     #
 
@@ -345,7 +360,8 @@ def main():
     outputs = trainer.predict(testds)
 
     print(outputs.metrics)
-    get_confusion_matrix(outputs, class_names_sorted)
+    if 0:
+        get_confusion_matrix(outputs, class_names_sorted)
 
 
 if __name__ == "__main__":
