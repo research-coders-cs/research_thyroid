@@ -201,8 +201,7 @@ class MriDataset(Dataset):
             transformed_image = self.transform(tens)
             #print(f'@@ [preprocessing] {tens.shape} -> {transformed_image.shape}')
 
-        ##return transformed_image, class_index, extra
-        return transformed_image, class_index
+        return transformed_image, class_index, extra
 
 
 def get_transform_mri(target_size, phase='train'):

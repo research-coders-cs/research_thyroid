@@ -199,8 +199,8 @@ class MriDatasetAdapter(Dataset):
         return len(self.dataset)
 
     def __getitem__(self, index) -> T_co:
-        px, class_index = self.dataset[index]
-        return {'img': None, 'label': class_index, 'pixels': px }
+        px, class_index, extra = self.dataset[index]
+        return {'img': extra['path'], 'label': class_index, 'pixels': px }
 
 
 def get_confusion_matrix(outputs, itos):
@@ -218,6 +218,72 @@ def get_confusion_matrix(outputs, itos):
     disp.plot(xticks_rotation=45).figure_.savefig(fname)
     if is_colab():
         plt_imshow(plt, fname)
+
+# FYI
+#---- ^^ https://github.com/huggingface/pytorch-image-models/discussions/1232
+def my_forward_wrapper(attn_obj):
+    def my_forward(x):
+        B, N, C = x.shape
+        qkv = attn_obj.qkv(x).reshape(B, N, 3, attn_obj.num_heads, C // attn_obj.num_heads).permute(2, 0, 3, 1, 4)
+        q, k, v = qkv.unbind(0)   # make torchscript happy (cannot use tensor as tuple)
+
+        attn = (q @ k.transpose(-2, -1)) * attn_obj.scale
+        attn = attn.softmax(dim=-1)
+        attn = attn_obj.attn_drop(attn)
+        attn_obj.attn_map = attn
+        attn_obj.cls_attn_map = attn[:, :, 0, 2:]
+
+        x = (attn @ v).transpose(1, 2).reshape(B, N, C)
+        x = attn_obj.proj(x)
+        x = attn_obj.proj_drop(x)
+        return x
+    return my_forward
+#---- $$
+
+#---- ^^ https://gist.github.com/zlapp/40126608b01a5732412da38277db9ff5
+import cv2
+
+def get_mask(im, att_mat):
+    # Average the attention weights across all heads.
+    # att_mat,_ = torch.max(att_mat, dim=1)
+    att_mat = torch.mean(att_mat, dim=1)
+
+    # To account for residual connections, we add an identity matrix to the
+    # attention matrix and re-normalize the weights.
+    residual_att = torch.eye(att_mat.size(1))
+    aug_att_mat = att_mat + residual_att
+    aug_att_mat = aug_att_mat / aug_att_mat.sum(dim=-1).unsqueeze(-1)
+
+    # Recursively multiply the weight matrices
+    joint_attentions = torch.zeros(aug_att_mat.size())
+    joint_attentions[0] = aug_att_mat[0]
+
+    for n in range(1, aug_att_mat.size(0)):
+        joint_attentions[n] = torch.matmul(aug_att_mat[n], joint_attentions[n-1])
+
+    # Attention from the output token to the input space.
+    v = joint_attentions[-1]
+    grid_size = int(np.sqrt(aug_att_mat.size(-1)))
+    mask = v[0, 1:].reshape(grid_size, grid_size).detach().numpy()
+
+    if 0:  #==== @@ orig
+        mask = cv2.resize(mask / mask.max(), im.size)[..., np.newaxis]
+        result = (mask * im).astype("uint8")
+
+        #print(result.shape, joint_attentions.shape, grid_size)
+        # (224, 224, 3) torch.Size([12, 197, 197]) 14
+
+        return result, joint_attentions, grid_size
+    if 1:  #==== @@ !!
+        mask = cv2.resize(mask / mask.max(), im.size)
+        print('@@ mask.shape:', mask.shape)  # (224, 224)
+        return mask, joint_attentions, grid_size
+        #====
+        # result = (mask[..., np.newaxis] * im).astype("uint8")
+        # print('@@ result.shape:', result.shape)  # (224, 224, 3)
+        #return result, joint_attentions, grid_size
+
+#---- $$
 
 
 def main():
@@ -265,11 +331,35 @@ def main():
         #exit()  # !!
     #==== @@ MRI: mnist/thyroid
     if 1:  # !!
-        from ..vit.vit_torch import MriDataset, get_mnist_ds_paths, get_thyroid_ds_paths
+        from ..vit.vit_torch import MriDataset, get_mnist_ds_paths, get_thyroid_ds_paths, build_dataset
 
-        ds_paths, class_names_sorted = get_mnist_ds_paths(debug=True)
-        #ds_paths, class_names_sorted = get_thyroid_ds_paths('ttv', debug=True)  # !!!! !!!!
-        #ds_paths, class_names_sorted = get_thyroid_ds_paths('100g', debug=True)  # !!!! !!!!
+        #ds_paths, class_names_sorted = get_mnist_ds_paths(debug=True)
+        #ds_paths, class_names_sorted = get_thyroid_ds_paths('ttv', debug=True)  # !!
+        #ds_paths, class_names_sorted = get_thyroid_ds_paths('100g', debug=True)  # !!
+        if 1:  # !! custom
+            ds_paths, class_names_sorted = {
+                'train': build_dataset({
+                    'benign': ['Markers_Train_Remove_Markers/Benign_Remove/train', 'Markers_Train_Remove_Markers/Benign_Remove/validate'],
+                    'malignant': ['Markers_Train_Remove_Markers/Malignant_Remove/train', 'Markers_Train_Remove_Markers/Malignant_Remove/validate'],
+                }, root='Dataset_doppler_100g'),
+                #
+                #
+                #==== for '100g'
+                'test': build_dataset({
+                    'benign': ['Markers_Train_Remove_Markers/Benign_Remove/test'],
+                    'malignant': ['Markers_Train_Remove_Markers/Malignant_Remove/test'],
+                }, root='Dataset_doppler_100g'),
+                #====
+                # 'test': build_dataset({
+                #     'benign': ['test26/Benign'],
+                #     'malignant': ['test26/Malignant'],
+                # }, root='siriraj_original_Testset_26'),
+                #==== for 'extra'
+                # 'test': build_dataset({
+                #     'benign': ['test'],  # fixme !!!!
+                #     'malignant': [],  # fixme !!!!
+                # }, root='thyroid_inference_extra'),
+            }, ['benign', 'malignant']
 
         # Build: {train,test}_set
 
@@ -289,13 +379,13 @@ def main():
             len_val = 6000  # ~10%
             len_train = len(train_set) - len_val  # ~90%
             train_set_train, train_set_val = random_split(train_set, [len_train, len_val])
-        elif 1:  # !! mnist; CPU experiments
+        elif 0:  # !! mnist; CPU experiments
             #train_set_train, train_set_val, _ = random_split(train_set, [90, 10, len(train_set)-100])  # cpu ~3 min
             train_set_train, train_set_val, _ = random_split(train_set, [180, 20, len(train_set)-200])  # cpu ~6 min
 
             #test_set, _ = random_split(test_set, [40, len(test_set) - 40])
             test_set, _ = random_split(test_set, [10, len(test_set) - 10])
-        elif 0:  # !!!!
+        elif 1:  # !!!!
             #train_set_train, train_set_val = random_split(train_set, [55, 5])  # for 'ttv'
             train_set_train, train_set_val = random_split(train_set, [700, 50])  # for '100g'
         else:
@@ -345,13 +435,69 @@ def main():
     from ..vit.vit_torch import _save_ckpt, _load_ckpt
     #ckpt_saved = 'foo.ckpt'
     #ckpt_saved = 'foo_debug_eps1.ckpt'
-    ckpt_saved = 'mnist_trained_full.ckpt'
+    #ckpt_saved = 'mnist_trained_full.ckpt'
+    #----
+    #ckpt_saved = 'thyroid_skip_finetune.ckpt'
+    ckpt_saved = 'thyroid_trained_eps8_full.ckpt'
 
     if 1:
         print('@@ using `ckpt_saved`:', ckpt_saved)
         model_dict = _load_ckpt(model, ckpt_saved)
 
         model.load_state_dict(model_dict)
+
+        """ attention masks """
+
+        #for i in range(0, 2):  # mnist: 0 6
+        for idx in range(0, len(testds)):
+            x = testds[idx]
+            print(idx, x['img'], x['label'], x['pixels'].shape)
+
+            input = x['pixels']
+            input_path = x['img']
+            print('@@ input.shape:', input.shape)  # torch.Size([3, 224, 224])
+
+            outputs = model(input.unsqueeze(0), output_attentions=True)
+            logits = outputs.logits
+            attentions = outputs.attentions
+            print('@@ logits:', logits)
+            print('@@ type(attentions):', type(attentions))  # <class 'tuple'>
+            for i, attn in enumerate(attentions):
+                print(f'@@ attn[{i}]: {attn.shape}')
+
+            #====
+            print(f'@@ testds[{idx}]: path={input_path}')
+            im_orig = cv2.resize(plt.imread(input_path), mask.shape)
+
+            im_input = transform_to_pil(input)
+            mask, joint_attentions, grid_size = get_mask(im_input, torch.cat(attentions))
+
+            #----
+            fig = plt.figure()
+
+            axes = []
+            rows, cols = 1, 2
+
+            axes.append(fig.add_subplot(rows, cols, 1))
+            plt.imshow(im_orig, cmap='gray')
+            #plt.imshow(im_input, cmap='gray')
+
+            axes.append(fig.add_subplot(rows, cols, 2))
+            plt.imshow(mask, cmap='gray')
+
+            fig.suptitle(f'testds[{idx}] --> attention_mask_{idx}\n'
+                         f'(path: {input_path})\n'
+                         f'(ViT model: {ckpt_saved})')
+
+            plt.axis('off')
+            plt.setp(axes, xticks=[], yticks=[])  # https://stackoverflow.com/questions/25124143/get-rid-of-tick-labels-for-all-subplots/25127092#25127092
+            # assume `mkdir inference`
+            plt.savefig(f'inference/attention_mask_{idx}_{ckpt_saved}.png', bbox_inches='tight')
+            #----
+
+
+        exit()  # !!!!
+        #---- !!!!
     else:
         print('@@ calling `trainer.train()`')
         trainer.train()
