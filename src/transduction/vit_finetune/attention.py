@@ -93,27 +93,52 @@ def verify_attentions(model, testds, ckpt_file=None):
         for i, attn in enumerate(attentions):
             print(f'@@ attn[{i}]: {attn.shape}')
 
-        #====
+        #
+
         im_input = transform_to_pil(input)
         mask, joint_attentions, grid_size = get_mask(im_input, torch.cat(attentions))
 
         print(f'@@ testds[{idx}]: path={input_path}')
         im_orig_resized = cv2.resize(plt.imread(input_path), mask.shape)
+        #print('@@ im_orig_resized.shape:', im_orig_resized.shape)  # (224, 224, 3)
+
+        # TODO refactor into a method
+        #---- ^^ mask --> heat attention
+        mask_stacked = torch.tensor([mask[:,:]], dtype=torch.float32)
+        #print('@@ mask_stacked.shape:', mask_stacked.shape)  # torch.Size([1, 224, 224])
+
+        mask_stacked = torch.stack([mask_stacked], dim=0)
+        #print('@@ mask_stacked.shape:', mask_stacked.shape)  # -> torch.Size([1, 1, 224, 224])
+
+        from ...wsdan.net.augment import generate_heatmap
+        heat_attention_map = generate_heatmap(mask_stacked)
+
+        raw_image = torch.tensor([im_orig_resized[:,:]], dtype=torch.float32).permute(0, 3, 1, 2)
+        #print('@@ raw_image.shape:', raw_image.shape)  # torch.Size([1, 3, 224, 224])
+
+        heat_attention_image = (raw_image * 0.3) + (heat_attention_map.cpu() * 0.7)
+        #print('@@ heat_attention_image.shape:', heat_attention_image.shape)  # torch.Size([1, 3, 224, 224])
+
+        heat_attention_image = transform_to_pil(heat_attention_image[0])
+        #heat_attention_image.save(f'heat_attention_{idx}.png')
+        #---- $$
 
         #----
         fig = plt.figure()
 
         axes = []
-        rows, cols = 1, 2
+        rows, cols = 1, 3
 
         axes.append(fig.add_subplot(rows, cols, 1))
         plt.imshow(im_orig_resized, cmap='gray')
-        #plt.imshow(im_input, cmap='gray')
 
         axes.append(fig.add_subplot(rows, cols, 2))
         plt.imshow(mask, cmap='gray')
 
-        fig.suptitle(f'testds[{idx}] --> attention_mask_{idx}\n'
+        axes.append(fig.add_subplot(rows, cols, 3))
+        plt.imshow(heat_attention_image)
+
+        fig.suptitle(f'testds[{idx}] | attention_mask_{idx} | heat_attention_{idx}\n'
                      f'(path: {input_path})\n'
                      f'(ViT model: {ckpt_file})')
 
