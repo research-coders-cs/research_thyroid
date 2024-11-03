@@ -68,6 +68,6 @@ if __name__ == '__main__':
         vit_main()
 
     if 1:  # finetune
-        from src.transduction.vit_finetune.main_supersjgk import main as supersjgk_main
+        from src.transduction.vit_finetune.main import main as vit_finetune_main
 
-        supersjgk_main()
+        vit_finetune_main()

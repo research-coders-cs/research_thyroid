@@ -466,11 +466,11 @@ def main():
                 print(f'@@ attn[{i}]: {attn.shape}')
 
             #====
-            print(f'@@ testds[{idx}]: path={input_path}')
-            im_orig = cv2.resize(plt.imread(input_path), mask.shape)
-
             im_input = transform_to_pil(input)
             mask, joint_attentions, grid_size = get_mask(im_input, torch.cat(attentions))
+
+            print(f'@@ testds[{idx}]: path={input_path}')
+            im_orig_resized = cv2.resize(plt.imread(input_path), mask.shape)
 
             #----
             fig = plt.figure()
@@ -479,7 +479,7 @@ def main():
             rows, cols = 1, 2
 
             axes.append(fig.add_subplot(rows, cols, 1))
-            plt.imshow(im_orig, cmap='gray')
+            plt.imshow(im_orig_resized, cmap='gray')
             #plt.imshow(im_input, cmap='gray')
 
             axes.append(fig.add_subplot(rows, cols, 2))
