@@ -8,8 +8,6 @@ transform_to_pil = ToPILImage()
 from ..plot_if import get_plt
 plt = get_plt()
 
-from ...wsdan.net.augment import generate_heatmap
-
 
 # FYI
 #---- ^^ https://github.com/huggingface/pytorch-image-models/discussions/1232
@@ -33,8 +31,9 @@ def my_forward_wrapper(attn_obj):
 #---- $$
 
 
+# https://www.kaggle.com/code/piantic/vision-transformer-vit-visualize-attention-map/notebook
+# https://www.kaggle.com/datasets/piantic/visiontransformerpytorch121/data
 #---- ^^ https://gist.github.com/zlapp/40126608b01a5732412da38277db9ff5
-
 def get_mask(im, att_mat):
     # Average the attention weights across all heads.
     # att_mat,_ = torch.max(att_mat, dim=1)
@@ -71,8 +70,17 @@ def get_mask(im, att_mat):
         im_mask = cv2.resize(mask / mask.max(), im.size)
         #print('@@ im_mask.shape:', im_mask.shape)  # (224, 224)
         return im_mask, joint_attentions, grid_size
-
 #---- $$
+
+
+# https://github.com/GuYuc/WS-DAN.PyTorch/blob/87779124f619ceeb445ddfb0246c8a22ff324db4/eval.py#L37
+def generate_heatmap(attention_maps):
+    heat_attention_maps = []
+    heat_attention_maps.append(attention_maps[:, 0, ...])  # R
+    heat_attention_maps.append(attention_maps[:, 0, ...] * (attention_maps[:, 0, ...] < 0.5).float() + \
+                               (1. - attention_maps[:, 0, ...]) * (attention_maps[:, 0, ...] >= 0.5).float())  # G
+    heat_attention_maps.append(1. - attention_maps[:, 0, ...])  # B
+    return torch.stack(heat_attention_maps, dim=1)
 
 
 def generate_attention_heatmap(im_orig, mask):
