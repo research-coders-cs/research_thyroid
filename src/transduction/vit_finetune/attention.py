@@ -122,10 +122,12 @@ def plot_attention(im_orig, im_mask, im_heatmap, title, save_path):
 
 def verify_attentions(model, testds, ckpt_file=None, save_dir='inference'):
 
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
     for idx, x in enumerate(testds):
         print(idx, x['img'], x['label'], x['pixels'].shape)
 
-        input = x['pixels']
+        input = x['pixels'].to(device)
         input_path = x['img']
         print('@@ input.shape:', input.shape)  # torch.Size([3, 224, 224])
 
