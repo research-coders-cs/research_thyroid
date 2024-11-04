@@ -127,11 +127,11 @@ def verify_attentions(model, testds, ckpt_file=None, save_dir='inference'):
     for idx, x in enumerate(testds):
         print(idx, x['img'], x['label'], x['pixels'].shape)
 
-        input = x['pixels'].to(device)
+        input = x['pixels']
         input_path = x['img']
         print('@@ input.shape:', input.shape)  # torch.Size([3, 224, 224])
 
-        outputs = model(input.unsqueeze(0), output_attentions=True)
+        outputs = model(input.to(device).unsqueeze(0), output_attentions=True)
         logits = outputs.logits
         attentions = outputs.attentions
 
@@ -144,7 +144,7 @@ def verify_attentions(model, testds, ckpt_file=None, save_dir='inference'):
         #
 
         im_mask, joint_attentions, grid_size = get_mask(
-            transform_to_pil(input), torch.cat(attentions))
+            transform_to_pil(input.cpu()), torch.cat(attentions))
 
         print(f'@@ testds[{idx}]: path={input_path}')
         im_orig = cv2.resize(plt.imread(input_path), im_mask.shape)
