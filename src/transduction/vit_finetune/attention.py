@@ -112,7 +112,7 @@ def plot_attention(im_orig, im_mask, im_heatmap, title, save_path):
     plt.savefig(save_path, bbox_inches='tight')
 
 
-def verify_attentions(model, testds, ckpt_file=None):
+def verify_attentions(model, testds, ckpt_file=None, save_dir='inference'):
 
     for idx, x in enumerate(testds):
         print(idx, x['img'], x['label'], x['pixels'].shape)
@@ -153,4 +153,4 @@ def verify_attentions(model, testds, ckpt_file=None):
                  f'(ViT model: {ckpt_file})')
 
         plot_attention(im_orig, im_mask, im_heatmap, title,
-            f'inference/attention_mask_{idx}_{ckpt_file}.png')  # assume `mkdir inference`
+            f'{save_dir}/attention_mask_{idx}_{ckpt_file}.png')

@@ -385,9 +385,16 @@ def main():
 
     #
 
-    from .attention import verify_attentions
-    verify_attentions(model, testds, ckpt_saved)
-    exit()  # !!!!
+    if 1:
+        import os
+        from .attention import verify_attentions
+
+        attn_dir = 'inference_attention'
+        if not os.path.exists(attn_dir):
+            os.makedirs(attn_dir, exist_ok=True)
+
+        verify_attentions(model, testds, ckpt_saved, save_dir=attn_dir)
+        exit()  # !!!!
 
     #
 
