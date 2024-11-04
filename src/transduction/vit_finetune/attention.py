@@ -8,6 +8,8 @@ transform_to_pil = ToPILImage()
 from ..plot_if import get_plt
 plt = get_plt()
 
+from ...wsdan.net.augment import generate_heatmap
+
 
 # FYI
 #---- ^^ https://github.com/huggingface/pytorch-image-models/discussions/1232
@@ -56,7 +58,7 @@ def get_mask(im, att_mat):
     grid_size = int(np.sqrt(aug_att_mat.size(-1)))
     mask = v[0, 1:].reshape(grid_size, grid_size).detach().numpy()
 
-    if 0:  #==== @@ orig
+    if 0:  # @@ orig
         mask = cv2.resize(mask / mask.max(), im.size)[..., np.newaxis]
         result = (mask * im).astype("uint8")
 
@@ -64,16 +66,28 @@ def get_mask(im, att_mat):
         # (224, 224, 3) torch.Size([12, 197, 197]) 14
 
         return result, joint_attentions, grid_size
-    if 1:  #==== @@ !!
-        mask = cv2.resize(mask / mask.max(), im.size)
-        print('@@ mask.shape:', mask.shape)  # (224, 224)
-        return mask, joint_attentions, grid_size
-        #====
-        # result = (mask[..., np.newaxis] * im).astype("uint8")
-        # print('@@ result.shape:', result.shape)  # (224, 224, 3)
-        #return result, joint_attentions, grid_size
+    #====
+    if 1:  # @@
+        im_mask = cv2.resize(mask / mask.max(), im.size)
+        #print('@@ im_mask.shape:', im_mask.shape)  # (224, 224)
+        return im_mask, joint_attentions, grid_size
 
 #---- $$
+
+
+def generate_attention_heatmap(im_orig, mask):
+    mask_stacked = torch.tensor([mask[:,:]], dtype=torch.float32)
+    #print('@@ mask_stacked.shape:', mask_stacked.shape)  # torch.Size([1, 224, 224])
+
+    mask_stacked = torch.stack([mask_stacked], dim=0)
+    #print('@@ mask_stacked.shape:', mask_stacked.shape)  # -> torch.Size([1, 1, 224, 224])
+
+    heatmap_stacked = generate_heatmap(mask_stacked)
+
+    orig_stacked = torch.tensor([im_orig[:,:]], dtype=torch.float32).permute(0, 3, 1, 2)
+    #print('@@ orig_stacked.shape:', orig_stacked.shape)  # torch.Size([1, 3, 224, 224])
+
+    return ((orig_stacked * 0.3) + (heatmap_stacked.cpu() * 0.7))[0]
 
 
 def verify_attentions(model, testds, ckpt_file=None):
@@ -95,33 +109,20 @@ def verify_attentions(model, testds, ckpt_file=None):
 
         #
 
-        im_input = transform_to_pil(input)
-        mask, joint_attentions, grid_size = get_mask(im_input, torch.cat(attentions))
+        im_mask, joint_attentions, grid_size = get_mask(
+            transform_to_pil(input), torch.cat(attentions))
 
         print(f'@@ testds[{idx}]: path={input_path}')
-        im_orig_resized = cv2.resize(plt.imread(input_path), mask.shape)
-        #print('@@ im_orig_resized.shape:', im_orig_resized.shape)  # (224, 224, 3)
+        im_orig = cv2.resize(plt.imread(input_path), im_mask.shape)
+        #print('@@ im_orig.shape:', im_orig.shape)  # (224, 224, 3)
 
-        # TODO refactor into a method
-        #---- ^^ mask --> heat attention
-        mask_stacked = torch.tensor([mask[:,:]], dtype=torch.float32)
-        #print('@@ mask_stacked.shape:', mask_stacked.shape)  # torch.Size([1, 224, 224])
+        im_heatmap = transform_to_pil(generate_attention_heatmap(im_orig, im_mask))
 
-        mask_stacked = torch.stack([mask_stacked], dim=0)
-        #print('@@ mask_stacked.shape:', mask_stacked.shape)  # -> torch.Size([1, 1, 224, 224])
+        if 0:
+            im_heatmap.save(f'debug_heat_attention_{idx}.png')
+            exit()  # !!
 
-        from ...wsdan.net.augment import generate_heatmap
-        heat_attention_map = generate_heatmap(mask_stacked)
-
-        raw_image = torch.tensor([im_orig_resized[:,:]], dtype=torch.float32).permute(0, 3, 1, 2)
-        #print('@@ raw_image.shape:', raw_image.shape)  # torch.Size([1, 3, 224, 224])
-
-        heat_attention_image = (raw_image * 0.3) + (heat_attention_map.cpu() * 0.7)
-        #print('@@ heat_attention_image.shape:', heat_attention_image.shape)  # torch.Size([1, 3, 224, 224])
-
-        heat_attention_image = transform_to_pil(heat_attention_image[0])
-        #heat_attention_image.save(f'heat_attention_{idx}.png')
-        #---- $$
+        #
 
         #----
         fig = plt.figure()
@@ -130,13 +131,13 @@ def verify_attentions(model, testds, ckpt_file=None):
         rows, cols = 1, 3
 
         axes.append(fig.add_subplot(rows, cols, 1))
-        plt.imshow(im_orig_resized, cmap='gray')
+        plt.imshow(im_orig, cmap='gray')
 
         axes.append(fig.add_subplot(rows, cols, 2))
-        plt.imshow(mask, cmap='gray')
+        plt.imshow(im_mask, cmap='gray')
 
         axes.append(fig.add_subplot(rows, cols, 3))
-        plt.imshow(heat_attention_image)
+        plt.imshow(im_heatmap)
 
         fig.suptitle(f'testds[{idx}] | attention_mask_{idx} | heat_attention_{idx}\n'
                      f'(path: {input_path})\n'
