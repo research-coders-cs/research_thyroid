@@ -90,6 +90,28 @@ def generate_attention_heatmap(im_orig, mask):
     return ((orig_stacked * 0.3) + (heatmap_stacked.cpu() * 0.7))[0]
 
 
+def plot_attention(im_orig, im_mask, im_heatmap, title, save_path):
+    fig = plt.figure()
+
+    axes = []
+    rows, cols = 1, 3
+
+    axes.append(fig.add_subplot(rows, cols, 1))
+    plt.imshow(im_orig, cmap='gray')
+
+    axes.append(fig.add_subplot(rows, cols, 2))
+    plt.imshow(im_mask, cmap='gray')
+
+    axes.append(fig.add_subplot(rows, cols, 3))
+    plt.imshow(im_heatmap)
+
+    fig.suptitle(title)
+
+    plt.axis('off')
+    plt.setp(axes, xticks=[], yticks=[])
+    plt.savefig(save_path, bbox_inches='tight')
+
+
 def verify_attentions(model, testds, ckpt_file=None):
 
     for idx, x in enumerate(testds):
@@ -102,10 +124,12 @@ def verify_attentions(model, testds, ckpt_file=None):
         outputs = model(input.unsqueeze(0), output_attentions=True)
         logits = outputs.logits
         attentions = outputs.attentions
-        print('@@ logits:', logits)
-        print('@@ type(attentions):', type(attentions))  # <class 'tuple'>
-        for i, attn in enumerate(attentions):
-            print(f'@@ attn[{i}]: {attn.shape}')
+
+        if 0:
+            print('@@ logits:', logits)
+            print('@@ type(attentions):', type(attentions))  # <class 'tuple'>
+            for i, attn in enumerate(attentions):
+                print(f'@@ attn[{i}]: {attn.shape}')
 
         #
 
@@ -124,28 +148,9 @@ def verify_attentions(model, testds, ckpt_file=None):
 
         #
 
-        #----
-        fig = plt.figure()
+        title = (f'testds[{idx}] | attention_mask_{idx} | heat_attention_{idx}\n'
+                 f'(path: {input_path})\n'
+                 f'(ViT model: {ckpt_file})')
 
-        axes = []
-        rows, cols = 1, 3
-
-        axes.append(fig.add_subplot(rows, cols, 1))
-        plt.imshow(im_orig, cmap='gray')
-
-        axes.append(fig.add_subplot(rows, cols, 2))
-        plt.imshow(im_mask, cmap='gray')
-
-        axes.append(fig.add_subplot(rows, cols, 3))
-        plt.imshow(im_heatmap)
-
-        fig.suptitle(f'testds[{idx}] | attention_mask_{idx} | heat_attention_{idx}\n'
-                     f'(path: {input_path})\n'
-                     f'(ViT model: {ckpt_file})')
-
-        plt.axis('off')
-        plt.setp(axes, xticks=[], yticks=[])
-        # assume `mkdir inference`
-        plt.savefig(f'inference/attention_mask_{idx}_{ckpt_file}.png', bbox_inches='tight')
-        #----
-
+        plot_attention(im_orig, im_mask, im_heatmap, title,
+            f'inference/attention_mask_{idx}_{ckpt_file}.png')  # assume `mkdir inference`
