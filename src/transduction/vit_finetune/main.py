@@ -143,6 +143,7 @@ def get_finetuned(model_name, class_names_sorted):
 
     # To use Cifar-10, it needs to be fine tuned again with 10 output classes
     model = ViTForImageClassification.from_pretrained(model_name,
+        attn_implementation="eager",  # @@ https://discuss.huggingface.co/t/attentions-not-returned-from-transformers-vit-model-when-using-output-attentions-true/91203/4
         #@@num_labels=10,
         num_labels=len(itos.keys()),  # @@
         ignore_mismatched_sizes=True,
