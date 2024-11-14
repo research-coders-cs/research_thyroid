@@ -144,7 +144,7 @@ def verify_attentions(model, testds, ckpt_file=None, save_dir='inference'):
         #
 
         im_mask, joint_attentions, grid_size = get_mask(
-            transform_to_pil(input.cpu()), torch.cat(attentions.cpu()))
+            transform_to_pil(input.cpu()), torch.cat(attentions).cpu())
 
         print(f'@@ testds[{idx}]: path={input_path}')
         im_orig = cv2.resize(plt.imread(input_path), im_mask.shape)
