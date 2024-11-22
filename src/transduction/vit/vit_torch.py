@@ -266,47 +266,6 @@ def stat_ds_paths(ds_paths):
 #-------- $$
 
 
-def load_mri_data():
-
-    ds_paths, _ = get_mri_ds_paths('synth', debug=False)
-
-    ds_paths['train']['e1'][0] = 'datasets_mri/50-001/sub-ADNI002S0295_ses-M012/mta_erica_sub-ADNI002S0295_ses-M012_116.png'
-    target_resize = (99, 99)  # !!!!
-
-    return create_mri_data(ds_paths, target_resize)
-
-
-def load_thyroid_data():
-    if 0:  # case thyroid 'Dataset_train_test_val'
-        ds_paths, _ = get_thyroid_ds_paths('ttv', debug=False)
-
-        target_resize = (250, 250)  # per `def _train(` in 'src/wsdan/demo/__init__.py'
-
-    if 1:  # case thyroid 100g
-        ds_paths, _ = get_thyroid_ds_paths('100g', debug=False)
-
-#        target_resize = (250, 250)  # per `def _train(` in 'src/wsdan/demo/__init__.py'
-        target_resize = (280, 280)  # per `def _train(` in 'src/wsdan/demo/__init__.py'
-
-    return create_mri_data(ds_paths, target_resize)
-
-
-def create_mri_data(ds_paths, target_resize):
-    stat_ds_paths(ds_paths)
-    print('@@ target_resize:', target_resize)
-
-    train_set = MriDataset(
-        phase='train',
-        dataset=ds_paths['train'],
-        transform=get_transform_mri(target_resize, phase='train'))
-    test_set = MriDataset(
-        phase='test',
-        dataset=ds_paths['test'],
-        transform=get_transform_mri(target_resize, phase='test'))
-
-    return train_set, test_set, target_resize
-
-
 class MyMSA(nn.Module):
     def __init__(self, d, n_heads=2):
         super(MyMSA, self).__init__()
@@ -590,7 +549,7 @@ class MriViT(nn.Module):
         model_dict = _load_ckpt(self, ckpt)
         super(MriViT, self).load_state_dict(model_dict)
 
-
+#-------- ^^ loaders
 def get_mnist_ds_paths(debug=False):
     class_dir_map = { f'mnist_{y}': f'y_{y}' for y in range(10) }
     ds_paths = {
@@ -680,6 +639,44 @@ def get_mri_ds_paths(variant, debug=False):
 
     return ds_paths, class_names_sorted
 
+def load_thyroid_data():
+    if 0:  # case thyroid 'Dataset_train_test_val'
+        ds_paths, _ = get_thyroid_ds_paths('ttv', debug=False)
+
+        target_resize = (250, 250)  # per `def _train(` in 'src/wsdan/demo/__init__.py'
+
+    if 1:  # case thyroid 100g
+        ds_paths, _ = get_thyroid_ds_paths('100g', debug=False)
+
+#        target_resize = (250, 250)  # per `def _train(` in 'src/wsdan/demo/__init__.py'
+        target_resize = (280, 280)  # per `def _train(` in 'src/wsdan/demo/__init__.py'
+
+    return create_mri_data(ds_paths, target_resize)
+
+def load_mri_data():
+
+    ds_paths, _ = get_mri_ds_paths('synth', debug=False)
+
+    ds_paths['train']['e1'][0] = 'datasets_mri/50-001/sub-ADNI002S0295_ses-M012/mta_erica_sub-ADNI002S0295_ses-M012_116.png'
+    target_resize = (99, 99)  # !!!!
+
+    return create_mri_data(ds_paths, target_resize)
+
+def create_mri_data(ds_paths, target_resize):
+    stat_ds_paths(ds_paths)
+    print('@@ target_resize:', target_resize)
+
+    train_set = MriDataset(
+        phase='train',
+        dataset=ds_paths['train'],
+        transform=get_transform_mri(target_resize, phase='train'))
+    test_set = MriDataset(
+        phase='test',
+        dataset=ds_paths['test'],
+        transform=get_transform_mri(target_resize, phase='test'))
+
+    return train_set, test_set, target_resize
+#-------- $$ loaders
 
 def main():
 
