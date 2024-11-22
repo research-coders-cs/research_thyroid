@@ -603,8 +603,7 @@ def get_thyroid_ds_paths(variant, debug=False):
 
     return ds_paths, class_names_sorted
 
-def get_mri_ds_paths(variant, debug=False):
-
+def get_mri_ds_paths(variant):
     if variant == 'synth':
         ds_paths = {
             'train': {  # -> assert len(train_set) == 13
@@ -620,6 +619,7 @@ def get_mri_ds_paths(variant, debug=False):
                 'e4': ['p0', 'p1'],
             },
         }
+        ds_paths['train']['e1'][0] = 'datasets_mri/50-001/sub-ADNI002S0295_ses-M012/mta_erica_sub-ADNI002S0295_ses-M012_116.png'
     elif variant == 'dev':  # !!!! './datasets_mri/50-001'
         ds_paths = {
             'train': build_dataset({
@@ -632,10 +632,7 @@ def get_mri_ds_paths(variant, debug=False):
     else:
         raise ValueError(f'unknown ds_paths variant: {variant}')
 
-    if debug:
-        stat_ds_paths(ds_paths)
-
-    class_names_sorted = ['11', '22']  # !!!!
+    class_names_sorted = ['e1', 'e2', 'e3', 'e4']
 
     return ds_paths, class_names_sorted
 
@@ -654,10 +651,7 @@ def load_thyroid_data():
     return create_mri_data(ds_paths, target_resize)
 
 def load_mri_data():
-
     ds_paths, _ = get_mri_ds_paths('synth', debug=False)
-
-    ds_paths['train']['e1'][0] = 'datasets_mri/50-001/sub-ADNI002S0295_ses-M012/mta_erica_sub-ADNI002S0295_ses-M012_116.png'
     target_resize = (99, 99)  # !!!!
 
     return create_mri_data(ds_paths, target_resize)

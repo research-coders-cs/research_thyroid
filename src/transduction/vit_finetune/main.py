@@ -266,12 +266,20 @@ def main():
         #exit()  # !!
     #==== @@ MRI: mnist/thyroid/mri
     if 1:  # !!
-        from ..vit.vit_torch import MriDataset, get_mnist_ds_paths, get_thyroid_ds_paths, get_mri_ds_paths, build_dataset
+        from ..vit.vit_torch import MriDataset, stat_ds_paths, build_dataset
+        from ..vit.vit_torch import get_mnist_ds_paths, get_thyroid_ds_paths, get_mri_ds_paths
 
         #ds_paths, class_names_sorted = get_mnist_ds_paths(debug=True)
         #ds_paths, class_names_sorted = get_thyroid_ds_paths('ttv', debug=True)
         #ds_paths, class_names_sorted = get_thyroid_ds_paths('100g', debug=True)
-        ds_paths, class_names_sorted = get_mri_ds_paths('synth', debug=True)  # !!
+        if 1:  # !!!!
+            ds_paths, class_names_sorted = get_mri_ds_paths('synth')
+            # ds_paths, class_names_sorted = get_mri_ds_paths('try')
+
+            stat_ds_paths(ds_paths)
+            print(ds_paths)
+
+            exit()  # !!!!
         if 0:  # thyroid colab
             ds_paths, class_names_sorted = {
                 'train': build_dataset({
