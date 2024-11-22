@@ -140,7 +140,6 @@ def patches_plot(plt, patches, idx, n_patches_hw, img_hw):
 #-------- ^^ @@
 from torch.utils.data import Dataset
 from torch.utils.data.dataset import T_co
-from torchvision import transforms
 
 class MriDataset(Dataset):
 
@@ -202,30 +201,6 @@ class MriDataset(Dataset):
             #print(f'@@ [preprocessing] {tens.shape} -> {transformed_image.shape}')
 
         return transformed_image, class_index, extra
-
-
-def get_transform_mri(target_size, phase='train'):
-    transform_dict = {
-        # 'basic':
-        #     transforms.Compose([
-        #         transforms.Resize(target_size),
-        #         transforms.ToTensor(),
-        #         #imagenet_normalize
-        #     ]),
-        'train':
-            transforms.Compose([
-                transforms.Resize(target_size),
-            ]),
-        'test':
-            transforms.Compose([
-                transforms.Resize(target_size),
-            ]),
-    }
-
-    if phase in transform_dict:
-        return transform_dict[phase]
-    else:
-        raise Exception("Unknown phase specified")
 
 
 #-------- ^^
@@ -656,6 +631,7 @@ def load_mri_data():
 
     return create_mri_data(ds_paths, target_resize)
 
+
 def create_mri_data(ds_paths, target_resize):
     stat_ds_paths(ds_paths)
     print('@@ target_resize:', target_resize)
@@ -670,6 +646,31 @@ def create_mri_data(ds_paths, target_resize):
         transform=get_transform_mri(target_resize, phase='test'))
 
     return train_set, test_set, target_resize
+
+
+from torchvision import transforms
+def get_transform_mri(target_size, phase='train'):
+    transform_dict = {
+        # 'basic':
+        #     transforms.Compose([
+        #         transforms.Resize(target_size),
+        #         transforms.ToTensor(),
+        #         #imagenet_normalize
+        #     ]),
+        'train':
+            transforms.Compose([
+                transforms.Resize(target_size),
+            ]),
+        'test':
+            transforms.Compose([
+                transforms.Resize(target_size),
+            ]),
+    }
+
+    if phase in transform_dict:
+        return transform_dict[phase]
+    else:
+        raise Exception("Unknown phase specified")
 #-------- $$ loaders
 
 def main():
