@@ -264,14 +264,15 @@ def main():
         #print(trainds[0]['pixels'].shape)  # torch.Size([3, 224, 224])
 
         #exit()  # !!
-    #==== @@ MRI: mnist/thyroid
+    #==== @@ MRI: mnist/thyroid/mri
     if 1:  # !!
-        from ..vit.vit_torch import MriDataset, get_mnist_ds_paths, get_thyroid_ds_paths, build_dataset
+        from ..vit.vit_torch import MriDataset, get_mnist_ds_paths, get_thyroid_ds_paths, get_mri_ds_paths, build_dataset
 
         #ds_paths, class_names_sorted = get_mnist_ds_paths(debug=True)
-        #ds_paths, class_names_sorted = get_thyroid_ds_paths('ttv', debug=True)  # !!
-        #ds_paths, class_names_sorted = get_thyroid_ds_paths('100g', debug=True)  # !!
-        if 1:  # !! custom
+        #ds_paths, class_names_sorted = get_thyroid_ds_paths('ttv', debug=True)
+        #ds_paths, class_names_sorted = get_thyroid_ds_paths('100g', debug=True)
+        ds_paths, class_names_sorted = get_mri_ds_paths('synth', debug=True)  # !!
+        if 0:  # thyroid colab
             ds_paths, class_names_sorted = {
                 'train': build_dataset({
                     'benign': ['Markers_Train_Remove_Markers/Benign_Remove/train', 'Markers_Train_Remove_Markers/Benign_Remove/validate'],
@@ -295,6 +296,7 @@ def main():
                 #     'malignant': [],  # fixme !!!!
                 # }, root='thyroid_inference_extra'),
             }, ['benign', 'malignant']
+
 
         # Build: {train,test}_set
 
@@ -320,9 +322,11 @@ def main():
 
             #test_set, _ = random_split(test_set, [40, len(test_set) - 40])
             test_set, _ = random_split(test_set, [10, len(test_set) - 10])
-        elif 1:  # !!!!
+        elif 0:  # thyroid
             #train_set_train, train_set_val = random_split(train_set, [55, 5])  # for 'ttv'
             train_set_train, train_set_val = random_split(train_set, [700, 50])  # for '100g'
+        elif 1:  # mri
+            pass  # !!!!
         else:
             pass
 

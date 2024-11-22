@@ -267,34 +267,11 @@ def stat_ds_paths(ds_paths):
 
 
 def load_mri_data():
-    if 0:  # !!!! debug ***
-        ds_paths = {
-            'train': {  # -> assert len(train_set) == 13
-                'e1': ['a', 'b', 'c', 'd'],
-                'e2': ['e', 'f', 'g'],
-                'e3': ['h', 'i', 'j'],
-                'e4': ['k', 'l', 'm'],
-            },
-            'test': {
-                'e1': ['aa', 'bb'],
-                'e2': ['p0', 'p1'],
-                'e3': ['p0', 'p1'],
-                'e4': ['p0', 'p1'],
-            },
-        }
-        ds_paths['train']['e1'][0] = 'datasets_mri/50-001/sub-ADNI002S0295_ses-M012/mta_erica_sub-ADNI002S0295_ses-M012_116.png'
-        target_resize = (99, 99)  # !!!!
 
-    if 0:  # !!!! './datasets_mri/50-001'
-        ds_paths = {
-            'train': build_dataset({
-                # !!!!
-            }, root='datasets_mri'),
-            'test': build_dataset({
-                # !!!!
-            }, root='datasets_mri'),
-        }
-        target_resize = (99, 99)  # !!!!
+    ds_paths, _ = get_mri_ds_paths('synth', debug=False)
+
+    ds_paths['train']['e1'][0] = 'datasets_mri/50-001/sub-ADNI002S0295_ses-M012/mta_erica_sub-ADNI002S0295_ses-M012_116.png'
+    target_resize = (99, 99)  # !!!!
 
     return create_mri_data(ds_paths, target_resize)
 
@@ -664,6 +641,42 @@ def get_thyroid_ds_paths(variant, debug=False):
         stat_ds_paths(ds_paths)
 
     class_names_sorted = ['benign', 'malignant']
+
+    return ds_paths, class_names_sorted
+
+def get_mri_ds_paths(variant, debug=False):
+
+    if variant == 'synth':
+        ds_paths = {
+            'train': {  # -> assert len(train_set) == 13
+                'e1': ['a', 'b', 'c', 'd'],
+                'e2': ['e', 'f', 'g'],
+                'e3': ['h', 'i', 'j'],
+                'e4': ['k', 'l', 'm'],
+            },
+            'test': {
+                'e1': ['aa', 'bb'],
+                'e2': ['p0', 'p1'],
+                'e3': ['p0', 'p1'],
+                'e4': ['p0', 'p1'],
+            },
+        }
+    elif variant == 'dev':  # !!!! './datasets_mri/50-001'
+        ds_paths = {
+            'train': build_dataset({
+                # !!!!
+            }, root='datasets_mri'),
+            'test': build_dataset({
+                # !!!!
+            }, root='datasets_mri'),
+        }
+    else:
+        raise ValueError(f'unknown ds_paths variant: {variant}')
+
+    if debug:
+        stat_ds_paths(ds_paths)
+
+    class_names_sorted = ['11', '22']  # !!!!
 
     return ds_paths, class_names_sorted
 
