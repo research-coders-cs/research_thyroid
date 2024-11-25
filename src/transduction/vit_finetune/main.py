@@ -268,18 +268,13 @@ def main():
     if 1:  # !!
         from ..vit.vit_torch import MriDataset, stat_ds_paths, build_dataset
         from ..vit.vit_torch import get_mnist_ds_paths, get_thyroid_ds_paths, get_mri_ds_paths
+        from ..vit.vit_torch import erica_crop
+
+        transf = lambda pil_img : transf_inner(pil_img)  # default `transf`
 
         #ds_paths, class_names_sorted = get_mnist_ds_paths(debug=True)
         #ds_paths, class_names_sorted = get_thyroid_ds_paths('ttv', debug=True)
         #ds_paths, class_names_sorted = get_thyroid_ds_paths('100g', debug=True)
-        if 1:  # !!!!
-            ds_paths, class_names_sorted = get_mri_ds_paths('synth')
-            # ds_paths, class_names_sorted = get_mri_ds_paths('try')
-
-            stat_ds_paths(ds_paths)
-            print(ds_paths)
-
-            exit()  # !!!!
         if 0:  # thyroid colab
             ds_paths, class_names_sorted = {
                 'train': build_dataset({
@@ -304,11 +299,22 @@ def main():
                 #     'malignant': [],  # fixme !!!!
                 # }, root='thyroid_inference_extra'),
             }, ['benign', 'malignant']
+        if 1:  # !!!!
+            ds_paths, class_names_sorted = get_mri_ds_paths('synth')
+            # ds_paths, class_names_sorted = get_mri_ds_paths('try')
+
+            stat_ds_paths(ds_paths)
+            print(ds_paths)
+
+            # update `transf`
+            if 1:
+                transf = lambda pil_img : transf_inner(erica_crop(pil_img)[0])  # left
+            else:
+                transf = lambda pil_img : transf_inner(erica_crop(pil_img)[1])  # right
 
 
         # Build: {train,test}_set
 
-        transf = lambda pil_img : transf_inner(pil_img.convert('RGB'))
         train_set = MriDataset(
             phase='finetune_train',
             dataset=ds_paths['train'],
@@ -317,6 +323,9 @@ def main():
             phase='finetune_test',
             dataset=ds_paths['test'],
             transform=transf)
+
+        print(train_set[0])  # !!!! invoke getter
+        exit()  # !!!!
 
         # Convert: {train,test}_set --> {train,val,test}ds
 
