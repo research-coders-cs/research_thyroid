@@ -68,11 +68,12 @@ def patchify_mri(images, n_patches_hw):  # @@
 
 
 #-------- ^^ @@
-from torchvision.transforms import ToPILImage
-transform_pil = ToPILImage()
+from torchvision.transforms import ToPILImage, PILToTensor
+transform_to_pil = ToPILImage()
+transform_to_tensor = PILToTensor()
 
 def save_tensor_as_png(fname, ten):
-    transform_pil(ten).save(fname, format='PNG')
+    transform_to_pil(ten).save(fname, format='PNG')
 
 def imread_as_tensor_mri(plt, fpath):
     im = plt.imread(fpath)
@@ -183,7 +184,7 @@ class MriDataset(Dataset):
         #image = Image.open(path).convert('RGB')
         #transformed_image = self.transform(image)
         #==== @@
-        if path.startswith('datasets_mri/'):  # !!!!
+        if path.startswith('datasets_mri00/'):  # !! legacy
             erica_tensor = imread_as_tensor_mri(plt, path)
             erica_crops = crop_erica_tensor(erica_tensor)
 
@@ -194,13 +195,26 @@ class MriDataset(Dataset):
             from PIL import Image
             img = Image.open(path)
             #print('[orig] type(img):', type(img))
-            transformed_image = self.transform(img)
+            transformed_image = self.transform(img.convert('RGB'))
         else:
             tens = imread_as_tensor_mri(plt, path)
             transformed_image = self.transform(tens)
             #print(f'@@ [preprocessing] {tens.shape} -> {transformed_image.shape}')
 
         return transformed_image, class_index, extra
+
+
+def erica_crop(pil_img):
+    im = transform_to_tensor(pil_img)
+    print(im.shape)  # torch.Size([3, 480, 640])
+
+    im = torch.stack([im[0,:,:]])  # extract R channel as tensor
+    print(im, im.shape)  # tensor([[[255, 255, 255,  ..., 255, 255, 255], ...
+                         #          , dtype=torch.uint8) torch.Size([1, 480, 640])
+    # [ ] ???? -> dtype=torch.float32
+
+    # [ ] permute, crop_erica_tensor, visualize
+
 
 
 #-------- ^^
@@ -611,7 +625,7 @@ def get_mri_ds_paths(variant):
 
     return ds_paths, class_names_sorted
 
-def load_thyroid_data():
+def load_thyroid_data_legacy():
     if 0:  # case thyroid 'Dataset_train_test_val'
         ds_paths, _ = get_thyroid_ds_paths('ttv', debug=False)
 
@@ -625,8 +639,8 @@ def load_thyroid_data():
 
     return create_mri_data(ds_paths, target_resize)
 
-def load_mri_data():
-    ds_paths, _ = get_mri_ds_paths('synth', debug=False)
+def load_mri_data_legacy():
+    ds_paths, _ = get_mri_ds_paths('synth')
     target_resize = (99, 99)  # !!!!
 
     return create_mri_data(ds_paths, target_resize)
@@ -726,7 +740,7 @@ def main():
         n_epochs = 5
 
     if 0:  # case mri
-        train_set, test_set, target_resize = load_mri_data()
+        train_set, test_set, target_resize = load_mri_data_legacy()
 
         #====
         #train_loader = DataLoader(train_set, shuffle=True, batch_size=128)
@@ -747,7 +761,7 @@ def main():
         ).to(device)
 
     if 0:  # case thyroid
-        train_set, test_set, target_resize = load_thyroid_data()
+        train_set, test_set, target_resize = load_thyroid_data_legacy()
 
         train_loader = DataLoader(train_set, shuffle=True, batch_size=8)
         test_loader = DataLoader(test_set, shuffle=False, batch_size=8)
