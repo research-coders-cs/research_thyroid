@@ -268,7 +268,6 @@ def main():
     if 1:  # !!
         from ..vit.vit_torch import MriDataset, stat_ds_paths, build_dataset
         from ..vit.vit_torch import get_mnist_ds_paths, get_thyroid_ds_paths, get_mri_ds_paths
-        from ..vit.vit_torch import erica_crop
 
         transf = lambda pil_img : transf_inner(pil_img)  # default `transf`
 
@@ -306,11 +305,11 @@ def main():
             stat_ds_paths(ds_paths)
             print(ds_paths)
 
-            # update `transf`
-            if 1:
-                transf = lambda pil_img : transf_inner(erica_crop(pil_img)[0])  # left
-            else:
-                transf = lambda pil_img : transf_inner(erica_crop(pil_img)[1])  # right
+            # Update `transf`
+            #idx_left_right = 0  # !!!! !!!!
+            idx_left_right = 1  # !!!! !!!!
+            transf = lambda pil_img : transf_inner(
+                MriDataset.erica_crop(pil_img, idx_left_right))
 
 
         # Build: {train,test}_set
@@ -324,7 +323,9 @@ def main():
             dataset=ds_paths['test'],
             transform=transf)
 
-        print(train_set[0])  # !!!! invoke getter
+        dat = train_set[0]  # !!!! invoke getter
+        print(dat)
+        plt_imshow_tensor(plt, dat[0])  # transformed_image
         exit()  # !!!!
 
         # Convert: {train,test}_set --> {train,val,test}ds
