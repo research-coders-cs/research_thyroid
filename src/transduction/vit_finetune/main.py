@@ -306,9 +306,7 @@ def main():
             print(ds_paths)
 
             # Update `transf`
-            #idx_left_right = 0  # !!!! !!!!
-            idx_left_right = 1  # !!!! !!!!
-            transf = lambda pil_img : transf_inner(
+            transf = lambda pil_img, idx_left_right : transf_inner(
                 MriDataset.erica_crop(pil_img, idx_left_right))
 
 
@@ -323,10 +321,19 @@ def main():
             dataset=ds_paths['test'],
             transform=transf)
 
-        dat = train_set[0]  # !!!! invoke getter
-        print(dat)
-        plt_imshow_tensor(plt, dat[0])  # transformed_image
-        exit()  # !!!!
+        if 1:  # !!!!
+            dat = train_set[0]
+            print(dat)
+            plt_imshow_tensor(plt, dat[0])  # transformed
+            """ FIXME
+            Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers). Got range [-1.0..0.94509804].
+            """
+
+            dat = train_set[1]
+            print(dat)
+            plt_imshow_tensor(plt, dat[0])  # transformed
+
+            exit()  # !!!!
 
         # Convert: {train,test}_set --> {train,val,test}ds
 

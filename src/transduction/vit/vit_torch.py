@@ -72,6 +72,9 @@ from torchvision.transforms import ToPILImage, PILToTensor
 transform_to_pil = ToPILImage()
 transform_to_tensor = PILToTensor()
 
+from PIL import Image
+pil_image_open = Image.open
+
 def save_tensor_as_png(fname, ten):
     transform_to_pil(ten).save(fname, format='PNG')
 
@@ -181,28 +184,29 @@ class MriDataset(Dataset):
         }
         #print(f'@@ __getitem__(): index: {index} extra: {extra}')
 
-        #==== ref
-        #image = Image.open(path).convert('RGB')
-        #transformed_image = self.transform(image)
-        #==== @@
         if path.startswith('datasets_mri00/'):  # !! legacy
             erica_tensor = imread_as_tensor_mri(plt, path)
             erica_crops = crop_erica_tensor(erica_tensor)
 
-            transformed_image = erica_crops[0]  # left
-            ##transformed_image = erica_crops[1]  # right
-            ##transformed_image = torch.zeros(1, 320, 160)  # erica_crops[0] or erica_crops[1]
+            transformed = erica_crops[0]  # left
+            ##transformed = erica_crops[1]  # right
+            ##transformed = torch.zeros(1, 320, 160)  # erica_crops[0] or erica_crops[1]
         elif self.phase.startswith('finetune_'):
-            from PIL import Image
-            img = Image.open(path)
-            #print('[orig] type(img):', type(img))
-            transformed_image = self.transform(img.convert('RGB'))
-        else:
+            if path.endswith('?erica=l'):  # !! crude
+                transformed = self.transform(
+                    pil_image_open(path.replace('?erica=l', '')).convert('RGB'), 0)
+            elif path.endswith('?erica=r'):  # !! crude
+                transformed = self.transform(
+                    pil_image_open(path.replace('?erica=r', '')).convert('RGB'), 1)
+            else:
+                transformed = self.transform(
+                    pil_image_open(path).convert('RGB'))
+        else:  # !! legacy
             tens = imread_as_tensor_mri(plt, path)
-            transformed_image = self.transform(tens)
-            #print(f'@@ [preprocessing] {tens.shape} -> {transformed_image.shape}')
+            transformed = self.transform(tens)
+            #print(f'@@ [preprocessing] {tens.shape} -> {transformed.shape}')
 
-        return transformed_image, class_index, extra
+        return transformed, class_index, extra
 
     @staticmethod
     def erica_crop(pil_img, idx_left_right):
@@ -609,7 +613,8 @@ def get_mri_ds_paths(variant):
                 'e4': ['p0', 'p1'],
             },
         }
-        ds_paths['train']['e1'][0] = 'datasets_mri/50-001/sub-ADNI002S0295_ses-M012/mta_erica_sub-ADNI002S0295_ses-M012_116.png'
+        ds_paths['train']['e1'][0] = 'datasets_mri/50-001/sub-ADNI002S0295_ses-M012/mta_erica_sub-ADNI002S0295_ses-M012_116.png?erica=l'
+        ds_paths['train']['e1'][1] = 'datasets_mri/50-001/sub-ADNI002S0295_ses-M012/mta_erica_sub-ADNI002S0295_ses-M012_116.png?erica=r'
     elif variant == 'dev':  # !!!! './datasets_mri/50-001'
         ds_paths = {
             'train': build_dataset({
