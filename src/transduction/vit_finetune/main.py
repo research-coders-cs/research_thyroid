@@ -299,11 +299,12 @@ def main():
                 # }, root='thyroid_inference_extra'),
             }, ['benign', 'malignant']
         if 1:  # !!!!
-            ds_paths, class_names_sorted = get_mri_ds_paths('synth')
-            # ds_paths, class_names_sorted = get_mri_ds_paths('try')
+            #ds_paths, class_names_sorted = get_mri_ds_paths('synth')
+            ds_paths, class_names_sorted = get_mri_ds_paths('try')  # !!!!
 
             stat_ds_paths(ds_paths)
             print(ds_paths)
+            exit()  # !!!! 22
 
             # Update `transf`
             transf = lambda pil_img, idx_left_right : transf_inner(
@@ -324,14 +325,11 @@ def main():
         if 1:  # !!!!
             dat = train_set[0]
             print(dat)
-            plt_imshow_tensor(plt, dat[0])  # transformed
-            """ FIXME
-            Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers). Got range [-1.0..0.94509804].
-            """
+            plt_imshow_tensor(plt, dat[0])  # transformed, normalized to the range of -1 to 1
 
             dat = train_set[1]
             print(dat)
-            plt_imshow_tensor(plt, dat[0])  # transformed
+            plt_imshow_tensor(plt, dat[0])  # transformed, normalized to the range of -1 to 1
 
             exit()  # !!!!
 
