@@ -618,7 +618,7 @@ def get_mri_ds_paths(variant):
     elif variant == 'try':  # !!!! './datasets_mri/50-001'
         root = 'datasets_mri/50-001'  # !!!!
 
-        #-------- !!
+        #-------- !! # into 'erica.py' part-I
         def glob_erica(srcdir, root=''):
             if srcdir.endswith('__l'):
                 postfix = '__l'
@@ -647,7 +647,7 @@ def get_mri_ds_paths(variant):
             return datasets
         #-------- !!
 
-        if 1:
+        if 0:
             #print(glob.glob(os.path.join(root, 'sub-ADNI002S0295_ses-M012', ext)))
             #print(glob_erica('sub-ADNI002S0295_ses-M012__l', root=root))  # ok
 
@@ -663,6 +663,39 @@ def get_mri_ds_paths(variant):
             }
             #print(ds_paths)  # !!!!
             #exit()  # !!!!
+
+
+        if 1:  # into 'erica.py' part-II
+            erica_dict = {
+                'e1': [],
+                'e2': [],
+                'e3': [],
+                'e4': [],
+            }
+
+            def erica_append(ed, ex, idx_left_right):
+                li = ed.get('e' + ex)
+                if li is not None:
+                    postfix = '__l' if idx_left_right else '__r'
+                    li.append(name + postfix)
+                else:
+                    raise ValueError(f'invalid erica score: {ex}')
+
+            import csv
+            with open('datasets_mri/50-001/50-001_alisa.csv', mode='r') as file:
+                cr = csv.reader(file)
+                for row in cr:
+                    #print(row)
+                    name = row[0]
+                    if not name.startswith('sub-'):
+                        continue
+
+                    erica_append(erica_dict, row[4], 0)
+                    erica_append(erica_dict, row[5], 1)
+
+            print(erica_dict)
+            exit()  # !!!!
+
 
         # head 50-001_alisa.csv
 # File,GCA,MTA_RIGHT,MTA_LEFT,ERICA_RIGHT,ERICA_LEFT,PA
