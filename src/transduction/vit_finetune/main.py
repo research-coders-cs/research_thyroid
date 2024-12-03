@@ -299,11 +299,11 @@ def main():
                 # }, root='thyroid_inference_extra'),
             }, ['benign', 'malignant']
         if 1:  # !!!!
-            #ds_paths, class_names_sorted = get_mri_ds_paths('synth')
-            ds_paths, class_names_sorted = get_mri_ds_paths('try')  # !!!!
+            #ds_paths, class_names_sorted = get_mri_ds_paths('debug')
+            ds_paths, class_names_sorted = get_mri_ds_paths('erica')
 
             stat_ds_paths(ds_paths)
-            print(ds_paths)
+            #print(ds_paths)
             exit()  # !!!! 22
 
             # Update `transf`
