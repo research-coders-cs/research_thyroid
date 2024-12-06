@@ -175,7 +175,7 @@ def verify_attentions(model, testds, ckpt_file=None, save_dir='inference'):
                      f'(ViT model: {ckpt_file})')
             plot_attention([im_erica_l, im_erica_r, im_mask, im_heatmap], title,
                 f'{save_dir}/attention_debug_{idx}_{ckpt_file}.png')
-            exit()  # !!!!
+            #exit()  # !!!!
         else:
             title = (f'testds[{idx}] | attention_mask_{idx} | heat_attention_{idx}\n'
                      f'(path: {input_path})\n'
