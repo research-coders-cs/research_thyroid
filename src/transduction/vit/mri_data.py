@@ -30,7 +30,9 @@ class EricaDataset:
                 EricaDataset.load_erica_from_csv(f'{root}/50-001_alisa.csv'),
                 root=root),
             #---- !!
-            #'test': EricaDataset.build_datset_erica(  # !!!!
+            'test': EricaDataset.build_datset_erica({
+                # !!!!
+            },   root=root),
         }
         return ds_paths
 

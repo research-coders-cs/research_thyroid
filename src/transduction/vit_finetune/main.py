@@ -221,6 +221,10 @@ def get_confusion_matrix(outputs, itos):
         plt_imshow(plt, fname)
 
 
+def debug_print_dat(dat):
+    print(dat)
+    #plt_imshow_tensor(plt, dat[0])  # transformed, normalized to the range of -1 to 1
+
 def main():
 
     model_name = "google/vit-base-patch16-224"
@@ -298,17 +302,15 @@ def main():
                 #     'malignant': [],  # fixme !!!!
                 # }, root='thyroid_inference_extra'),
             }, ['benign', 'malignant']
-        if 1:  # !!!!
+        if 1:  # mri-erica
             #ds_paths, class_names_sorted = get_mri_ds_paths('debug')
             ds_paths, class_names_sorted = get_mri_ds_paths('erica')
 
             stat_ds_paths(ds_paths)
-            #print(ds_paths)
-            exit()  # !!!! 22
 
             # Update `transf`
             transf = lambda pil_img, idx_left_right : transf_inner(
-                MriDataset.erica_crop(pil_img, idx_left_right))
+                MriDataset.erica_crop_pil(pil_img, idx_left_right))
 
 
         # Build: {train,test}_set
@@ -322,16 +324,13 @@ def main():
             dataset=ds_paths['test'],
             transform=transf)
 
-        if 1:  # !!!!
-            dat = train_set[0]
-            print(dat)
-            plt_imshow_tensor(plt, dat[0])  # transformed, normalized to the range of -1 to 1
+        if 0:  # ok
+            debug_print_dat(train_set[0])
+            debug_print_dat(train_set[1])
 
-            dat = train_set[1]
-            print(dat)
-            plt_imshow_tensor(plt, dat[0])  # transformed, normalized to the range of -1 to 1
-
-            exit()  # !!!!
+            # debug_print_dat(train_set[80])  # datasets_mri/50-001/sub-ADNI002S0559_ses-M012/mta_erica_sub-ADNI002S0559_ses-M012_120.png?erica=r
+            # debug_print_dat(train_set[81])  # datasets_mri/50-001/sub-ADNI002S0559_ses-M012/mta_erica_sub-ADNI002S0559_ses-M012_135.png?erica=r
+            exit()  # !!
 
         # Convert: {train,test}_set --> {train,val,test}ds
 
@@ -348,8 +347,8 @@ def main():
         elif 0:  # thyroid
             #train_set_train, train_set_val = random_split(train_set, [55, 5])  # for 'ttv'
             train_set_train, train_set_val = random_split(train_set, [700, 50])  # for '100g'
-        elif 1:  # mri
-            pass  # !!!!
+        elif 1:  # mri-erica
+            train_set_train, train_set_val, test_set, _ = random_split(train_set, [80, 10, 10, len(train_set)-100])
         else:
             pass
 
@@ -400,9 +399,11 @@ def main():
     #ckpt_saved = 'mnist_trained_full.ckpt'
     #----
     #ckpt_saved = 'thyroid_skip_finetune.ckpt'
-    ckpt_saved = 'thyroid_trained_eps8_full.ckpt'
+    #ckpt_saved = 'thyroid_trained_eps8_full.ckpt'
+    #----
+    ckpt_saved = 'mri_trained_eps1_debug.ckpt'
 
-    if 1:
+    if 11:
         print('@@ using `ckpt_saved`:', ckpt_saved)
         model_dict = _load_ckpt(model, ckpt_saved)
         model.load_state_dict(model_dict)

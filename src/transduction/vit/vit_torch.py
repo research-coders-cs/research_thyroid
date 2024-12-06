@@ -211,7 +211,7 @@ class MriDataset(Dataset):
         return transformed, class_index, extra
 
     @staticmethod
-    def erica_crop(pil_img, idx_left_right):
+    def erica_crop_pil(pil_img, idx_left_right):
         im = transform_to_tensor(pil_img)
         #print(im.dtype, im.shape)  # torch.uint8 torch.Size([3, 480, 640])
 
@@ -222,6 +222,21 @@ class MriDataset(Dataset):
             plt_imshow_tensor(plt, im[1])  # right
 
         return transform_to_pil(im[idx_left_right])
+
+    @staticmethod
+    def erica_crop_im(im, idx_left_right):  # `ndarray` image via `plt.imread()`
+        # crop( ndarray
+        #       -> torch.Size([480, 640, 4])
+        #       -> torch.Size([4, 480, 640])
+        #       -> torch.Size([3, 480, 640])  # rgba to rgb
+        # )
+        crops = crop_erica_tensor(
+            torch.from_numpy(im).permute(2, 0, 1)[:3, :, :])
+        if 0:  # debug
+            plt_imshow_tensor(plt, crops[0])  # left
+            plt_imshow_tensor(plt, crops[1])  # right
+
+        return crops[idx_left_right].permute(1, 2, 0).numpy()
 
 
 #-------- ^^

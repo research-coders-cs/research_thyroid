@@ -5,8 +5,10 @@ import cv2
 from torchvision.transforms import ToPILImage
 transform_to_pil = ToPILImage()
 
-from ..plot_if import get_plt
+from ..plot_if import get_plt, plt_imshow
 plt = get_plt()
+
+from ..vit.vit_torch import MriDataset
 
 
 # FYI
@@ -147,8 +149,19 @@ def verify_attentions(model, testds, ckpt_file=None, save_dir='inference'):
             transform_to_pil(input.cpu()), torch.cat(attentions).cpu())
 
         print(f'@@ testds[{idx}]: path={input_path}')
-        im_orig = cv2.resize(plt.imread(input_path), im_mask.shape)
-        #print('@@ im_orig.shape:', im_orig.shape)  # (224, 224, 3)
+        im_orig0 = plt.imread(input_path.split('?')[0])  # ndarray
+
+        if 1:
+            plt_imshow(plt, im_orig0)
+
+        # !! crude
+        if 'erica=l' in input_path:
+            im_orig0 = MriDataset.erica_crop_im(im_orig0, 0)
+        elif 'erica=r' in input_path:
+            im_orig0 = MriDataset.erica_crop_im(im_orig0, 1)
+
+        im_orig = cv2.resize(im_orig0, im_mask.shape)
+        print('@@ im_orig.shape:', im_orig.shape)  # (224, 224, 3)
 
         im_heatmap = transform_to_pil(generate_attention_heatmap(im_orig, im_mask))
 
