@@ -100,20 +100,18 @@ def generate_attention_heatmap(im_orig, mask):
     return ((orig_stacked * 0.3) + (heatmap_stacked.cpu() * 0.7))[0]
 
 
-def plot_attention(im_orig, im_mask, im_heatmap, title, save_path):
+def plot_attention(ims, title, save_path):
     fig = plt.figure()
 
     axes = []
-    rows, cols = 1, 3
 
-    axes.append(fig.add_subplot(rows, cols, 1))
-    plt.imshow(im_orig, cmap='gray')
-
-    axes.append(fig.add_subplot(rows, cols, 2))
-    plt.imshow(im_mask, cmap='gray')
-
-    axes.append(fig.add_subplot(rows, cols, 3))
-    plt.imshow(im_heatmap)
+    rows, cols = 1, len(ims)
+    for idx in range(cols):
+        axes.append(fig.add_subplot(rows, cols, idx + 1))
+        if idx != cols - 1:
+            plt.imshow(ims[idx], cmap='gray')
+        else:
+            plt.imshow(ims[idx])  # heatmap
 
     fig.suptitle(title)
 
@@ -149,18 +147,18 @@ def verify_attentions(model, testds, ckpt_file=None, save_dir='inference'):
             transform_to_pil(input.cpu()), torch.cat(attentions).cpu())
 
         print(f'@@ testds[{idx}]: path={input_path}')
-        im_orig0 = plt.imread(input_path.split('?')[0])  # ndarray
+        im_input = plt.imread(input_path.split('?')[0])  # ndarray
+        #plt_imshow(plt, im_input)
 
-        if 1:
-            plt_imshow(plt, im_orig0)
+        erica_mode = 'erica=' in input_path
+        if erica_mode:
+            im_erica_l, im_erica_r = MriDataset.erica_crop_im(im_input)
+            if 'erica=l' in input_path:
+                im_input = im_erica_l
+            elif 'erica=r' in input_path:
+                im_input = im_erica_r
 
-        # !! crude
-        if 'erica=l' in input_path:
-            im_orig0 = MriDataset.erica_crop_im(im_orig0, 0)
-        elif 'erica=r' in input_path:
-            im_orig0 = MriDataset.erica_crop_im(im_orig0, 1)
-
-        im_orig = cv2.resize(im_orig0, im_mask.shape)
+        im_orig = cv2.resize(im_input, im_mask.shape)
         print('@@ im_orig.shape:', im_orig.shape)  # (224, 224, 3)
 
         im_heatmap = transform_to_pil(generate_attention_heatmap(im_orig, im_mask))
@@ -171,9 +169,16 @@ def verify_attentions(model, testds, ckpt_file=None, save_dir='inference'):
 
         #
 
-        title = (f'testds[{idx}] | attention_mask_{idx} | heat_attention_{idx}\n'
-                 f'(path: {input_path})\n'
-                 f'(ViT model: {ckpt_file})')
-
-        plot_attention(im_orig, im_mask, im_heatmap, title,
-            f'{save_dir}/attention_mask_{idx}_{ckpt_file}.png')
+        if erica_mode:
+            title = (f'testds[{idx}] (erica_[l,r]) | attention_mask_{idx} | heat_attention_{idx}\n'
+                     f'(path: {input_path})\n'
+                     f'(ViT model: {ckpt_file})')
+            plot_attention([im_erica_l, im_erica_r, im_mask, im_heatmap], title,
+                f'{save_dir}/attention_debug_{idx}_{ckpt_file}.png')
+            exit()  # !!!!
+        else:
+            title = (f'testds[{idx}] | attention_mask_{idx} | heat_attention_{idx}\n'
+                     f'(path: {input_path})\n'
+                     f'(ViT model: {ckpt_file})')
+            plot_attention([im_orig, im_mask, im_heatmap], title,
+                f'{save_dir}/attention_debug_{idx}_{ckpt_file}.png')
