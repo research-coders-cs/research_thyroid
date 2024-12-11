@@ -4,8 +4,8 @@ from typing import Dict
 import csv
 
 
-def get_erica_ds_paths():
-    return EricaDataset.build_ds_paths()
+def get_erica_ds_paths(root):
+    return EricaDataset.build_ds_paths(root)
 
 
 class EricaDataset:
@@ -13,9 +13,7 @@ class EricaDataset:
     postfix_r = '__r'
 
     @staticmethod
-    def build_ds_paths():
-        root = 'datasets_mri/50-001'  # !!!!
-
+    def build_ds_paths(root='datasets_mri/50-001'):
         ds_paths = {
             #==== debug <<<<<<<<
             # 'train': EricaDataset.build_datset_erica({
