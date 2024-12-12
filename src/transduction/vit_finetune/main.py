@@ -204,16 +204,12 @@ class MriDatasetAdapter(Dataset):
         return {'img': extra['path'], 'label': class_index, 'pixels': px }
 
 
-def get_confusion_matrix(outputs, itos):
-    print(itos[np.argmax(outputs.predictions[0])], itos[outputs.label_ids[0]])  # e.g. ('cat', 'cat')
-
-    y_true = outputs.label_ids
-    y_pred = outputs.predictions.argmax(1)
-    cm = confusion_matrix(y_true, y_pred)
-    labels = [ itos[i] for i in range(len(itos)) ]
+def get_confusion_matrix(y_true, y_pred, class_names_sorted):
+    cm = confusion_matrix(y_true, y_pred, labels=[i for i in range(len(class_names_sorted))])
+    print('@@ cm:\n', cm)
 
     fname = 'confusion_matrix.png'
-    disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=labels)
+    disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=class_names_sorted)
 
     print(f'@@ saving {fname}')
     disp.plot(xticks_rotation=45).figure_.savefig(fname)
@@ -414,7 +410,7 @@ def main():
 
     #
 
-    if 1:
+    if 0:
         import os
         from .attention import verify_attentions
 
@@ -430,9 +426,14 @@ def main():
     print('@@ calling `trainer.predict(testds)`')
     outputs = trainer.predict(testds)
 
-    print(outputs.metrics)
-    if 0:
-        get_confusion_matrix(outputs, class_names_sorted)
+    print('@@ metrics:', outputs.metrics)
+
+    y_true = outputs.label_ids
+    y_pred = outputs.predictions.argmax(1)
+    #print(y_true, y_pred)  # e.g. [2 1 0 0 2 0 1 1 0 0] [0 0 0 1 0 1 0 0 0 0]
+
+    if 1:
+        get_confusion_matrix(y_true, y_pred, class_names_sorted)
 
 
 if __name__ == "__main__":
