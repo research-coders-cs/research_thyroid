@@ -107,8 +107,8 @@ def crop_erica_tensor(et):
     r = 160
     erica_crop_left =  et[:, ch-r:ch+r, cw-r:cw]  # torch.Size([1, r*2, r])
     erica_crop_right = et[:, ch-r:ch+r, cw:cw+r]  # torch.Size([1, r*2, r])
-    print('@@ erica_crop_left.shape:', erica_crop_left.shape)
-    print('@@ erica_crop_right.shape:', erica_crop_right.shape)
+    #print('@@ erica_crop_left.shape:', erica_crop_left.shape)
+    #print('@@ erica_crop_right.shape:', erica_crop_right.shape)
 
     return erica_crop_left, erica_crop_right
 
