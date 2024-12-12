@@ -121,15 +121,16 @@ def plot_attention(ims, title, save_path):
 
 
 def verify_attentions(model, testds, y_true=None, y_pred=None, ckpt_file=None, save_dir='inference'):
+    print(f'@@ verify_attentions(): ^^ len(testds): {len(testds)}')
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     for idx, x in enumerate(testds):
-        print(idx, x['img'], x['label'], x['pixels'].shape)
+        #print(idx, x['img'], x['label'], x['pixels'].shape)
 
         input = x['pixels']
         input_path = x['img']
-        print('@@ input.shape:', input.shape)  # torch.Size([3, 224, 224])
+        #print('@@ input.shape:', input.shape)  # torch.Size([3, 224, 224])
 
         outputs = model(input.to(device).unsqueeze(0), output_attentions=True)
         logits = outputs.logits
@@ -146,7 +147,7 @@ def verify_attentions(model, testds, y_true=None, y_pred=None, ckpt_file=None, s
         im_mask, joint_attentions, grid_size = get_mask(
             transform_to_pil(input.cpu()), torch.cat(attentions).cpu())
 
-        print(f'@@ testds[{idx}]: path={input_path}')
+        #print(f'@@ testds[{idx}]: path={input_path}')
         im_input = plt.imread(input_path.split('?')[0])  # ndarray
         #plt_imshow(plt, im_input)
 
@@ -159,7 +160,7 @@ def verify_attentions(model, testds, y_true=None, y_pred=None, ckpt_file=None, s
                 im_input = im_erica_r
 
         im_orig = cv2.resize(im_input, im_mask.shape)
-        print('@@ im_orig.shape:', im_orig.shape)  # (224, 224, 3)
+        #print('@@ im_orig.shape:', im_orig.shape)  # (224, 224, 3)
 
         im_heatmap = transform_to_pil(generate_attention_heatmap(im_orig, im_mask))
 

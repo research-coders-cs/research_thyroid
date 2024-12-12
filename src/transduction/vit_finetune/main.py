@@ -211,7 +211,7 @@ def get_confusion_matrix(y_true, y_pred, class_names_sorted):
     fname = 'confusion_matrix.png'
     disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=class_names_sorted)
 
-    print(f'@@ saving {fname}')
+    print(f'@@ get_confusion_matrix(): saving {fname}')
     disp.plot(xticks_rotation=45).figure_.savefig(fname)
     if is_colab():
         plt_imshow(plt, fname)
