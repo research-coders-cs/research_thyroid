@@ -410,19 +410,6 @@ def main():
 
     #
 
-    if 0:
-        import os
-        from .attention import verify_attentions
-
-        attn_dir = 'inference_attention'
-        if not os.path.exists(attn_dir):
-            os.makedirs(attn_dir, exist_ok=True)
-
-        verify_attentions(model, testds, ckpt_saved, save_dir=attn_dir)
-        exit()  # !!!!
-
-    #
-
     print('@@ calling `trainer.predict(testds)`')
     outputs = trainer.predict(testds)
 
@@ -434,6 +421,18 @@ def main():
 
     if 1:
         get_confusion_matrix(y_true, y_pred, class_names_sorted)
+
+    if 1:
+        import os
+        from .attention import verify_attentions
+
+        attn_dir = 'inference_attention'
+        if not os.path.exists(attn_dir):
+            os.makedirs(attn_dir, exist_ok=True)
+
+        verify_attentions(model, testds,
+                          y_true=y_true, y_pred=y_pred,
+                          ckpt_file=ckpt_saved, save_dir=attn_dir)
 
 
 if __name__ == "__main__":

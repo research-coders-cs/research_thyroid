@@ -120,7 +120,7 @@ def plot_attention(ims, title, save_path):
     plt.savefig(save_path, bbox_inches='tight')
 
 
-def verify_attentions(model, testds, ckpt_file=None, save_dir='inference'):
+def verify_attentions(model, testds, y_true=None, y_pred=None, ckpt_file=None, save_dir='inference'):
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -170,12 +170,16 @@ def verify_attentions(model, testds, ckpt_file=None, save_dir='inference'):
         #
 
         if erica_mode:
+            ytrue = y_true[idx] if y_true is not None else None
+            ypred = y_pred[idx] if y_pred is not None else None
+            result = ytrue == ypred if (ytrue is not None and ypred is not None) else None
             title = (f'testds[{idx}] (erica_[l,r]) | attention_mask_{idx} | heat_attention_{idx}\n'
                      f'(path: {input_path})\n'
+                     f'(ytrue: {ytrue} ypred: {ypred} inference result: {result})\n'
                      f'(ViT model: {ckpt_file})')
+
             plot_attention([im_erica_l, im_erica_r, im_mask, im_heatmap], title,
-                f'{save_dir}/attention_debug_{idx}_{ckpt_file}.png')
-            #exit()  # !!!!
+                f'{save_dir}/info_testds_{idx}_result_{result}.png')
         else:
             title = (f'testds[{idx}] | attention_mask_{idx} | heat_attention_{idx}\n'
                      f'(path: {input_path})\n'
