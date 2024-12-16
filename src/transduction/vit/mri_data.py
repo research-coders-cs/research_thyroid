@@ -93,10 +93,10 @@ class EricaDataset:
     def load_erica_from_csv(fpath):
         erica_dict = {'e1': [], 'e2': [], 'e3': [], 'e4': [] }
 
-        def erica_append(ed, ex, idx_left_right):
+        def erica_append(ed, ex, idx_mri_left_right):
             li = ed.get('e' + ex)
             if li is not None:
-                postfix = EricaDataset.postfix_l if idx_left_right else EricaDataset.postfix_r
+                postfix = EricaDataset.postfix_l if idx_mri_left_right else EricaDataset.postfix_r
                 li.append(name + postfix)
             else:
                 raise ValueError(f'invalid erica score: {ex}')
@@ -108,8 +108,8 @@ class EricaDataset:
                 if not name.startswith('sub-'):
                     continue
 
-                erica_append(erica_dict, row[4], 0)
-                erica_append(erica_dict, row[5], 1)
+                erica_append(erica_dict, row[4], 1)  # ERICA_RIGHT <--> MRI_IMAGE_LEFT
+                erica_append(erica_dict, row[5], 0)  # ERICA_LEFT <--> MRI_IMAGE_RIGHT
 
         return erica_dict
 

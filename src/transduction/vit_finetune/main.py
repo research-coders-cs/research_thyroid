@@ -305,8 +305,8 @@ def main():
             stat_ds_paths(ds_paths)
 
             # Update `transf`
-            transf = lambda pil_img, idx_left_right : transf_inner(
-                MriDataset.erica_crop_pil(pil_img, idx_left_right))
+            transf = lambda pil_img, idx_mri_left_right : transf_inner(
+                MriDataset.erica_crop_pil(pil_img, idx_mri_left_right))
 
 
         # Build: {train,test}_set
