@@ -52,56 +52,66 @@ class CustomModel(PreTrainedModel):
 
 ##
 
-AutoConfig.register("custom_model", CustomConfig)
-AutoModel.register(CustomConfig, CustomModel)
-
-##
-
-mnist = load_dataset("mnist")
-train_dataset = mnist["train"]
-test_dataset = mnist["test"]
-
 def preprocess(example):
     return {"pixel_values": torch.tensor(example["image"]).float() / 255.0, "labels": example["label"]}
 
-train_dataset = train_dataset.map(preprocess)
-test_dataset = test_dataset.map(preprocess)
 
-##
+def main():
 
-train_dataloader = DataLoader(train_dataset, batch_size=32, shuffle=True)
-test_dataloader = DataLoader(test_dataset, batch_size=32)
+    print('@@ vit arch !!')
 
-##
 
-model = CustomModel(CustomConfig())
+    AutoConfig.register("custom_model", CustomConfig)
+    AutoModel.register(CustomConfig, CustomModel)
 
-optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
-loss_fn = nn.CrossEntropyLoss()
+    ##
 
-model.train()
-for epoch in range(3):  # Train for 3 epochs
-    for batch in train_dataloader:
-        optimizer.zero_grad()
-        outputs = model(batch["pixel_values"])
-        loss = loss_fn(outputs, batch["labels"])
-        loss.backward()
-        optimizer.step()
-    print(f"Epoch {epoch+1}, Loss: {loss.item()}")
+    mnist = load_dataset("mnist")
+    train_dataset = mnist["train"]
+    test_dataset = mnist["test"]
 
-##
 
-model.eval()
-correct = 0
-total = 0
-with torch.no_grad():
-    for batch in test_dataloader:
-        outputs = model(batch["pixel_values"])
-        _, predicted = torch.max(outputs.data, 1)
-        total += batch["labels"].size(0)
-        correct += (predicted == batch["labels"]).sum().item()
+    train_dataset = train_dataset.map(preprocess)
+    test_dataset = test_dataset.map(preprocess)
 
-print(f"Accuracy: {100 * correct / total}%")
+    ##
 
-##
+    train_dataloader = DataLoader(train_dataset, batch_size=32, shuffle=True)
+    test_dataloader = DataLoader(test_dataset, batch_size=32)
 
+    ##
+
+    model = CustomModel(CustomConfig())
+
+    optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
+    loss_fn = nn.CrossEntropyLoss()
+
+    model.train()
+    for epoch in range(3):  # Train for 3 epochs
+        for batch in train_dataloader:
+            optimizer.zero_grad()
+            outputs = model(batch["pixel_values"])
+            loss = loss_fn(outputs, batch["labels"])
+            loss.backward()
+            optimizer.step()
+        print(f"Epoch {epoch+1}, Loss: {loss.item()}")
+
+    ##
+
+    model.eval()
+    correct = 0
+    total = 0
+    with torch.no_grad():
+        for batch in test_dataloader:
+            outputs = model(batch["pixel_values"])
+            _, predicted = torch.max(outputs.data, 1)
+            total += batch["labels"].size(0)
+            correct += (predicted == batch["labels"]).sum().item()
+
+    print(f"Accuracy: {100 * correct / total}%")
+
+    ##
+
+
+if __name__ == "__main__":
+    main()

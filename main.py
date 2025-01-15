@@ -67,7 +67,12 @@ if __name__ == '__main__':
 
         vit_main()
 
-    if 1:  # finetune
+    if 0:  # finetune
         from src.transduction.vit_finetune.main import main as vit_finetune_main
 
         vit_finetune_main()
+
+    if 1:  # arch
+        from src.transduction.vit.vit_arch import main as vit_arch_main
+
+        vit_arch_main()
