@@ -1,3 +1,16 @@
+"""
+  # local dev setup
+  pip install torch==2.2.2
+  pip uninstall torchdata torchtext torchvision
+  pip install torchdata torchtext torchvision
+  pip list | grep torch
+
+  # huggingface setup
+  pip install 'transformers[torch]'
+  pip install datasets
+  pip install scikit-learn
+"""
+
 import transduction  # 'research-ai-transduction' pkg (i.e. 'src/transduction/*')
 
 #----
@@ -66,13 +79,16 @@ if __name__ == '__main__':
         from src.transduction.vit.vit_torch import main as vit_main
 
         vit_main()
+        exit()
 
-    if 0:  # finetune
+    if 1:  # finetune
         from src.transduction.vit_finetune.main import main as vit_finetune_main
 
         vit_finetune_main()
+        exit()
 
-    if 1:  # arch
+    if 0:  # arch
         from src.transduction.vit.vit_arch import main as vit_arch_main
 
         vit_arch_main()
+        exit()
