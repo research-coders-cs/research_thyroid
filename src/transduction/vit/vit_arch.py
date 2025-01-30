@@ -13,6 +13,8 @@ from torch import nn
 from transformers import PreTrainedModel, PretrainedConfig, AutoConfig, AutoModel
 from datasets import load_dataset
 from torch.utils.data import DataLoader
+import numpy as np
+
 
 class CustomConfig(PretrainedConfig):
     model_type = "custom_model"
@@ -53,7 +55,13 @@ class CustomModel(PreTrainedModel):
 ##
 
 def preprocess(example):
-    return {"pixel_values": torch.tensor(example["image"]).float() / 255.0, "labels": example["label"]}
+    #print(example["image"])  # <PIL.PngImagePlugin.PngImageFile image mode=L size=28x28 at 0x366EE38E0>
+    img = np.array(example["image"])
+
+    return {
+        "pixel_values": torch.tensor(img).float() / 255.0,
+        "labels": example["label"]
+    }
 
 
 def main():
