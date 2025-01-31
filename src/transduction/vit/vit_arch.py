@@ -13,7 +13,9 @@ from torch import nn
 from transformers import PreTrainedModel, PretrainedConfig, AutoConfig, AutoModel
 from datasets import load_dataset
 from torch.utils.data import DataLoader
+
 import numpy as np
+from torchvision import transforms
 
 
 class CustomConfig(PretrainedConfig):
@@ -54,33 +56,67 @@ class CustomModel(PreTrainedModel):
 
 ##
 
-def preprocess(example):
-    #print(example["image"])  # <PIL.PngImagePlugin.PngImageFile image mode=L size=28x28 at 0x366EE38E0>
-    img = np.array(example["image"])
+#-------- ^^
 
-    return {
-        "pixel_values": torch.tensor(img).float() / 255.0,
-        "labels": example["label"]
-    }
+import os
+from torch.utils.data import Dataset
 
+class CustomDataset(Dataset):
+    def __init__(self, ds, transform=None):
+        # @@ ds: Dataset({
+        #     features: ['image', 'label'],
+        #     num_rows: 60000
+        # })
+        self.ds = ds
+        self.transform = transform
+
+    def __len__(self):
+        return len(self.ds)
+
+    def __getitem__(self, idx):
+        image = self.ds[idx]['image']
+        lebel = self.ds[idx]['label']  # TODO
+
+        if self.transform:
+            image = self.transform(image)
+
+        return image
+
+#-------- $$
 
 def main():
 
     print('@@ vit arch !!')
-
 
     AutoConfig.register("custom_model", CustomConfig)
     AutoModel.register(CustomConfig, CustomModel)
 
     ##
 
+    transform = transforms.Compose([
+        transforms.ToTensor(),
+    ])
+    preprocess = lambda pil_img : transform(pil_img)
+
     mnist = load_dataset("mnist")
-    train_dataset = mnist["train"]
-    test_dataset = mnist["test"]
+    """ ^---- TODO shorten them, cf.
+    from datasets import load_dataset  # cifar10
+    trainds, testds = load_dataset("cifar10", split=[f"train[:{train_size}]", f"test[:{test_size}]"])
 
+    splits = trainds.train_test_split(test_size=0.1)
+    trainds = splits['train']  # 90%
+    valds = splits['test']  # 10%
+    """
 
-    train_dataset = train_dataset.map(preprocess)
-    test_dataset = test_dataset.map(preprocess)
+    train_dataset = CustomDataset(mnist["train"], transform=preprocess)
+    test_dataset = CustomDataset(mnist["test"], transform=preprocess)
+
+    print('@@ len(train_dataset):', len(train_dataset))  # 60000
+    print('@@ len(test_dataset):', len(test_dataset))  # 10000
+    print('@@ type(train_dataset[0]):', type(train_dataset[0]))
+
+    exit()  # !!!!
+    #----
 
     ##
 
@@ -96,7 +132,11 @@ def main():
 
     model.train()
     for epoch in range(3):  # Train for 3 epochs
+        print(f'@@ Epoch: {epoch+1}')
         for batch in train_dataloader:
+            print('@@ batch:', batch)  # !!!!
+            exit()  # !!!!
+
             optimizer.zero_grad()
             outputs = model(batch["pixel_values"])
             loss = loss_fn(outputs, batch["labels"])
