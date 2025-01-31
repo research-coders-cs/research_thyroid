@@ -28,7 +28,6 @@ class CustomConfig(PretrainedConfig):
         self.num_attention_heads = num_attention_heads
         self.num_classes = num_classes
 
-##
 
 class CustomModel(PreTrainedModel):
     config_class = CustomConfig
@@ -54,10 +53,7 @@ class CustomModel(PreTrainedModel):
         return logits
 
 
-##
-
 #-------- ^^
-
 from torch.utils.data import Dataset, random_split
 
 class CustomDataset(Dataset):
@@ -80,8 +76,8 @@ class CustomDataset(Dataset):
             image = self.transform(image)
 
         return image, label
-
 #-------- $$
+
 
 def main():
 
@@ -93,7 +89,14 @@ def main():
     ##
 
     transform = transforms.Compose([
+        #----
+        #Resize((processor.size['height'], processor.size['width'])),
+        # TODO organize the sizes
+        #----
         transforms.ToTensor(),
+        #---- cf.
+        # Normalize(mean=processor.image_mean, std=processor.image_std),
+        #----
     ])
     preprocess = lambda pil_img : transform(pil_img)
 
