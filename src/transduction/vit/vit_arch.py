@@ -58,7 +58,7 @@ class CustomModel(PreTrainedModel):
 
 #-------- ^^
 
-from torch.utils.data import Dataset
+from torch.utils.data import Dataset, random_split
 
 class CustomDataset(Dataset):
     def __init__(self, ds, transform=None):
@@ -98,24 +98,40 @@ def main():
     preprocess = lambda pil_img : transform(pil_img)
 
     mnist = load_dataset("mnist")
-    """ ^---- TODO shorten them, cf.
-    from datasets import load_dataset  # cifar10
-    trainds, testds = load_dataset("cifar10", split=[f"train[:{train_size}]", f"test[:{test_size}]"])
-
-    splits = trainds.train_test_split(test_size=0.1)
-    trainds = splits['train']  # 90%
-    valds = splits['test']  # 10%
-    """
-
     train_dataset = CustomDataset(mnist["train"], transform=preprocess)
     test_dataset = CustomDataset(mnist["test"], transform=preprocess)
 
-    print('@@ len(train_dataset):', len(train_dataset))  # 60000
-    print('@@ len(test_dataset):', len(test_dataset))  # 10000
-    print('@@ type(train_dataset[0]):', type(train_dataset[0]))  # <class 'tuple'>
+    if 1:  # @@ dev
+        #====
+        len_train, len_test = 600, 100
+# @@ Epoch: 1
+# Epoch 1, Loss: 2.0140535831451416
+# @@ Epoch: 2
+# Epoch 2, Loss: 0.9587066173553467
+# @@ Epoch: 3
+# Epoch 3, Loss: 0.820209264755249
+# Accuracy: 75.0%
+        #====
+        #len_train, len_test = 6000, 1000
+# @@ Epoch: 1
+# Epoch 1, Loss: 0.5430163145065308
+# @@ Epoch: 2
+# Epoch 2, Loss: 0.1401258111000061
+# @@ Epoch: 3
+# Epoch 3, Loss: 0.48536649346351624
+# Accuracy: 88.3%
+        #====
 
-    ##exit()  # !!!!
-    #----
+        train_dataset, _ = random_split(train_dataset, [len_train, len(train_dataset) - len_train])
+        test_dataset, _ = random_split(test_dataset, [len_test, len(test_dataset) - len_test])
+        print('@@ !! train/test dataset shortened')
+    else:
+        pass  # 60000, 10000
+
+    print('@@ len(train_dataset):', len(train_dataset))
+    print('@@ len(test_dataset):', len(test_dataset))
+
+    print('@@ type(train_dataset[0]):', type(train_dataset[0]))  # <class 'tuple'>
 
     ##
 
@@ -134,9 +150,6 @@ def main():
         print(f'@@ Epoch: {epoch+1}')
         for batch in train_dataloader:
             pixels, labels = batch
-            # print('@@ pixels:', pixels)  # !!!!
-            # print('@@ labels:', labels)  # !!!!
-            #exit()  # !!!!
 
             optimizer.zero_grad()
             outputs = model(pixels)
@@ -152,10 +165,12 @@ def main():
     total = 0
     with torch.no_grad():
         for batch in test_dataloader:
-            outputs = model(batch["pixel_values"])
+            pixels, labels = batch
+
+            outputs = model(pixels)
             _, predicted = torch.max(outputs.data, 1)
-            total += batch["labels"].size(0)
-            correct += (predicted == batch["labels"]).sum().item()
+            total += labels.size(0)
+            correct += (predicted == labels).sum().item()
 
     print(f"Accuracy: {100 * correct / total}%")
 
