@@ -58,7 +58,6 @@ class CustomModel(PreTrainedModel):
 
 #-------- ^^
 
-import os
 from torch.utils.data import Dataset
 
 class CustomDataset(Dataset):
@@ -75,12 +74,12 @@ class CustomDataset(Dataset):
 
     def __getitem__(self, idx):
         image = self.ds[idx]['image']
-        lebel = self.ds[idx]['label']  # TODO
+        label = self.ds[idx]['label']
 
         if self.transform:
             image = self.transform(image)
 
-        return image
+        return image, label
 
 #-------- $$
 
@@ -113,9 +112,9 @@ def main():
 
     print('@@ len(train_dataset):', len(train_dataset))  # 60000
     print('@@ len(test_dataset):', len(test_dataset))  # 10000
-    print('@@ type(train_dataset[0]):', type(train_dataset[0]))
+    print('@@ type(train_dataset[0]):', type(train_dataset[0]))  # <class 'tuple'>
 
-    exit()  # !!!!
+    ##exit()  # !!!!
     #----
 
     ##
@@ -134,12 +133,14 @@ def main():
     for epoch in range(3):  # Train for 3 epochs
         print(f'@@ Epoch: {epoch+1}')
         for batch in train_dataloader:
-            print('@@ batch:', batch)  # !!!!
-            exit()  # !!!!
+            pixels, labels = batch
+            # print('@@ pixels:', pixels)  # !!!!
+            # print('@@ labels:', labels)  # !!!!
+            #exit()  # !!!!
 
             optimizer.zero_grad()
-            outputs = model(batch["pixel_values"])
-            loss = loss_fn(outputs, batch["labels"])
+            outputs = model(pixels)
+            loss = loss_fn(outputs, labels)
             loss.backward()
             optimizer.step()
         print(f"Epoch {epoch+1}, Loss: {loss.item()}")
